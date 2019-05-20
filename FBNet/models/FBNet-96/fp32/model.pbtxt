@@ -1,0 +1,1514 @@
+name: "mobile_vision.cls"
+op {
+  input: "data"
+  input: "conv0_conv_w"
+  input: "conv0_bn_b"
+  output: "conv0_bn"
+  name: ""
+  type: "Conv"
+  arg {
+    name: "kernel"
+    i: 3
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "exhaustive_search"
+    i: 1
+  }
+  arg {
+    name: "stride"
+    i: 2
+  }
+  arg {
+    name: "pad"
+    i: 1
+  }
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  device_option {
+  }
+  engine: "DEPTHWISE_3x3,NNPACK"
+}
+op {
+  input: "conv0_bn"
+  output: "conv0_bn"
+  name: ""
+  type: "Relu"
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "conv0_bn"
+  input: "fbn0_0_pw_conv_w"
+  input: "fbn0_0_pw_bn_b"
+  output: "fbn0_0_pw_bn"
+  name: ""
+  type: "Conv"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "exhaustive_search"
+    i: 1
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  device_option {
+  }
+  engine: "DEPTHWISE_3x3,NNPACK"
+}
+op {
+  input: "fbn0_0_pw_bn"
+  output: "fbn0_0_pw_bn"
+  name: ""
+  type: "Relu"
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "fbn0_0_pw_bn"
+  input: "fbn0_0_dw_conv_w"
+  output: "fbn0_0_dw_conv"
+  name: ""
+  type: "Conv"
+  arg {
+    name: "kernel"
+    i: 3
+  }
+  arg {
+    name: "group"
+    i: 8
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "exhaustive_search"
+    i: 1
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 1
+  }
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  device_option {
+  }
+  engine: "DEPTHWISE_3x3,NNPACK"
+}
+op {
+  input: "fbn0_0_dw_conv"
+  input: "fbn0_0_pwl_conv_w"
+  input: "fbn0_0_pwl_bn_b"
+  output: "fbn0_0_pwl_bn"
+  name: ""
+  type: "Conv"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "exhaustive_search"
+    i: 1
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  device_option {
+  }
+  engine: "DEPTHWISE_3x3,NNPACK"
+}
+op {
+  input: "fbn0_0_pwl_bn"
+  input: "conv0_bn"
+  output: "fbn0_0"
+  name: ""
+  type: "Sum"
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "fbn0_0"
+  input: "fbn1_0_pw_conv_w"
+  input: "fbn1_0_pw_bn_b"
+  output: "fbn1_0_pw_bn"
+  name: ""
+  type: "Conv"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "exhaustive_search"
+    i: 1
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  device_option {
+  }
+  engine: "DEPTHWISE_3x3,NNPACK"
+}
+op {
+  input: "fbn1_0_pw_bn"
+  output: "fbn1_0_pw_bn"
+  name: ""
+  type: "Relu"
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "fbn1_0_pw_bn"
+  input: "fbn1_0_dw_conv_w"
+  output: "fbn1_0_dw_conv"
+  name: ""
+  type: "Conv"
+  arg {
+    name: "kernel"
+    i: 3
+  }
+  arg {
+    name: "group"
+    i: 48
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "exhaustive_search"
+    i: 1
+  }
+  arg {
+    name: "stride"
+    i: 2
+  }
+  arg {
+    name: "pad"
+    i: 1
+  }
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  device_option {
+  }
+  engine: "DEPTHWISE_3x3,NNPACK"
+}
+op {
+  input: "fbn1_0_dw_conv"
+  input: "fbn1_0_pwl_conv_w"
+  input: "fbn1_0_pwl_bn_b"
+  output: "fbn1_0_pwl_bn"
+  name: ""
+  type: "Conv"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "exhaustive_search"
+    i: 1
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  device_option {
+  }
+  engine: "DEPTHWISE_3x3,NNPACK"
+}
+op {
+  input: "fbn1_0_pwl_bn"
+  input: "fbn1_1_pw_conv_w"
+  input: "fbn1_1_pw_bn_b"
+  output: "fbn1_1_pw_bn"
+  name: ""
+  type: "Conv"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "exhaustive_search"
+    i: 1
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  device_option {
+  }
+  engine: "DEPTHWISE_3x3,NNPACK"
+}
+op {
+  input: "fbn1_1_pw_bn"
+  output: "fbn1_1_pw_bn"
+  name: ""
+  type: "Relu"
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "fbn1_1_pw_bn"
+  input: "fbn1_1_dw_conv_w"
+  output: "fbn1_1_dw_conv"
+  name: ""
+  type: "Conv"
+  arg {
+    name: "kernel"
+    i: 3
+  }
+  arg {
+    name: "group"
+    i: 96
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "exhaustive_search"
+    i: 1
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 1
+  }
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  device_option {
+  }
+  engine: "DEPTHWISE_3x3,NNPACK"
+}
+op {
+  input: "fbn1_1_dw_conv"
+  input: "fbn1_1_pwl_conv_w"
+  input: "fbn1_1_pwl_bn_b"
+  output: "fbn1_1_pwl_bn"
+  name: ""
+  type: "Conv"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "exhaustive_search"
+    i: 1
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  device_option {
+  }
+  engine: "DEPTHWISE_3x3,NNPACK"
+}
+op {
+  input: "fbn1_1_pwl_bn"
+  input: "fbn1_0_pwl_bn"
+  output: "fbn1_1"
+  name: ""
+  type: "Sum"
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "fbn1_1"
+  input: "fbn2_0_pw_conv_w"
+  input: "fbn2_0_pw_bn_b"
+  output: "fbn2_0_pw_bn"
+  name: ""
+  type: "Conv"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "exhaustive_search"
+    i: 1
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  device_option {
+  }
+  engine: "DEPTHWISE_3x3,NNPACK"
+}
+op {
+  input: "fbn2_0_pw_bn"
+  output: "fbn2_0_pw_bn"
+  name: ""
+  type: "Relu"
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "fbn2_0_pw_bn"
+  input: "fbn2_0_dw_conv_w"
+  output: "fbn2_0_dw_conv"
+  name: ""
+  type: "Conv"
+  arg {
+    name: "kernel"
+    i: 5
+  }
+  arg {
+    name: "group"
+    i: 96
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "exhaustive_search"
+    i: 1
+  }
+  arg {
+    name: "stride"
+    i: 2
+  }
+  arg {
+    name: "pad"
+    i: 2
+  }
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  device_option {
+  }
+  engine: "DEPTHWISE_3x3,NNPACK"
+}
+op {
+  input: "fbn2_0_dw_conv"
+  input: "fbn2_0_pwl_conv_w"
+  input: "fbn2_0_pwl_bn_b"
+  output: "fbn2_0_pwl_bn"
+  name: ""
+  type: "Conv"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "exhaustive_search"
+    i: 1
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  device_option {
+  }
+  engine: "DEPTHWISE_3x3,NNPACK"
+}
+op {
+  input: "fbn2_0_pwl_bn"
+  input: "fbn2_1_pw_conv_w"
+  input: "fbn2_1_pw_bn_b"
+  output: "fbn2_1_pw_bn"
+  name: ""
+  type: "Conv"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "exhaustive_search"
+    i: 1
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  device_option {
+  }
+  engine: "DEPTHWISE_3x3,NNPACK"
+}
+op {
+  input: "fbn2_1_pw_bn"
+  output: "fbn2_1_pw_bn"
+  name: ""
+  type: "Relu"
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "fbn2_1_pw_bn"
+  input: "fbn2_1_dw_conv_w"
+  output: "fbn2_1_dw_conv"
+  name: ""
+  type: "Conv"
+  arg {
+    name: "kernel"
+    i: 5
+  }
+  arg {
+    name: "group"
+    i: 96
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "exhaustive_search"
+    i: 1
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 2
+  }
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  device_option {
+  }
+  engine: "DEPTHWISE_3x3,NNPACK"
+}
+op {
+  input: "fbn2_1_dw_conv"
+  input: "fbn2_1_pwl_conv_w"
+  input: "fbn2_1_pwl_bn_b"
+  output: "fbn2_1_pwl_bn"
+  name: ""
+  type: "Conv"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "exhaustive_search"
+    i: 1
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  device_option {
+  }
+  engine: "DEPTHWISE_3x3,NNPACK"
+}
+op {
+  input: "fbn2_1_pwl_bn"
+  input: "fbn2_0_pwl_bn"
+  output: "fbn2_1"
+  name: ""
+  type: "Sum"
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "fbn2_1"
+  input: "fbn3_0_pw_conv_w"
+  input: "fbn3_0_pw_bn_b"
+  output: "fbn3_0_pw_bn"
+  name: ""
+  type: "Conv"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "exhaustive_search"
+    i: 1
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  device_option {
+  }
+  engine: "DEPTHWISE_3x3,NNPACK"
+}
+op {
+  input: "fbn3_0_pw_bn"
+  output: "fbn3_0_pw_bn"
+  name: ""
+  type: "Relu"
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "fbn3_0_pw_bn"
+  input: "fbn3_0_dw_conv_w"
+  output: "fbn3_0_dw_conv"
+  name: ""
+  type: "Conv"
+  arg {
+    name: "kernel"
+    i: 5
+  }
+  arg {
+    name: "group"
+    i: 96
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "exhaustive_search"
+    i: 1
+  }
+  arg {
+    name: "stride"
+    i: 2
+  }
+  arg {
+    name: "pad"
+    i: 2
+  }
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  device_option {
+  }
+  engine: "DEPTHWISE_3x3,NNPACK"
+}
+op {
+  input: "fbn3_0_dw_conv"
+  input: "fbn3_0_pwl_conv_w"
+  input: "fbn3_0_pwl_bn_b"
+  output: "fbn3_0_pwl_bn"
+  name: ""
+  type: "Conv"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "exhaustive_search"
+    i: 1
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  device_option {
+  }
+  engine: "DEPTHWISE_3x3,NNPACK"
+}
+op {
+  input: "fbn3_0_pwl_bn"
+  input: "fbn3_4_pw_conv_w"
+  input: "fbn3_4_pw_bn_b"
+  output: "fbn3_4_pw_bn"
+  name: ""
+  type: "Conv"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "exhaustive_search"
+    i: 1
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  device_option {
+  }
+  engine: "DEPTHWISE_3x3,NNPACK"
+}
+op {
+  input: "fbn3_4_pw_bn"
+  output: "fbn3_4_pw_bn"
+  name: ""
+  type: "Relu"
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "fbn3_4_pw_bn"
+  input: "fbn3_4_dw_conv_w"
+  output: "fbn3_4_dw_conv"
+  name: ""
+  type: "Conv"
+  arg {
+    name: "kernel"
+    i: 3
+  }
+  arg {
+    name: "group"
+    i: 144
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "exhaustive_search"
+    i: 1
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 1
+  }
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  device_option {
+  }
+  engine: "DEPTHWISE_3x3,NNPACK"
+}
+op {
+  input: "fbn3_4_dw_conv"
+  input: "fbn3_4_pwl_conv_w"
+  input: "fbn3_4_pwl_bn_b"
+  output: "fbn3_4_pwl_bn"
+  name: ""
+  type: "Conv"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "exhaustive_search"
+    i: 1
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  device_option {
+  }
+  engine: "DEPTHWISE_3x3,NNPACK"
+}
+op {
+  input: "fbn3_4_pwl_bn"
+  input: "fbn4_0_pw_conv_w"
+  input: "fbn4_0_pw_bn_b"
+  output: "fbn4_0_pw_bn"
+  name: ""
+  type: "Conv"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "exhaustive_search"
+    i: 1
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  device_option {
+  }
+  engine: "DEPTHWISE_3x3,NNPACK"
+}
+op {
+  input: "fbn4_0_pw_bn"
+  output: "fbn4_0_pw_bn"
+  name: ""
+  type: "Relu"
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "fbn4_0_pw_bn"
+  input: "fbn4_0_dw_conv_w"
+  output: "fbn4_0_dw_conv"
+  name: ""
+  type: "Conv"
+  arg {
+    name: "kernel"
+    i: 5
+  }
+  arg {
+    name: "group"
+    i: 240
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "exhaustive_search"
+    i: 1
+  }
+  arg {
+    name: "stride"
+    i: 2
+  }
+  arg {
+    name: "pad"
+    i: 2
+  }
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  device_option {
+  }
+  engine: "DEPTHWISE_3x3,NNPACK"
+}
+op {
+  input: "fbn4_0_dw_conv"
+  input: "fbn4_0_pwl_conv_w"
+  input: "fbn4_0_pwl_bn_b"
+  output: "fbn4_0_pwl_bn"
+  name: ""
+  type: "Conv"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "exhaustive_search"
+    i: 1
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  device_option {
+  }
+  engine: "DEPTHWISE_3x3,NNPACK"
+}
+op {
+  input: "fbn4_0_pwl_bn"
+  input: "fbn4_1_pw_conv_w"
+  input: "fbn4_1_pw_bn_b"
+  output: "fbn4_1_pw_bn"
+  name: ""
+  type: "Conv"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "exhaustive_search"
+    i: 1
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  device_option {
+  }
+  engine: "DEPTHWISE_3x3,NNPACK"
+}
+op {
+  input: "fbn4_1_pw_bn"
+  output: "fbn4_1_pw_bn"
+  name: ""
+  type: "Relu"
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "fbn4_1_pw_bn"
+  input: "fbn4_1_dw_conv_w"
+  output: "fbn4_1_dw_conv"
+  name: ""
+  type: "Conv"
+  arg {
+    name: "kernel"
+    i: 5
+  }
+  arg {
+    name: "group"
+    i: 432
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "exhaustive_search"
+    i: 1
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 2
+  }
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  device_option {
+  }
+  engine: "DEPTHWISE_3x3,NNPACK"
+}
+op {
+  input: "fbn4_1_dw_conv"
+  input: "fbn4_1_pwl_conv_w"
+  input: "fbn4_1_pwl_bn_b"
+  output: "fbn4_1_pwl_bn"
+  name: ""
+  type: "Conv"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "exhaustive_search"
+    i: 1
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  device_option {
+  }
+  engine: "DEPTHWISE_3x3,NNPACK"
+}
+op {
+  input: "fbn4_1_pwl_bn"
+  input: "fbn4_0_pwl_bn"
+  output: "fbn4_1"
+  name: ""
+  type: "Sum"
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "fbn4_1"
+  input: "fbn4_4_pw_conv_w"
+  input: "fbn4_4_pw_bn_b"
+  output: "fbn4_4_pw_bn"
+  name: ""
+  type: "Conv"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "exhaustive_search"
+    i: 1
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  device_option {
+  }
+  engine: "DEPTHWISE_3x3,NNPACK"
+}
+op {
+  input: "fbn4_4_pw_bn"
+  output: "fbn4_4_pw_bn"
+  name: ""
+  type: "Relu"
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "fbn4_4_pw_bn"
+  input: "fbn4_4_dw_conv_w"
+  output: "fbn4_4_dw_conv"
+  name: ""
+  type: "Conv"
+  arg {
+    name: "kernel"
+    i: 5
+  }
+  arg {
+    name: "group"
+    i: 432
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "exhaustive_search"
+    i: 1
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 2
+  }
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  device_option {
+  }
+  engine: "DEPTHWISE_3x3,NNPACK"
+}
+op {
+  input: "fbn4_4_dw_conv"
+  input: "fbn4_4_pwl_conv_w"
+  input: "fbn4_4_pwl_bn_b"
+  output: "fbn4_4_pwl_bn"
+  name: ""
+  type: "Conv"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "exhaustive_search"
+    i: 1
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  device_option {
+  }
+  engine: "DEPTHWISE_3x3,NNPACK"
+}
+op {
+  input: "fbn4_4_pwl_bn"
+  input: "fbn4_4_pwl_bn_1x1_conv_w"
+  input: "fbn4_4_pwl_bn_1x1_bn_b"
+  output: "fbn4_4_pwl_bn_1x1_bn"
+  name: ""
+  type: "Conv"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "exhaustive_search"
+    i: 1
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  device_option {
+  }
+  engine: "DEPTHWISE_3x3,NNPACK"
+}
+op {
+  input: "fbn4_4_pwl_bn_1x1_bn"
+  output: "fbn4_4_pwl_bn_1x1_bn"
+  name: ""
+  type: "Relu"
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "fbn4_4_pwl_bn_1x1_bn"
+  output: "final_avg"
+  name: ""
+  type: "AveragePool"
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  arg {
+    name: "kernel"
+    i: 3
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "final_avg"
+  input: "pred_w"
+  input: "pred_b"
+  output: "pred"
+  name: ""
+  type: "FC"
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "pred"
+  output: "softmax"
+  name: ""
+  type: "Softmax"
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  device_option {
+  }
+  engine: ""
+}
+external_input: "data"
+external_input: "conv0_conv_w"
+external_input: "conv0_bn_b"
+external_input: "fbn0_0_pw_conv_w"
+external_input: "fbn0_0_pw_bn_b"
+external_input: "fbn0_0_dw_conv_w"
+external_input: "fbn0_0_pwl_conv_w"
+external_input: "fbn0_0_pwl_bn_b"
+external_input: "fbn1_0_pw_conv_w"
+external_input: "fbn1_0_pw_bn_b"
+external_input: "fbn1_0_dw_conv_w"
+external_input: "fbn1_0_pwl_conv_w"
+external_input: "fbn1_0_pwl_bn_b"
+external_input: "fbn1_1_pw_conv_w"
+external_input: "fbn1_1_pw_bn_b"
+external_input: "fbn1_1_dw_conv_w"
+external_input: "fbn1_1_pwl_conv_w"
+external_input: "fbn1_1_pwl_bn_b"
+external_input: "fbn2_0_pw_conv_w"
+external_input: "fbn2_0_pw_bn_b"
+external_input: "fbn2_0_dw_conv_w"
+external_input: "fbn2_0_pwl_conv_w"
+external_input: "fbn2_0_pwl_bn_b"
+external_input: "fbn2_1_pw_conv_w"
+external_input: "fbn2_1_pw_bn_b"
+external_input: "fbn2_1_dw_conv_w"
+external_input: "fbn2_1_pwl_conv_w"
+external_input: "fbn2_1_pwl_bn_b"
+external_input: "fbn3_0_pw_conv_w"
+external_input: "fbn3_0_pw_bn_b"
+external_input: "fbn3_0_dw_conv_w"
+external_input: "fbn3_0_pwl_conv_w"
+external_input: "fbn3_0_pwl_bn_b"
+external_input: "fbn3_4_pw_conv_w"
+external_input: "fbn3_4_pw_bn_b"
+external_input: "fbn3_4_dw_conv_w"
+external_input: "fbn3_4_pwl_conv_w"
+external_input: "fbn3_4_pwl_bn_b"
+external_input: "fbn4_0_pw_conv_w"
+external_input: "fbn4_0_pw_bn_b"
+external_input: "fbn4_0_dw_conv_w"
+external_input: "fbn4_0_pwl_conv_w"
+external_input: "fbn4_0_pwl_bn_b"
+external_input: "fbn4_1_pw_conv_w"
+external_input: "fbn4_1_pw_bn_b"
+external_input: "fbn4_1_dw_conv_w"
+external_input: "fbn4_1_pwl_conv_w"
+external_input: "fbn4_1_pwl_bn_b"
+external_input: "fbn4_4_pw_conv_w"
+external_input: "fbn4_4_pw_bn_b"
+external_input: "fbn4_4_dw_conv_w"
+external_input: "fbn4_4_pwl_conv_w"
+external_input: "fbn4_4_pwl_bn_b"
+external_input: "fbn4_4_pwl_bn_1x1_conv_w"
+external_input: "fbn4_4_pwl_bn_1x1_bn_b"
+external_input: "pred_w"
+external_input: "pred_b"
+external_output: "softmax"

@@ -1,0 +1,2428 @@
+name: "mobile_vision.cls_int8_1"
+op {
+  input: "data"
+  output: "data_NHWC"
+  name: ""
+  type: "NCHW2NHWC"
+}
+op {
+  input: "data_NHWC"
+  output: "data_int8"
+  name: ""
+  type: "Int8Quantize"
+  arg {
+    name: "Y_scale"
+    f: 0.0186584472656
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 114
+  }
+}
+op {
+  input: "data_int8"
+  input: "conv0_conv_w_int8"
+  input: "conv0_bn_b_int8"
+  output: "conv0_int8"
+  name: ""
+  type: "Int8ConvRelu"
+  arg {
+    name: "kernel"
+    i: 3
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 2
+  }
+  arg {
+    name: "pad"
+    i: 1
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 0
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.145595096763
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "conv0_int8"
+  input: "xif0_0_pw_conv_w_int8"
+  input: "xif0_0_pw_bn_b_int8"
+  output: "xif0_0_pw_int8"
+  name: ""
+  type: "Int8ConvRelu"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 0
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.232830944303
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif0_0_pw_int8"
+  input: "xif0_0_dw_conv_w_int8"
+  input: "b_zero_generated_xif0_0_pw_int8"
+  output: "xif0_0_dw_conv_int8"
+  name: ""
+  type: "Int8Conv"
+  arg {
+    name: "kernel"
+    i: 3
+  }
+  arg {
+    name: "group"
+    i: 24
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 1
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 129
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.483238698922
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif0_0_dw_conv_int8"
+  input: "xif0_0_conv_w_int8"
+  input: "xif0_0_bn_b_int8"
+  output: "xif0_0_bn_int8"
+  name: ""
+  type: "Int8Conv"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 131
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.512889547909
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif0_0_bn_int8"
+  input: "xif1_0_pw_conv_w_int8"
+  input: "xif1_0_pw_bn_b_int8"
+  output: "xif1_0_pw_int8"
+  name: ""
+  type: "Int8ConvRelu"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 0
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.283847495273
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif1_0_pw_int8"
+  input: "xif1_0_dw_conv_w_int8"
+  input: "b_zero_generated_xif1_0_pw_int8"
+  output: "xif1_0_dw_conv_int8"
+  name: ""
+  type: "Int8Conv"
+  arg {
+    name: "kernel"
+    i: 3
+  }
+  arg {
+    name: "group"
+    i: 80
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 2
+  }
+  arg {
+    name: "pad"
+    i: 1
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 132
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.414442413928
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif1_0_dw_conv_int8"
+  input: "xif1_0_conv_w_int8"
+  input: "xif1_0_bn_b_int8"
+  output: "xif1_0_bn_int8"
+  name: ""
+  type: "Int8Conv"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 120
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.379779142492
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif1_0_bn_int8"
+  input: "xif1_1_pw_conv_w_int8"
+  input: "xif1_1_pw_bn_b_int8"
+  output: "xif1_1_pw_int8"
+  name: ""
+  type: "Int8ConvRelu"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 0
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.10042457472
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif1_1_pw_int8"
+  input: "xif1_1_dw_conv_w_int8"
+  input: "b_zero_generated_xif1_1_pw_int8"
+  output: "xif1_1_dw_conv_int8"
+  name: ""
+  type: "Int8Conv"
+  arg {
+    name: "kernel"
+    i: 3
+  }
+  arg {
+    name: "group"
+    i: 200
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 1
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 109
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.0766648386039
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif1_1_dw_conv_int8"
+  input: "xif1_1_pwl_conv_w_int8"
+  input: "xif1_1_pwl_bn_b_int8"
+  output: "xif1_1_pwl_bn_int8"
+  name: ""
+  type: "Int8Conv"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 129
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.418188685997
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif1_1_pwl_bn_int8"
+  input: "xif1_0_bn_int8"
+  output: "xif1_1_int8"
+  name: ""
+  type: "Int8Sum"
+  arg {
+    name: "Y_scale"
+    f: 0.454794760311
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 123
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif1_1_int8"
+  input: "xif2_0_pw_conv_w_int8"
+  input: "xif2_0_pw_bn_b_int8"
+  output: "xif2_0_pw_int8"
+  name: ""
+  type: "Int8ConvRelu"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 0
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.153335743178
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif2_0_pw_int8"
+  input: "xif2_0_dw_conv_w_int8"
+  input: "b_zero_generated_xif2_0_pw_int8"
+  output: "xif2_0_dw_conv_int8"
+  name: ""
+  type: "Int8Conv"
+  arg {
+    name: "kernel"
+    i: 3
+  }
+  arg {
+    name: "group"
+    i: 240
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 2
+  }
+  arg {
+    name: "pad"
+    i: 1
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 127
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.0744576098872
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif2_0_dw_conv_int8"
+  input: "xif2_0_conv_w_int8"
+  input: "xif2_0_bn_b_int8"
+  output: "xif2_0_bn_int8"
+  name: ""
+  type: "Int8Conv"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 128
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.290074845856
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif2_0_bn_int8"
+  input: "xif2_1_pw_conv_w_int8"
+  input: "xif2_1_pw_bn_b_int8"
+  output: "xif2_1_pw_int8"
+  name: ""
+  type: "Int8ConvRelu"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 0
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.0595671129062
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif2_1_pw_int8"
+  input: "xif2_1_dw_conv_w_int8"
+  input: "b_zero_generated_xif2_1_pw_int8"
+  output: "xif2_1_dw_conv_int8"
+  name: ""
+  type: "Int8Conv"
+  arg {
+    name: "kernel"
+    i: 3
+  }
+  arg {
+    name: "group"
+    i: 240
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 1
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 123
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.0346289989995
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif2_1_dw_conv_int8"
+  input: "xif2_1_pwl_conv_w_int8"
+  input: "xif2_1_pwl_bn_b_int8"
+  output: "xif2_1_pwl_bn_int8"
+  name: ""
+  type: "Int8Conv"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 119
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.19396646537
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif2_1_pwl_bn_int8"
+  input: "xif2_0_bn_int8"
+  output: "xif2_1_int8"
+  name: ""
+  type: "Int8Sum"
+  arg {
+    name: "Y_scale"
+    f: 0.301133398916
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 132
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif2_1_int8"
+  input: "xif2_2_pw_conv_w_int8"
+  input: "xif2_2_pw_bn_b_int8"
+  output: "xif2_2_pw_int8"
+  name: ""
+  type: "Int8ConvRelu"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 0
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.0623405004235
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif2_2_pw_int8"
+  input: "xif2_2_dw_conv_w_int8"
+  input: "b_zero_generated_xif2_2_pw_int8"
+  output: "xif2_2_dw_conv_int8"
+  name: ""
+  type: "Int8Conv"
+  arg {
+    name: "kernel"
+    i: 3
+  }
+  arg {
+    name: "group"
+    i: 240
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 1
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 126
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.0347847994636
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif2_2_dw_conv_int8"
+  input: "xif2_2_pwl_conv_w_int8"
+  input: "xif2_2_pwl_bn_b_int8"
+  output: "xif2_2_pwl_bn_int8"
+  name: ""
+  type: "Int8Conv"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 125
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.210428858738
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif2_2_pwl_bn_int8"
+  input: "xif2_1_int8"
+  output: "xif2_2_int8"
+  name: ""
+  type: "Int8Sum"
+  arg {
+    name: "Y_scale"
+    f: 0.40265305463
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 123
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif2_2_int8"
+  input: "xif3_0_pw_conv_w_int8"
+  input: "xif3_0_pw_bn_b_int8"
+  output: "xif3_0_pw_int8"
+  name: ""
+  type: "Int8ConvRelu"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 0
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.129328964333
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif3_0_pw_int8"
+  input: "xif3_0_dw_conv_w_int8"
+  input: "b_zero_generated_xif3_0_pw_int8"
+  output: "xif3_0_dw_conv_int8"
+  name: ""
+  type: "Int8Conv"
+  arg {
+    name: "kernel"
+    i: 3
+  }
+  arg {
+    name: "group"
+    i: 240
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 2
+  }
+  arg {
+    name: "pad"
+    i: 1
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 128
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.099137953216
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif3_0_dw_conv_int8"
+  input: "xif3_0_conv_w_int8"
+  input: "xif3_0_bn_b_int8"
+  output: "xif3_0_bn_int8"
+  name: ""
+  type: "Int8Conv"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 131
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.221738299202
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif3_0_bn_int8"
+  input: "xif3_1_pw_conv_w_int8"
+  input: "xif3_1_pw_bn_b_int8"
+  output: "xif3_1_pw_int8"
+  name: ""
+  type: "Int8ConvRelu"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 0
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.0653182262991
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif3_1_pw_int8"
+  input: "xif3_1_dw_conv_w_int8"
+  input: "b_zero_generated_xif3_1_pw_int8"
+  output: "xif3_1_dw_conv_int8"
+  name: ""
+  type: "Int8Conv"
+  arg {
+    name: "kernel"
+    i: 3
+  }
+  arg {
+    name: "group"
+    i: 552
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 1
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 133
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.0245109558105
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif3_1_dw_conv_int8"
+  input: "xif3_1_pwl_conv_w_int8"
+  input: "xif3_1_pwl_bn_b_int8"
+  output: "xif3_1_pwl_bn_int8"
+  name: ""
+  type: "Int8Conv"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 111
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.186370610256
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif3_1_pwl_bn_int8"
+  input: "xif3_0_bn_int8"
+  output: "xif3_1_int8"
+  name: ""
+  type: "Int8Sum"
+  arg {
+    name: "Y_scale"
+    f: 0.219823560528
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 126
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif3_1_int8"
+  input: "xif3_2_pw_conv_w_int8"
+  input: "xif3_2_pw_bn_b_int8"
+  output: "xif3_2_pw_int8"
+  name: ""
+  type: "Int8ConvRelu"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 0
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.0381995629733
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif3_2_pw_int8"
+  input: "xif3_2_dw_conv_w_int8"
+  input: "b_zero_generated_xif3_2_pw_int8"
+  output: "xif3_2_dw_conv_int8"
+  name: ""
+  type: "Int8Conv"
+  arg {
+    name: "kernel"
+    i: 3
+  }
+  arg {
+    name: "group"
+    i: 552
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 1
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 131
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.0205067092297
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif3_2_dw_conv_int8"
+  input: "xif3_2_pwl_conv_w_int8"
+  input: "xif3_2_pwl_bn_b_int8"
+  output: "xif3_2_pwl_bn_int8"
+  name: ""
+  type: "Int8Conv"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 121
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.150209763471
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif3_2_pwl_bn_int8"
+  input: "xif3_1_int8"
+  output: "xif3_2_int8"
+  name: ""
+  type: "Int8Sum"
+  arg {
+    name: "Y_scale"
+    f: 0.203784538718
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 134
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif3_2_int8"
+  input: "xif3_3_pw_conv_w_int8"
+  input: "xif3_3_pw_bn_b_int8"
+  output: "xif3_3_pw_int8"
+  name: ""
+  type: "Int8ConvRelu"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 0
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.0816415805369
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif3_3_pw_int8"
+  input: "xif3_3_dw_conv_w_int8"
+  input: "b_zero_generated_xif3_3_pw_int8"
+  output: "xif3_3_dw_conv_int8"
+  name: ""
+  type: "Int8Conv"
+  arg {
+    name: "kernel"
+    i: 3
+  }
+  arg {
+    name: "group"
+    i: 552
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 1
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 169
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.0643757764031
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif3_3_dw_conv_int8"
+  input: "xif3_3_conv_w_int8"
+  input: "xif3_3_bn_b_int8"
+  output: "xif3_3_bn_int8"
+  name: ""
+  type: "Int8Conv"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 129
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.199170729693
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif3_3_bn_int8"
+  input: "xif3_4_pw_conv_w_int8"
+  input: "xif3_4_pw_bn_b_int8"
+  output: "xif3_4_pw_int8"
+  name: ""
+  type: "Int8ConvRelu"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 0
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.039647225714
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif3_4_pw_int8"
+  input: "xif3_4_dw_conv_w_int8"
+  input: "b_zero_generated_xif3_4_pw_int8"
+  output: "xif3_4_dw_conv_int8"
+  name: ""
+  type: "Int8Conv"
+  arg {
+    name: "kernel"
+    i: 3
+  }
+  arg {
+    name: "group"
+    i: 624
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 1
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 137
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.023280914157
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif3_4_dw_conv_int8"
+  input: "xif3_4_pwl_conv_w_int8"
+  input: "xif3_4_pwl_bn_b_int8"
+  output: "xif3_4_pwl_bn_int8"
+  name: ""
+  type: "Int8Conv"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 148
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.221537825641
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif3_4_pwl_bn_int8"
+  input: "xif3_3_bn_int8"
+  output: "xif3_4_int8"
+  name: ""
+  type: "Int8Sum"
+  arg {
+    name: "Y_scale"
+    f: 0.231659234739
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 148
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif3_4_int8"
+  input: "xif3_5_pw_conv_w_int8"
+  input: "xif3_5_pw_bn_b_int8"
+  output: "xif3_5_pw_int8"
+  name: ""
+  type: "Int8ConvRelu"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 0
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.0445345256238
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif3_5_pw_int8"
+  input: "xif3_5_dw_conv_w_int8"
+  input: "b_zero_generated_xif3_5_pw_int8"
+  output: "xif3_5_dw_conv_int8"
+  name: ""
+  type: "Int8Conv"
+  arg {
+    name: "kernel"
+    i: 3
+  }
+  arg {
+    name: "group"
+    i: 624
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 1
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 77
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.0509104149014
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif3_5_dw_conv_int8"
+  input: "xif3_5_pwl_conv_w_int8"
+  input: "xif3_5_pwl_bn_b_int8"
+  output: "xif3_5_pwl_bn_int8"
+  name: ""
+  type: "Int8Conv"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 116
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.289313402363
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif3_5_pwl_bn_int8"
+  input: "xif3_4_int8"
+  output: "xif3_5_int8"
+  name: ""
+  type: "Int8Sum"
+  arg {
+    name: "Y_scale"
+    f: 0.315497813505
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 126
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif3_5_int8"
+  input: "xif4_0_pw_conv_w_int8"
+  input: "xif4_0_pw_bn_b_int8"
+  output: "xif4_0_pw_int8"
+  name: ""
+  type: "Int8ConvRelu"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 0
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.202007682944
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif4_0_pw_int8"
+  input: "xif4_0_dw_conv_w_int8"
+  input: "b_zero_generated_xif4_0_pw_int8"
+  output: "xif4_0_dw_conv_int8"
+  name: ""
+  type: "Int8Conv"
+  arg {
+    name: "kernel"
+    i: 3
+  }
+  arg {
+    name: "group"
+    i: 520
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 2
+  }
+  arg {
+    name: "pad"
+    i: 1
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 80
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.179344895307
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif4_0_dw_conv_int8"
+  input: "xif4_0_conv_w_int8"
+  input: "xif4_0_bn_b_int8"
+  output: "xif4_0_bn_int8"
+  name: ""
+  type: "Int8Conv"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 195
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.366811206294
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif4_0_bn_int8"
+  input: "xif4_1_pw_conv_w_int8"
+  input: "xif4_1_pw_bn_b_int8"
+  output: "xif4_1_pw_int8"
+  name: ""
+  type: "Int8ConvRelu"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 0
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.124822288786
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif4_1_pw_int8"
+  input: "xif4_1_dw_conv_w_int8"
+  input: "b_zero_generated_xif4_1_pw_int8"
+  output: "xif4_1_dw_conv_int8"
+  name: ""
+  type: "Int8Conv"
+  arg {
+    name: "kernel"
+    i: 3
+  }
+  arg {
+    name: "group"
+    i: 1000
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 1
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 75
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.0508692124311
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif4_1_dw_conv_int8"
+  input: "xif4_1_pwl_conv_w_int8"
+  input: "xif4_1_pwl_bn_b_int8"
+  output: "xif4_1_pwl_bn_int8"
+  name: ""
+  type: "Int8Conv"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 196
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.797993379481
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif4_1_pwl_bn_int8"
+  input: "xif4_0_bn_int8"
+  output: "xif4_1_int8"
+  name: ""
+  type: "Int8Sum"
+  arg {
+    name: "Y_scale"
+    f: 0.806614774816
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 219
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif4_1_int8"
+  input: "xif4_2_pw_conv_w_int8"
+  input: "xif4_2_pw_bn_b_int8"
+  output: "xif4_2_pw_int8"
+  name: ""
+  type: "Int8ConvRelu"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 0
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.103495030035
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif4_2_pw_int8"
+  input: "xif4_2_dw_conv_w_int8"
+  input: "b_zero_generated_xif4_2_pw_int8"
+  output: "xif4_2_dw_conv_int8"
+  name: ""
+  type: "Int8Conv"
+  arg {
+    name: "kernel"
+    i: 3
+  }
+  arg {
+    name: "group"
+    i: 1000
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 1
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 137
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.0602650661095
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif4_2_dw_conv_int8"
+  input: "xif4_2_pwl_conv_w_int8"
+  input: "xif4_2_pwl_bn_b_int8"
+  output: "xif4_2_pwl_bn_int8"
+  name: ""
+  type: "Int8Conv"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 215
+  }
+  arg {
+    name: "Y_scale"
+    f: 1.32520117666
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif4_2_pwl_bn_int8"
+  input: "xif4_1_int8"
+  output: "xif4_2_int8"
+  name: ""
+  type: "Int8Sum"
+  arg {
+    name: "Y_scale"
+    f: 1.35419299556
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 201
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif4_2_int8"
+  input: "xif4_3_pw_conv_w_int8"
+  input: "xif4_3_pw_bn_b_int8"
+  output: "xif4_3_pw_int8"
+  name: ""
+  type: "Int8ConvRelu"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 0
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.0986148497198
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif4_3_pw_int8"
+  input: "xif4_3_dw_conv_w_int8"
+  input: "b_zero_generated_xif4_3_pw_int8"
+  output: "xif4_3_dw_conv_int8"
+  name: ""
+  type: "Int8Conv"
+  arg {
+    name: "kernel"
+    i: 3
+  }
+  arg {
+    name: "group"
+    i: 1200
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 1
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 85
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.0784551283892
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif4_3_dw_conv_int8"
+  input: "xif4_3_conv_w_int8"
+  input: "xif4_3_bn_b_int8"
+  output: "xif4_3_bn_int8"
+  name: ""
+  type: "Int8Conv"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 126
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.337273990407
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif4_3_bn_int8"
+  input: "xif4_3_bn_1x1_conv_w_int8"
+  input: "xif4_3_bn_1x1_bn_b_int8"
+  output: "xif4_3_bn_1x1_int8"
+  name: ""
+  type: "Int8ConvRelu"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 0
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.259209495465
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "xif4_3_bn_1x1_int8"
+  output: "final_avg_int8"
+  name: ""
+  type: "Int8AveragePool"
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "kernel"
+    i: 6
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.259209495465
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 0
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "final_avg_int8"
+  input: "pred_w_int8"
+  input: "pred_b_int8"
+  output: "pred_int8"
+  name: ""
+  type: "Int8FC"
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 83
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.21265782375
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "pred_int8"
+  output: "softmax_int8"
+  name: ""
+  type: "Int8Softmax"
+  arg {
+    name: "order"
+    s: "NHWC"
+  }
+  arg {
+    name: "ws_nbytes_limit"
+    i: 268435456
+  }
+  arg {
+    name: "Y_scale"
+    f: 0.00390625
+  }
+  arg {
+    name: "Y_zero_point"
+    i: 0
+  }
+  device_option {
+  }
+  engine: ""
+}
+op {
+  input: "softmax_int8"
+  output: "softmax"
+  name: ""
+  type: "Int8Dequantize"
+}
+external_input: "data"
+external_input: "conv0_conv_w_int8"
+external_input: "conv0_bn_b_int8"
+external_input: "xif0_0_pw_conv_w_int8"
+external_input: "xif0_0_pw_bn_b_int8"
+external_input: "xif0_0_dw_conv_w_int8"
+external_input: "b_zero_generated_xif0_0_pw_int8"
+external_input: "xif0_0_conv_w_int8"
+external_input: "xif0_0_bn_b_int8"
+external_input: "xif1_0_pw_conv_w_int8"
+external_input: "xif1_0_pw_bn_b_int8"
+external_input: "xif1_0_dw_conv_w_int8"
+external_input: "b_zero_generated_xif1_0_pw_int8"
+external_input: "xif1_0_conv_w_int8"
+external_input: "xif1_0_bn_b_int8"
+external_input: "xif1_1_pw_conv_w_int8"
+external_input: "xif1_1_pw_bn_b_int8"
+external_input: "xif1_1_dw_conv_w_int8"
+external_input: "b_zero_generated_xif1_1_pw_int8"
+external_input: "xif1_1_pwl_conv_w_int8"
+external_input: "xif1_1_pwl_bn_b_int8"
+external_input: "xif2_0_pw_conv_w_int8"
+external_input: "xif2_0_pw_bn_b_int8"
+external_input: "xif2_0_dw_conv_w_int8"
+external_input: "b_zero_generated_xif2_0_pw_int8"
+external_input: "xif2_0_conv_w_int8"
+external_input: "xif2_0_bn_b_int8"
+external_input: "xif2_1_pw_conv_w_int8"
+external_input: "xif2_1_pw_bn_b_int8"
+external_input: "xif2_1_dw_conv_w_int8"
+external_input: "b_zero_generated_xif2_1_pw_int8"
+external_input: "xif2_1_pwl_conv_w_int8"
+external_input: "xif2_1_pwl_bn_b_int8"
+external_input: "xif2_2_pw_conv_w_int8"
+external_input: "xif2_2_pw_bn_b_int8"
+external_input: "xif2_2_dw_conv_w_int8"
+external_input: "b_zero_generated_xif2_2_pw_int8"
+external_input: "xif2_2_pwl_conv_w_int8"
+external_input: "xif2_2_pwl_bn_b_int8"
+external_input: "xif3_0_pw_conv_w_int8"
+external_input: "xif3_0_pw_bn_b_int8"
+external_input: "xif3_0_dw_conv_w_int8"
+external_input: "b_zero_generated_xif3_0_pw_int8"
+external_input: "xif3_0_conv_w_int8"
+external_input: "xif3_0_bn_b_int8"
+external_input: "xif3_1_pw_conv_w_int8"
+external_input: "xif3_1_pw_bn_b_int8"
+external_input: "xif3_1_dw_conv_w_int8"
+external_input: "b_zero_generated_xif3_1_pw_int8"
+external_input: "xif3_1_pwl_conv_w_int8"
+external_input: "xif3_1_pwl_bn_b_int8"
+external_input: "xif3_2_pw_conv_w_int8"
+external_input: "xif3_2_pw_bn_b_int8"
+external_input: "xif3_2_dw_conv_w_int8"
+external_input: "b_zero_generated_xif3_2_pw_int8"
+external_input: "xif3_2_pwl_conv_w_int8"
+external_input: "xif3_2_pwl_bn_b_int8"
+external_input: "xif3_3_pw_conv_w_int8"
+external_input: "xif3_3_pw_bn_b_int8"
+external_input: "xif3_3_dw_conv_w_int8"
+external_input: "b_zero_generated_xif3_3_pw_int8"
+external_input: "xif3_3_conv_w_int8"
+external_input: "xif3_3_bn_b_int8"
+external_input: "xif3_4_pw_conv_w_int8"
+external_input: "xif3_4_pw_bn_b_int8"
+external_input: "xif3_4_dw_conv_w_int8"
+external_input: "b_zero_generated_xif3_4_pw_int8"
+external_input: "xif3_4_pwl_conv_w_int8"
+external_input: "xif3_4_pwl_bn_b_int8"
+external_input: "xif3_5_pw_conv_w_int8"
+external_input: "xif3_5_pw_bn_b_int8"
+external_input: "xif3_5_dw_conv_w_int8"
+external_input: "b_zero_generated_xif3_5_pw_int8"
+external_input: "xif3_5_pwl_conv_w_int8"
+external_input: "xif3_5_pwl_bn_b_int8"
+external_input: "xif4_0_pw_conv_w_int8"
+external_input: "xif4_0_pw_bn_b_int8"
+external_input: "xif4_0_dw_conv_w_int8"
+external_input: "b_zero_generated_xif4_0_pw_int8"
+external_input: "xif4_0_conv_w_int8"
+external_input: "xif4_0_bn_b_int8"
+external_input: "xif4_1_pw_conv_w_int8"
+external_input: "xif4_1_pw_bn_b_int8"
+external_input: "xif4_1_dw_conv_w_int8"
+external_input: "b_zero_generated_xif4_1_pw_int8"
+external_input: "xif4_1_pwl_conv_w_int8"
+external_input: "xif4_1_pwl_bn_b_int8"
+external_input: "xif4_2_pw_conv_w_int8"
+external_input: "xif4_2_pw_bn_b_int8"
+external_input: "xif4_2_dw_conv_w_int8"
+external_input: "b_zero_generated_xif4_2_pw_int8"
+external_input: "xif4_2_pwl_conv_w_int8"
+external_input: "xif4_2_pwl_bn_b_int8"
+external_input: "xif4_3_pw_conv_w_int8"
+external_input: "xif4_3_pw_bn_b_int8"
+external_input: "xif4_3_dw_conv_w_int8"
+external_input: "b_zero_generated_xif4_3_pw_int8"
+external_input: "xif4_3_conv_w_int8"
+external_input: "xif4_3_bn_b_int8"
+external_input: "xif4_3_bn_1x1_conv_w_int8"
+external_input: "xif4_3_bn_1x1_bn_b_int8"
+external_input: "pred_w_int8"
+external_input: "pred_b_int8"
+external_output: "softmax"
