@@ -35,7 +35,7 @@ def load_caffe2_op(op_record, caffe2_op, input_shapes,
     op_record.set_val('op_type', caffe2_op.type)
     op_args = [arg for arg in caffe2_op.arg if arg.name not in ARGS_IGNORE]
     op_args.sort(key=lambda x: x.name)
-    op_record.set_val('op_args', [str(a) for a in op_args])
+    op_record.set_val('op_args', [str(a) for a in op_args if not 'ws_nbytes_limit' in str(a)])
     op_record.set_val('input_shapes', input_shapes)
     op_record.set_val('input_dtypes', input_dtypes)
     op_record.set_val('device', device)
@@ -89,4 +89,6 @@ class LUTSchema():
         elif isinstance(input_, dict):
             record = input_
         for k, v in record.items():
+            if k == 'op_args':
+                v = [str(a) for a in v if not 'ws_nbytes_limit' in str(a)]
             self.set_val(k, v)

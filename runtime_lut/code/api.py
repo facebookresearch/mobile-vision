@@ -22,7 +22,7 @@ from lut_schema import LUTSchema, load_caffe2_op
 
 DB_DIR = '../'
 
-TO_MATCH = ['op_type', 'op_args', 'input_shapes', 'input_dtypes', 'device']
+TO_MATCH = ['op_type', 'input_shapes', 'input_dtypes', 'device', 'op_args']
 
 DTYPE_ENCODE = {
     'undefined': core.DataType.UNDEFINED,
@@ -133,6 +133,10 @@ class OpLut(object):
                 records.append(op)
 
         if records == []:
+            if op_query.get_val('op_type') == 'Int8Conv':
+                op_query.set_val('op_type', 'Int8ConvRelu')
+                return self.find_op(op_query)
+
             print('No match found in the database!')
         return records
 
