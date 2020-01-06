@@ -1,17 +1,16 @@
 # Mobile Computer Vision @ Facebook
 
 This repository provides code and models for the following projects developed by Facebook for mobile:
-* [FBNet: Hardware-Aware Efficient ConvNet Design via Differentiable Neural Architecture Search](https://arxiv.org/abs/1812.03443).  
+* [FBNet: Hardware-Aware Efficient ConvNet Design via Differentiable Neural Architecture Search](https://arxiv.org/abs/1812.03443).
 * [ChamNet: Towards Efficient Network Design through Platform-Aware Model Adaptation](https://arxiv.org/abs/1812.08934)
 
 We provide the following code and models:
-* Pre-trained [ChamNet](https://github.com/facebookresearch/mobile-vision/tree/master/ChamNet) models.
-* Pre-trained [FBNet](https://github.com/facebookresearch/mobile-vision/tree/master/FBNet) models.
+* Pre-trained [FBNet](https://dl.fbaipublicfiles.com/fbnet/models/FBNet_caffe2.zip) models.
+* Pre-trained [ChamNet](https://dl.fbaipublicfiles.com/fbnet/models/ChamNet_caffe2.zip) models.
 * [CNN latency look-up table](https://github.com/facebookresearch/mobile-vision/tree/master/runtime_lut). We provided operator-level latency database using the latest caffe2 int8 inference engine (QNNPACK) on mobile phones.
 
 ## Pre-trained Models
-We also provide different pre-trained ChamNet and FBNet models. The models are trained and evaluated using ImageNet 1k ([ILSVRC2012](http://www.image-net.org/challenges/LSVRC/2012/)) dataset. Validation top-1 accuracy for fp32 and int8 models are reported. Model latenies are benchmarked on a Samsung S8 CPU with NNPACK (fp32) and QNNAPCK (int8) engines using Caffe2. Note that our models are best used in int8 as they are searched using on-device int8 latency metrics.
-
+We provide different pre-trained ChamNet and FBNet models. The models are trained and evaluated using ImageNet 1k ([ILSVRC2012](http://www.image-net.org/challenges/LSVRC/2012/)) dataset. Validation top-1 accuracy for fp32 and int8 models are reported. Model latenies are benchmarked on a Samsung S8 CPU with NNPACK (fp32) and QNNAPCK (int8) engines using Caffe2. Note that our models are best used in int8 as they are searched using on-device int8 latency metrics.
 
 | Model     | Resolution | Flops (M) | Params (M) | Accuracy (int8) | Latency (int8, ms) | Accuracy (fp32) | Latency (fp32, ms) |
 |-----------|------------|-----------|------------|-----------------------|--------------------|-----------------------|--------------------|
@@ -28,7 +27,9 @@ We also provide different pre-trained ChamNet and FBNet models. The models are t
 | FBNet-C1  | 224x224    | 374.2     | 4.9        | 73.3                  | **20.0**           | 74.5                  | 167.3              |
 | FBNet-96  | 96x96      | 12.9      | 1.8        | 47.5                  | **2.3**            | 50.4                  | 22.8               |
 
-The ChamNet and FBNet models are located at ChamNet/models and FBNet/models, respectively.
+The pretrained FBNet and ChamNet models are available to download here:
+* Pre-trained [FBNet](https://dl.fbaipublicfiles.com/fbnet/models/FBNet_caffe2.zip) models.
+* Pre-trained [ChamNet](https://dl.fbaipublicfiles.com/fbnet/models/ChamNet_caffe2.zip) models.
 
 The models expect the input image to be loaded in the range of `[0, 255]` in BGR format and normalized using `mean = [0.406, 0.456, 0.485]` and `std = [0.225, 0.224, 0.229]`. The transformation should preferrably happen at preprocessing.
 
