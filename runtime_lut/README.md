@@ -20,8 +20,7 @@ More devices (iPhone etc.) supports will be added.
 - PyTorch >= 0.4.0
 
 ## Examples
-The operator level latency database is stored at runtime_lut/data.  Please unzip the file
-in the database before using.
+The operator level latency database is available for download [here](https://dl.fbaipublicfiles.com/fbnet/lut/SM-G950U-7.0-24-op_lut_database_caffe2.json.zip). Please unzip the file to `runtime_lut/data` before using.
 
 We provide several pre-trained models for ChamNet and FBNet.  To extract the latency from the
 CNN latency look-up table (LUT):
