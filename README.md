@@ -31,7 +31,7 @@ model = fbnet("dmasking_l3", pretrained=True)
 model.eval()
 ```
 
-We also provide the following quantized models:
+We also provide the following *int8 quantized* models in TorchScript format:
 
 |        Model         | Resolution | Flops (M) | Params (M) | Top-1 Accuracy | Top-5 Accuracy |
 | -------------------- | ---------- | --------- | ---------- | -------------- | -------------- |
