@@ -5,11 +5,44 @@ This repository provides code and models for the following projects developed by
 * [ChamNet: Towards Efficient Network Design through Platform-Aware Model Adaptation](https://arxiv.org/abs/1812.08934)
 
 We provide the following code and models:
-* Pre-trained [FBNet](https://dl.fbaipublicfiles.com/fbnet/models/FBNet_caffe2.zip) models.
-* Pre-trained [ChamNet](https://dl.fbaipublicfiles.com/fbnet/models/ChamNet_caffe2.zip) models.
-* [CNN latency look-up table](https://github.com/facebookresearch/mobile-vision/tree/master/runtime_lut). We provided operator-level latency database using the latest caffe2 int8 inference engine (QNNPACK) on mobile phones.
+* Pre-trained FBNet models.
+* Pre-trained ChamNet models.
+* [CNN latency look-up table](runtime_lut). We provided operator-level latency database using the latest caffe2 int8 inference engine (QNNPACK) on mobile phones.
 
-## Pre-trained Models
+## Pytorch Pre-trained Models
+
+The following FBNet/FBNetV2 pre-trained models are provided. The models are trained and evaluated using ImageNet 1k ([ILSVRC2012](http://www.image-net.org/challenges/LSVRC/2012/)) dataset. Validation top-1 and top-5 accuracy for fp32 models are reported.
+
+|     Model      | Resolution | Flops (M) | Params (M) | Top-1 Accuracy | Top-5 Accuracy |
+| -------------- | ---------- | --------- | ---------- | -------------- | -------------- |
+| fbnet_a        | 224x224    | 244.5     | 4.3        | 73.3           | 90.9           |
+| fbnet_b        | 224x224    | 291.1     | 4.8        | 74.5           | 91.8           |
+| fbnet_c        | 224x224    | 378.2     | 5.5        | 75.2           | 92.3           |
+| dmasking_f1    | 128x128    | 56.3      | 6.0        | 68.3           | 87.8           |
+| dmasking_f4    | 224x224    | 235.9     | 7.0        | 75.5           | 92.5           |
+| dmasking_l2_hs | 256x256    | 419.1     | 8.4        | 77.7           | 93.7           |
+| dmasking_l3    | 288x288    | 753.1     | 9.4        | 78.9           | 94.3           |
+
+The model could be loaded with:
+
+```python
+from mobile_cv.model_zoo.models.fbnet_v2 import fbnet
+model = fbnet("dmasking_l3", pretrained=True)
+model.eval()
+```
+
+See [here](mobile_cv/model_zoo/README.md) for more details.
+
+We also provide the following quantized models:
+
+|        Model         | Resolution | Flops (M) | Params (M) | Top-1 Accuracy | Top-5 Accuracy |
+| -------------------- | ---------- | --------- | ---------- | -------------- | -------------- |
+| fbnet_a_i8f_int8_jit | 224x224    | 244.5     | 4.3        | 72.2           | 90.3           |
+| fbnet_b_i8f_int8_jit | 224x224    | 291.1     | 4.8        | 73.2           | 91.1           |
+| fbnet_c_i8f_int8_jit | 224x224    | 378.2     | 5.5        | 74.2           | 91.8           |
+
+
+## Caffe2 Pre-trained Models (deprecated)
 We provide different pre-trained ChamNet and FBNet models. The models are trained and evaluated using ImageNet 1k ([ILSVRC2012](http://www.image-net.org/challenges/LSVRC/2012/)) dataset. Validation top-1 accuracy for fp32 and int8 models are reported. Model latenies are benchmarked on a Samsung S8 CPU with NNPACK (fp32) and QNNAPCK (int8) engines using Caffe2. Note that our models are best used in int8 as they are searched using on-device int8 latency metrics.
 
 | Model     | Resolution | Flops (M) | Params (M) | Accuracy (int8) | Latency (int8, ms) | Accuracy (fp32) | Latency (fp32, ms) |
