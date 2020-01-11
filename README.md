@@ -31,8 +31,6 @@ model = fbnet("dmasking_l3", pretrained=True)
 model.eval()
 ```
 
-See [here](mobile_cv/model_zoo/README.md) for more details.
-
 We also provide the following quantized models:
 
 |        Model         | Resolution | Flops (M) | Params (M) | Top-1 Accuracy | Top-5 Accuracy |
@@ -41,8 +39,10 @@ We also provide the following quantized models:
 | fbnet_b_i8f_int8_jit | 224x224    | 291.1     | 4.8        | 73.2           | 91.1           |
 | fbnet_c_i8f_int8_jit | 224x224    | 378.2     | 5.5        | 74.2           | 91.8           |
 
+Please see [here](mobile_cv/model_zoo/README.md) for more details.
 
-## Caffe2 Pre-trained Models (deprecated)
+
+## Caffe2 Pre-trained Models
 We provide different pre-trained ChamNet and FBNet models. The models are trained and evaluated using ImageNet 1k ([ILSVRC2012](http://www.image-net.org/challenges/LSVRC/2012/)) dataset. Validation top-1 accuracy for fp32 and int8 models are reported. Model latenies are benchmarked on a Samsung S8 CPU with NNPACK (fp32) and QNNAPCK (int8) engines using Caffe2. Note that our models are best used in int8 as they are searched using on-device int8 latency metrics.
 
 | Model     | Resolution | Flops (M) | Params (M) | Accuracy (int8) | Latency (int8, ms) | Accuracy (fp32) | Latency (fp32, ms) |
