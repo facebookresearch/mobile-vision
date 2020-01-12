@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+
 """
 Preprocess function for pretrained models
 """
@@ -16,7 +18,9 @@ def get_preprocess(crop_size):
             transforms.Resize(resize_res),
             transforms.CenterCrop(crop_size),
             transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+            transforms.Normalize(
+                mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
+            ),
         ]
     )
     return preprocess

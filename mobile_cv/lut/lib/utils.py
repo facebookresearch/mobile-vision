@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
 import json
-import sys
 
 
 def load_from_json_file(file_name):

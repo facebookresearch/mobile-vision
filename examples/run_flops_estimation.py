@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
 """
 Compute per module flops and number of parameters for a given pytorch model
@@ -22,12 +23,10 @@ FBNet(
     ...
 """
 
-import math
-import urllib
-
 import torch
-from mobile_cv.model_zoo.models.fbnet_v2 import fbnet
+
 import mobile_cv.lut.lib.pt.flops_utils as flops_utils
+from mobile_cv.model_zoo.models.fbnet_v2 import fbnet
 
 
 def run_flops_estimation():

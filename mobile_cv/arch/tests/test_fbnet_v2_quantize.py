@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
 import unittest
+
+import torch
 
 import mobile_cv.arch.fbnet_v2.fbnet_builder as fbnet_builder
 import mobile_cv.arch.utils.fuse_utils as fuse_utils
 import mobile_cv.arch.utils.quantize_utils as quantize_utils
-import torch
 
 
 def _build_model(arch_def, dim_in):
@@ -30,9 +32,9 @@ class TestFBNetV2Quantize(unittest.TestCase):
                 # stage 1
                 [
                     ("ir_k3", 8, 2, 2, e6, dw_skip_bnrelu, bn_args),
-                    ("ir_k5", 8, 1, 1, e6, bn_args)
+                    ("ir_k5", 8, 1, 1, e6, bn_args),
                 ],
-            ],
+            ]
         }
 
         with quantize_utils.build_model_context():

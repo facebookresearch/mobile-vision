@@ -1,24 +1,28 @@
 #!/usr/bin/env python3
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
 import unittest
 
-import mobile_cv.arch.fbnet_v2.irf_block as irf_block
 import torch
 
+import mobile_cv.arch.fbnet_v2.irf_block as irf_block
 
 TEST_CUDA = torch.cuda.is_available()
 
 
 def create_test_irf(self, out_channels, op_args, input_shape, gt_output_dim):
     N, C_in, H, W = input_shape
-    op = irf_block.IRFBlock(in_channels=C_in, out_channels=out_channels, **op_args)
+    op = irf_block.IRFBlock(
+        in_channels=C_in, out_channels=out_channels, **op_args
+    )
     print(op)
 
     input = torch.rand(input_shape, dtype=torch.float32)
     output = op(input)
 
     self.assertEqual(
-        output.shape, torch.Size([N, out_channels, gt_output_dim, gt_output_dim])
+        output.shape,
+        torch.Size([N, out_channels, gt_output_dim, gt_output_dim]),
     )
 
 

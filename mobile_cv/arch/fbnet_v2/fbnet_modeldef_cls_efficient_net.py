@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
 from .fbnet_modeldef_cls import MODEL_ARCH
 from .modeldef_utils import e1, e6
-
 
 BASIC_ARGS = {"relu_args": "swish"}
 
@@ -24,7 +24,10 @@ MODEL_ARCH_EFFICIENT_NET = {
             # stage 3
             [["ir_k5_se", 40, 2, 2, e6, IRF_CFG]],
             # stage 4
-            [["ir_k3_se", 80, 2, 3, e6, IRF_CFG], ["ir_k5_se", 112, 1, 3, e6, IRF_CFG]],
+            [
+                ["ir_k3_se", 80, 2, 3, e6, IRF_CFG],
+                ["ir_k5_se", 112, 1, 3, e6, IRF_CFG],
+            ],
             # stage 5
             [
                 ["ir_k5_se", 192, 2, 4, e6, IRF_CFG],
@@ -48,7 +51,10 @@ MODEL_ARCH_EFFICIENT_NET = {
             # stage 3
             [["ir_k5_se", 40, 2, 3, e6, IRF_CFG]],
             # stage 4
-            [["ir_k3_se", 80, 2, 4, e6, IRF_CFG], ["ir_k5_se", 112, 1, 4, e6, IRF_CFG]],
+            [
+                ["ir_k3_se", 80, 2, 4, e6, IRF_CFG],
+                ["ir_k5_se", 112, 1, 4, e6, IRF_CFG],
+            ],
             # stage 5
             [
                 ["ir_k5_se", 192, 2, 5, e6, IRF_CFG],
@@ -72,7 +78,10 @@ MODEL_ARCH_EFFICIENT_NET = {
             # stage 3
             [["ir_k5_se", 48, 2, 3, e6, IRF_CFG]],
             # stage 4
-            [["ir_k3_se", 88, 2, 4, e6, IRF_CFG], ["ir_k5_se", 120, 1, 4, e6, IRF_CFG]],
+            [
+                ["ir_k3_se", 88, 2, 4, e6, IRF_CFG],
+                ["ir_k5_se", 120, 1, 4, e6, IRF_CFG],
+            ],
             # stage 5
             [
                 ["ir_k5_se", 208, 2, 5, e6, IRF_CFG],
@@ -96,7 +105,10 @@ MODEL_ARCH_EFFICIENT_NET = {
             # stage 3
             [["ir_k5_se", 48, 2, 3, e6, IRF_CFG]],
             # stage 4
-            [["ir_k3_se", 96, 2, 5, e6, IRF_CFG], ["ir_k5_se", 136, 1, 5, e6, IRF_CFG]],
+            [
+                ["ir_k3_se", 96, 2, 5, e6, IRF_CFG],
+                ["ir_k5_se", 136, 1, 5, e6, IRF_CFG],
+            ],
             # stage 5
             [
                 ["ir_k5_se", 232, 2, 6, e6, IRF_CFG],

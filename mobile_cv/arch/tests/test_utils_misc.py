@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
 import unittest
 
-import mobile_cv.arch.utils.misc as misc
 import torch
+
+import mobile_cv.arch.utils.misc as misc
 
 
 class TestUtilsMisc(unittest.TestCase):

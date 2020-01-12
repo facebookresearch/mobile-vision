@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
 import abc
 import copy
 import pickle
 import typing
 from collections import namedtuple
-from dataclasses import dataclass
 
 
 class OpBase(abc.ABC):
@@ -130,7 +130,11 @@ class LutItem(object):
     """ Represents a row in db """
 
     def __init__(
-        self, op: OpBase = None, input_shapes=None, latency=None, op_info: OpInfo = None
+        self,
+        op: OpBase = None,
+        input_shapes=None,
+        latency=None,
+        op_info: OpInfo = None,
     ):
         has_op = op is not None and input_shapes is not None
         has_op_info = op_info is not None

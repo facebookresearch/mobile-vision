@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
 import typing
 
 import torch
+
 from mobile_cv.common.misc.registry import Registry
 
 from .. import lut_ops, lut_schema
-
 
 PT_CONVERTER = Registry("pytorch_converter")
 
@@ -71,7 +72,9 @@ def convert_module(m: torch.nn.Module, shape):
     return ret
 
 
-def convert_all_modules(model: torch.nn.Module, get_module_shape: typing.Callable):
+def convert_all_modules(
+    model: torch.nn.Module, get_module_shape: typing.Callable
+):
     ret = []
 
     def _convert(m):

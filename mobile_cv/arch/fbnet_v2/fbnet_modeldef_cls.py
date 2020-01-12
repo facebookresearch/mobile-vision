@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
 import mobile_cv.common.misc.registry as registry
 
 from . import modeldef_utils as mdu
 from .modeldef_utils import _ex, e1, e3, e4, e6
-
 
 MODEL_ARCH = registry.Registry("cls_arch_factory")
 
@@ -404,4 +404,3 @@ MODEL_ARCH_FBNET = {
 }
 MODEL_ARCH.register_dict(MODEL_ARCH_FBNET)
 MODEL_ARCH.register_dict(mdu.get_i8f_models(MODEL_ARCH_FBNET))
-

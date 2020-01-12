@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
 import torch
 
@@ -11,7 +12,9 @@ def drop_connect_batch(inputs, drop_prob, training):
     batch_size = inputs.shape[0]
     keep_prob = 1 - drop_prob
     random_tensor = (
-        torch.rand([batch_size, 1, 1, 1], dtype=inputs.dtype, device=inputs.device)
+        torch.rand(
+            [batch_size, 1, 1, 1], dtype=inputs.dtype, device=inputs.device
+        )
         + keep_prob
     )
     binary_tensor = torch.floor(random_tensor)

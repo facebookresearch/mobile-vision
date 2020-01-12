@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
 import copy
 
-import mobile_cv.arch.fbnet_v2.basic_blocks as bb
 import torch
 import torch.nn as nn
+
+import mobile_cv.arch.fbnet_v2.basic_blocks as bb
 
 
 def fuse_convbnrelu(module, inplace=False):
@@ -31,7 +33,9 @@ def fuse_convbnrelu(module, inplace=False):
         ]
         assert len(names) > 0
         if len(names) > 1:
-            ret = torch.quantization.fuse_modules(module, names, inplace=inplace)
+            ret = torch.quantization.fuse_modules(
+                module, names, inplace=inplace
+            )
     return ret
 
 

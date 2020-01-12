@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
 """
 Example code to run fbnet model on a given image
@@ -11,14 +12,18 @@ Usage:
 import urllib
 
 import torch
+from PIL import Image
+
 from mobile_cv.model_zoo.models.fbnet_v2 import fbnet
 from mobile_cv.model_zoo.models.preprocess import get_preprocess
-from PIL import Image
 
 
 def _get_input():
     # Download an example image from the pytorch website
-    url, filename = ("https://github.com/pytorch/hub/raw/master/dog.jpg", "dog.jpg")
+    url, filename = (
+        "https://github.com/pytorch/hub/raw/master/dog.jpg",
+        "dog.jpg",
+    )
     local_filename, headers = urllib.request.urlretrieve(url, filename)
     input_image = Image.open(local_filename)
     return input_image

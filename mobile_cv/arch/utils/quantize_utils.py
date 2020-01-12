@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
 import contextlib
 import typing
@@ -86,14 +87,22 @@ def mock_quant_ops(
     """
     MAPPINGS = {
         "quant_add": (f"{calling_module}.TorchAdd", TorchAddPact),
-        "quant_add_scalar": (f"{calling_module}.TorchAddScalar", TorchAddScalarPact),
+        "quant_add_scalar": (
+            f"{calling_module}.TorchAddScalar",
+            TorchAddScalarPact,
+        ),
         "quant_mul": (f"{calling_module}.TorchMultiply", TorchMulPact),
-        "quant_mul_scalar": (f"{calling_module}.TorchMulScalar", TorchMulScalarPact),
+        "quant_mul_scalar": (
+            f"{calling_module}.TorchMulScalar",
+            TorchMulScalarPact,
+        ),
         "quant_cat": (f"{calling_module}.TorchCat", TorchCatPact),
     }
 
     if quant_op in MAPPINGS:
-        with mock.patch(MAPPINGS[quant_op][0], side_effect=MAPPINGS[quant_op][1]):
+        with mock.patch(
+            MAPPINGS[quant_op][0], side_effect=MAPPINGS[quant_op][1]
+        ):
             yield
     else:
         yield
@@ -116,7 +125,10 @@ def build_model_context():
 
 
 def quantize_model(
-    model_builder: typing.Callable, inputs, add_quant_stub=True, quant_config=None
+    model_builder: typing.Callable,
+    inputs,
+    add_quant_stub=True,
+    quant_config=None,
 ):
     print("Building quantization compatiable model...")
     with build_model_context():

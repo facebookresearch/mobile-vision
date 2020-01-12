@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
 import copy
 import unittest
+
 import torch
 import torch.nn as nn
 
@@ -18,14 +20,35 @@ class EmptyJitScriptModule(torch.jit.ScriptModule):
 def create_model():
     ret = nn.Sequential(
         nn.Conv2d(
-            3, 8, 3, stride=(1, 1), padding=(1, 1), dilation=1, groups=1, bias=False
+            3,
+            8,
+            3,
+            stride=(1, 1),
+            padding=(1, 1),
+            dilation=1,
+            groups=1,
+            bias=False,
         ),
         nn.ReLU(),
         nn.Conv2d(
-            8, 8, 3, stride=(2, 2), padding=(1, 1), dilation=1, groups=1, bias=False
+            8,
+            8,
+            3,
+            stride=(2, 2),
+            padding=(1, 1),
+            dilation=1,
+            groups=1,
+            bias=False,
         ),
         nn.ConvTranspose2d(
-            8, 4, 3, stride=(1, 1), padding=(1, 1), dilation=1, groups=1, bias=False
+            8,
+            4,
+            3,
+            stride=(1, 1),
+            padding=(1, 1),
+            dilation=1,
+            groups=1,
+            bias=False,
         ),
         EmptyJitScriptModule(),
         nn.ReLU(),
@@ -89,9 +112,12 @@ class TestPTUtils(unittest.TestCase):
                 if len(list(m.children())) > 0:
                     return
                 self.assertEqual(data(m, "name"), m.__class__.__name__)
+
             return _check_hook_output
 
-        with pt_utils.NestedModuleHook(_hook).register_forward_hook(model) as data:
+        with pt_utils.NestedModuleHook(_hook).register_forward_hook(
+            model
+        ) as data:
             model(input)
             model.apply(_get_check_result(data))
         self.assertEqual(sum(counts), 5)

@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
 import copy
 import unittest
 
-import mobile_cv.arch.fbnet_v2.fbnet_builder as fbnet_builder
 import numpy as np
 import torch
+
+import mobile_cv.arch.fbnet_v2.fbnet_builder as fbnet_builder
 
 
 def _create_input(input_dims):
@@ -26,7 +28,12 @@ class TestFBNetV2BlocksFactory(unittest.TestCase):
     }
     OP_CFGS = {
         "default": OP_CFGS_DEFAULT,
-        "conv_cfg": {**OP_CFGS_DEFAULT, "kernel_size": 3, "padding": 1, "bias": False},
+        "conv_cfg": {
+            **OP_CFGS_DEFAULT,
+            "kernel_size": 3,
+            "padding": 1,
+            "bias": False,
+        },
         "irf_cfg": {**OP_CFGS_DEFAULT, "expansion": 4, "bias": False},
         "irf_cfg_sefc": {
             **OP_CFGS_DEFAULT,
@@ -59,7 +66,9 @@ class TestFBNetV2BlocksFactory(unittest.TestCase):
     # fmt: on
 
     def _get_op_cfgs(self, op_name, op_cfg_name):
-        assert op_cfg_name in self.OP_CFGS, f"op cfg name {op_cfg_name} not existed."
+        assert (
+            op_cfg_name in self.OP_CFGS
+        ), f"op cfg name {op_cfg_name} not existed."
         op_cfg = self.OP_CFGS[op_cfg_name]
         op_cfg = copy.deepcopy(op_cfg)
         input_dims = op_cfg.pop("_inputs_")
@@ -120,7 +129,9 @@ class TestFBNetV2BlocksFactory(unittest.TestCase):
     def test_primitives_check_output(self):
         """ Make sures the primitives produce expected results """
         op_names = list(self.TEST_OP_EXPECTED_OUTPUT.keys())
-        op_names = {(x, "default") if isinstance(x, str) else x for x in op_names}
+        op_names = {
+            (x, "default") if isinstance(x, str) else x for x in op_names
+        }
 
         for op_name_info in op_names:
             op_name, op_cfg_name = op_name_info

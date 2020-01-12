@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
 import unittest
+
+import numpy as np
+import torch
 
 import mobile_cv.arch.fbnet_v2.basic_blocks as bb
 import mobile_cv.arch.fbnet_v2.fbnet_builder as fbnet_builder
 import mobile_cv.arch.utils.fuse_utils as fuse_utils
-import numpy as np
-import torch
 
 
 def run_and_compare(model_before, model_after, input_size):

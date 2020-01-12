@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
 import unittest
+
 import torch
 import torch.nn as nn
 
@@ -23,14 +25,35 @@ class M2(nn.Sequential):
 def create_model2():
     ret = nn.Sequential(
         nn.Conv2d(
-            3, 8, 3, stride=(1, 1), padding=(1, 1), dilation=1, groups=1, bias=False
+            3,
+            8,
+            3,
+            stride=(1, 1),
+            padding=(1, 1),
+            dilation=1,
+            groups=1,
+            bias=False,
         ),
         nn.ReLU(),
         nn.Conv2d(
-            8, 8, 3, stride=(2, 2), padding=(1, 1), dilation=1, groups=1, bias=False
+            8,
+            8,
+            3,
+            stride=(2, 2),
+            padding=(1, 1),
+            dilation=1,
+            groups=1,
+            bias=False,
         ),
         nn.ConvTranspose2d(
-            8, 4, 3, stride=(1, 1), padding=(1, 1), dilation=1, groups=1, bias=False
+            8,
+            4,
+            3,
+            stride=(1, 1),
+            padding=(1, 1),
+            dilation=1,
+            groups=1,
+            bias=False,
         ),
         EmptyJitScriptModule(),
         nn.ReLU(),
@@ -70,7 +93,7 @@ class TestFlopsEstimation(unittest.TestCase):
         GT_SHAPES_STRS = [
             "input_shapes=[[2, 3, 16, 16]], output_shapes=[2, 8, 16, 16]",
             "input_shapes=[[2, 8, 8, 8]], output_shapes=[2, 4, 8, 8]",
-            "ReLU(input_shapes=[[2, 4, 8, 8]], output_shapes=[2, 4, 8, 8], nparams=0.0, nflops=0.0)", # noqa
+            "ReLU(input_shapes=[[2, 4, 8, 8]], output_shapes=[2, 4, 8, 8], nparams=0.0, nflops=0.0)",  # noqa
             "nparams=0.00108, nflops=0.221184",
         ]
         for x in GT_SHAPES_STRS:
@@ -78,12 +101,7 @@ class TestFlopsEstimation(unittest.TestCase):
 
         # make sure the additional informaiton are cleaned up
         model_str_clean = str(model)
-        GT_SHAPES = [
-            "input_shapes",
-            "output_shapes",
-            "nparams",
-            "nflops",
-        ]
+        GT_SHAPES = ["input_shapes", "output_shapes", "nparams", "nflops"]
         for x in GT_SHAPES:
             self.assertNotIn(x, model_str_clean)
 
@@ -120,14 +138,10 @@ class TestFlopsEstimation(unittest.TestCase):
         self.assertEqual(unique_types, gt_types)
 
     def test_duplicated(self):
-        ''' Make sure handles subclasses propertly for mock
-        '''
+        """ Make sure handles subclasses propertly for mock
+        """
         model = nn.Sequential(
-            M1(),
-            M2(),
-            nn.Conv2d(3, 4, 3),
-            nn.ConvTranspose2d(4, 4, 3),
-            M1(),
+            M1(), M2(), nn.Conv2d(3, 4, 3), nn.ConvTranspose2d(4, 4, 3), M1()
         )
         input = torch.zeros([1, 3, 4, 4])
 

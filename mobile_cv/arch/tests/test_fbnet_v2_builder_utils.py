@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
 import unittest
 
@@ -15,7 +16,10 @@ class TestFBNetV2BuilderUtils(unittest.TestCase):
                 # stage 0
                 [("conv_k3", 32, 2, 1)],
                 # stage 1
-                [("ir_k3", 64, 2, 2, e6, dw_skip_bnrelu), ("ir_k5", 96, 1, 1, e6)],
+                [
+                    ("ir_k3", 64, 2, 2, e6, dw_skip_bnrelu),
+                    ("ir_k5", 96, 1, 1, e6),
+                ],
             ],
             "backbone": [0],
             "heads": [1],
@@ -55,7 +59,11 @@ class TestFBNetV2BuilderUtils(unittest.TestCase):
                     "stage_idx": 1,
                     "block_idx": 2,
                     "block_op": "ir_k5",
-                    "block_cfg": {"out_channels": 96, "stride": 1, "expansion": 6},
+                    "block_cfg": {
+                        "out_channels": 96,
+                        "stride": 1,
+                        "expansion": 6,
+                    },
                 },
             ],
             "backbone": [0],
@@ -88,8 +96,12 @@ class TestFBNetV2BuilderUtils(unittest.TestCase):
 
         gt_strides_blocks1 = [2, 2, 1, 1]
         gt_strides_blocks2 = [2, 0.5, 1, 0.5]
-        count_strides1 = mbuilder.count_stride_each_block(unified_arch["blocks1"])
-        count_strides2 = mbuilder.count_stride_each_block(unified_arch["blocks2"])
+        count_strides1 = mbuilder.count_stride_each_block(
+            unified_arch["blocks1"]
+        )
+        count_strides2 = mbuilder.count_stride_each_block(
+            unified_arch["blocks2"]
+        )
         self.assertEqual(gt_strides_blocks1, count_strides1)
         self.assertEqual(gt_strides_blocks2, count_strides2)
 

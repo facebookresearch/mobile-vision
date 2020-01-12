@@ -1,4 +1,5 @@
-from __future__ import absolute_import, division, print_function, unicode_literals
+#!/usr/bin/env python3
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
 import unittest
 
@@ -8,7 +9,14 @@ import mobile_cv.lut.lib.lut_ops as lut_ops
 class TestLutOps(unittest.TestCase):
     def test_op_conv(self):
         op1 = lut_ops.Conv2d(
-            3, 8, 3, stride=(1, 1), padding=(1, 1), dilation=1, groups=1, bias=False
+            3,
+            8,
+            3,
+            stride=(1, 1),
+            padding=(1, 1),
+            dilation=1,
+            groups=1,
+            bias=False,
         )
         op1_input = [[2, 3, 224, 224]]
 
@@ -42,7 +50,14 @@ class TestLutOps(unittest.TestCase):
 
     def test_op_conv_transpose(self):
         op1 = lut_ops.ConvTranspose2d(
-            3, 8, 3, stride=(1, 1), padding=(1, 1), dilation=1, groups=1, bias=False
+            3,
+            8,
+            3,
+            stride=(1, 1),
+            padding=(1, 1),
+            dilation=1,
+            groups=1,
+            bias=False,
         )
         op1_input = [[2, 3, 224, 224]]
 

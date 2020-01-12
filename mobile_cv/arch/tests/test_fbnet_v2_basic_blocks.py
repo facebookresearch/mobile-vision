@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
 import unittest
 
-import mobile_cv.arch.fbnet_v2.basic_blocks as bb
 import numpy as np
 import torch
+
+import mobile_cv.arch.fbnet_v2.basic_blocks as bb
 
 
 def _create_input(input_dims):
@@ -21,7 +23,16 @@ class TestFBNetV2BasicBlocks(unittest.TestCase):
         op = bb.HSigmoid()
         output = op(input)
         gt_output = torch.tensor(
-            [0.416667, 0.4375, 0.458333, 0.479167, 0.5000, 0.5208, 0.5417, 0.5625]
+            [
+                0.416667,
+                0.4375,
+                0.458333,
+                0.479167,
+                0.5000,
+                0.5208,
+                0.5417,
+                0.5625,
+            ]
         ).reshape([1, 2, 2, 2])
         np.testing.assert_allclose(output, gt_output, rtol=0, atol=1e-4)
 

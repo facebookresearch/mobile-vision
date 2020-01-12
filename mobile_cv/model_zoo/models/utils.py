@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
-import json
 import glob
+import json
 
 
 def _list_to_dict(model_list):
@@ -9,9 +10,7 @@ def _list_to_dict(model_list):
     names = [x["name"] for x in model_list]
     assert len(set(names)) == len(model_list), f"Name not unique {names}"
 
-    ret = {
-        val["name"]: val for val in model_list
-    }
+    ret = {val["name"]: val for val in model_list}
     return ret
 
 
@@ -35,6 +34,7 @@ def load_model_info_all(folder_path):
 
 def get_model_info_folder(name):
     import pkg_resources
+
     sub_folder = "model_info"
     if name is not None:
         sub_folder += f"/{name}"

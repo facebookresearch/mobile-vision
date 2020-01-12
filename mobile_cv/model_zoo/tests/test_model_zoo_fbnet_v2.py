@@ -1,19 +1,18 @@
 #!/usr/bin/env python3
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
 import unittest
 
-import mobile_cv.lut.lib.pt.flops_utils as flops_utils
 import torch
+
+import mobile_cv.lut.lib.pt.flops_utils as flops_utils
 from mobile_cv.model_zoo.models.fbnet_v2 import fbnet
 
 
 class TestModelZooFBNetV2(unittest.TestCase):
     def test_fbnet_v2(self):
         load_pretrained = True
-        for name in [
-            "fbnet_cse",
-            "dmasking_l2_hs",
-        ]:
+        for name in ["fbnet_cse", "dmasking_l2_hs"]:
             print(f"Testing {name}...")
             model = fbnet(name, pretrained=load_pretrained)
             res = model.arch_def.get("input_size", 224)
@@ -43,11 +42,7 @@ class TestModelZooFBNetV2(unittest.TestCase):
         self.assertEqual(out.size(), torch.Size([1, 8]))
 
     def test_fbnet_flops(self):
-        for x in [
-            "fbnet_a",
-            "fbnet_cse",
-            "dmasking_f1",
-        ]:
+        for x in ["fbnet_a", "fbnet_cse", "dmasking_f1"]:
             print(f"model name: {x}")
             model = fbnet(x, pretrained=False)
             res = model.arch_def.get("input_size", 224)

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
-'''
+"""
 FBNet traced models
 
 Example code to create the model:
@@ -12,9 +13,10 @@ Full example code is available at `examples/run_fbnet_v2_jit_int8.py`.
 
 Architectures with pretrained weights could be found in:
     mobile_cv/model_zoo/models/model_info/model_jit/*.json
-'''
+"""
 
 import torch
+
 from mobile_cv.model_zoo.models import hub_utils, utils
 
 

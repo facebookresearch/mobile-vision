@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
-'''
+"""
 FBNet classification models
 
 Example code to create the model:
@@ -15,16 +16,15 @@ All suported architectures could be found in:
 
 Architectures with pretrained weights could be found in:
     mobile_cv/model_zoo/models/model_info/fbnet_v2/*.json
-'''
+"""
 
 import typing
 
 import torch
 import torch.nn as nn
-from mobile_cv.arch.fbnet_v2 import (
-    fbnet_builder as mbuilder,
-    fbnet_modeldef_cls as modeldef,
-)
+
+from mobile_cv.arch.fbnet_v2 import fbnet_builder as mbuilder
+from mobile_cv.arch.fbnet_v2 import fbnet_modeldef_cls as modeldef
 from mobile_cv.arch.utils import misc
 from mobile_cv.model_zoo.models import hub_utils, utils
 

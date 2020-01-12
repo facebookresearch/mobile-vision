@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
 
 class Registry(object):
@@ -63,14 +64,16 @@ class Registry(object):
         [self.register(name, obj) for name, obj in mapping.items()]
 
     def get(self, name, is_raise=True):
-        '''
+        """
             Raise an exception if the key is not found if `is_raise` is True,
               return None otherwise
-        '''
+        """
         ret = self._obj_map.get(name)
         if ret is None and is_raise:
             raise KeyError(
-                "No object named '{}' found in '{}' registry!".format(name, self._name)
+                "No object named '{}' found in '{}' registry!".format(
+                    name, self._name
+                )
             )
         return ret
 

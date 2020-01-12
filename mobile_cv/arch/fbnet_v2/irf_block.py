@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
 """
 FBNet model inverse residual building block
@@ -6,12 +7,12 @@ FBNet model inverse residual building block
 
 import numbers
 
-import mobile_cv.arch.utils.helper as hp
-import mobile_cv.common.misc.registry as registry
 import torch.nn as nn
 
-from . import basic_blocks as bb
+import mobile_cv.arch.utils.helper as hp
+import mobile_cv.common.misc.registry as registry
 
+from . import basic_blocks as bb
 
 RESIDUAL_REGISTRY = registry.Registry("residual_connect")
 
@@ -34,7 +35,9 @@ def build_residual_connect(
                 return bb.AddWithDropConnect(drop_connect_rate)
         else:
             return None
-    return RESIDUAL_REGISTRY.get(name)(in_channels, out_channels, stride, **res_args)
+    return RESIDUAL_REGISTRY.get(name)(
+        in_channels, out_channels, stride, **res_args
+    )
 
 
 class IRFBlock(nn.Module):
@@ -68,7 +71,9 @@ class IRFBlock(nn.Module):
         bn_args = hp.unify_args(bn_args)
         relu_args = hp.unify_args(relu_args)
 
-        mid_channels = hp.get_divisible_by(in_channels * expansion, width_divisor)
+        mid_channels = hp.get_divisible_by(
+            in_channels * expansion, width_divisor
+        )
 
         self.pw = None
         self.shuffle = None
@@ -180,7 +185,9 @@ class IRPoolBlock(nn.Module):
     ):
         super().__init__()
 
-        mid_channels = hp.get_divisible_by(in_channels * expansion, width_divisor)
+        mid_channels = hp.get_divisible_by(
+            in_channels * expansion, width_divisor
+        )
 
         self.pw = None
         if in_channels != mid_channels or always_pw:

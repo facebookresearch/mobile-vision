@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
 """
 FBNet model basic building blocks
@@ -7,13 +8,13 @@ FBNet model basic building blocks
 import logging
 import numbers
 
+import torch
+import torch.nn as nn
+
 import mobile_cv.arch.utils.helper as hp
 import mobile_cv.arch.utils.misc as utils_misc
 import mobile_cv.common.misc.registry as registry
-import torch
-import torch.nn as nn
 from mobile_cv.arch.layers import NaiveSyncBatchNorm, interpolate
-
 
 CONV_REGISTRY = registry.Registry("conv")
 BN_REGISTRY = registry.Registry("bn")
@@ -33,7 +34,11 @@ class Identity(nn.Module):
                 in_channels,
                 out_channels,
                 **hp.merge(
-                    conv_args={"kernel_size": 1, "stride": stride, "bias": False},
+                    conv_args={
+                        "kernel_size": 1,
+                        "stride": stride,
+                        "bias": False,
+                    },
                     kwargs=kwargs,
                 ),
             )
@@ -94,9 +99,9 @@ class ChannelShuffle(nn.Module):
         """Channel shuffle: [N,C,H,W] -> [N,g,C/g,H,W] -> [N,C/g,g,H,w] -> [N,C,H,W]"""
         N, C, H, W = x.size()
         g = self.groups
-        assert C % g == 0, "Incompatible group size {} for input channel {}".format(
-            g, C
-        )
+        assert (
+            C % g == 0
+        ), "Incompatible group size {} for input channel {}".format(g, C)
         return (
             x.view(N, g, int(C / g), H, W)
             .permute(0, 2, 1, 3, 4)
@@ -309,7 +314,9 @@ def build_se(
     if name == "se_fc":
         return SEModule(in_channels, mid_channels, fc=True, **kwargs)
     elif name == "se_hsig":
-        return SEModule(in_channels, mid_channels, sigmoid_type="hsigmoid", **kwargs)
+        return SEModule(
+            in_channels, mid_channels, sigmoid_type="hsigmoid", **kwargs
+        )
     raise Exception(f"Invalid SEModule arugments {name}")
 
 
@@ -377,7 +384,9 @@ class AddWithDropConnect(nn.Module):
         self.add = TorchAdd()
 
     def forward(self, x, y):
-        xx = utils_misc.drop_connect_batch(x, self.drop_connect_rate, self.training)
+        xx = utils_misc.drop_connect_batch(
+            x, self.drop_connect_rate, self.training
+        )
         return self.add(xx, y)
 
     def extra_repr(self):

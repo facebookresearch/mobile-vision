@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
 import torch
 
@@ -130,7 +131,9 @@ class NestedModuleHook(object):
                 return self._callback(m, self._data)
 
             self._hooks.append(
-                ModuleHook(_hook_adapter, self.life_count).register_forward_hook(module)
+                ModuleHook(
+                    _hook_adapter, self.life_count
+                ).register_forward_hook(module)
             )
 
         return self
@@ -181,10 +184,12 @@ def convert_to_lut_ops(model, input_shapes):
 def convert_to_lut_ops_from_inputs(model, inputs):
     with torch.no_grad():
         model.eval()
-        with NestedModuleHook(collect_op_shape, leaf_only=True).register_forward_hook(
-            model
-        ) as model_data:
+        with NestedModuleHook(
+            collect_op_shape, leaf_only=True
+        ).register_forward_hook(model) as model_data:
             model(inputs)
-            ret = pt_converter.convert_all_modules(model, model_data["input_shapes"])
+            ret = pt_converter.convert_all_modules(
+                model, model_data["input_shapes"]
+            )
 
     return ret

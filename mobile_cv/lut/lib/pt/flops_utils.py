@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-
-from contextlib import contextmanager
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
 import unittest.mock as mock
+from contextlib import contextmanager
+
 import torch
 
 from .. import lut_helper
@@ -18,7 +19,9 @@ class FlopsEstimation(object):
     def __init__(self, model):
         assert isinstance(model, torch.nn.Module)
         self.model = model
-        self._hook = utils.NestedModuleHook(utils.collect_op_shape, leaf_only=False)
+        self._hook = utils.NestedModuleHook(
+            utils.collect_op_shape, leaf_only=False
+        )
         self._patchers = []
         self._is_patched = False
         self._init_repr_shape()
@@ -92,7 +95,9 @@ class FlopsEstimation(object):
                 info_str = []
                 if info is not None:
                     # input and output shapes
-                    info_str = [f"{k}={v}" for k, v in info.items() if k in REPR_ITEMS]
+                    info_str = [
+                        f"{k}={v}" for k, v in info.items() if k in REPR_ITEMS
+                    ]
 
                 ret = orig_extra_repr(module)
                 info_str = ", ".join(info_str)
@@ -176,7 +181,8 @@ def add_flops_info(model, model_info, unit=1e6):
         if "nparams" in info and "nflops" in info:
             return
         nparams, nflops = lut_helper.compute_flops(
-            pt_converter.convert_all_modules(m, model_info["input_shapes"]), unit
+            pt_converter.convert_all_modules(m, model_info["input_shapes"]),
+            unit,
         )
         info["nparams"] = nparams
         info["nflops"] = nflops

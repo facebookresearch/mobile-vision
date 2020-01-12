@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
-import copy
+""" Represents ops in LUT, following pytorch's interface """
+
 import functools
 import json
-import math
 import operator
 
 from mobile_cv.lut.lib.lut_schema import OpBase
-
-
-""" Represents ops in LUT, following pytorch's interface """
 
 
 def to_tuple2(x):
@@ -92,12 +90,22 @@ class Conv2d(OpProperty):
     def get_output_shape(self, input_shape):
         N, C, H, W = input_shape[0][:]
         oH = int(
-            (H + self.padding[0] * 2 - self.dilation[0] * (self.kernel_size[0] - 1) - 1)
+            (
+                H
+                + self.padding[0] * 2
+                - self.dilation[0] * (self.kernel_size[0] - 1)
+                - 1
+            )
             // self.stride[0]
             + 1
         )
         oW = int(
-            (W + self.padding[1] * 2 - self.dilation[1] * (self.kernel_size[1] - 1) - 1)
+            (
+                W
+                + self.padding[1] * 2
+                - self.dilation[1] * (self.kernel_size[1] - 1)
+                - 1
+            )
             // self.stride[1]
             + 1
         )
@@ -109,7 +117,12 @@ class Conv2d(OpProperty):
         if self.allow_frac:
             in_channels = self.in_channels / self.groups
         ret.append(
-            [self.out_channels, in_channels, self.kernel_size[0], self.kernel_size[1]]
+            [
+                self.out_channels,
+                in_channels,
+                self.kernel_size[0],
+                self.kernel_size[1],
+            ]
         )
         return ret
 
@@ -205,13 +218,23 @@ class ConvTranspose2d(OpProperty):
 
     def _unify(self):
         """ Unify the representation """
-        for name in ["kernel_size", "stride", "padding", "output_padding", "dilation"]:
+        for name in [
+            "kernel_size",
+            "stride",
+            "padding",
+            "output_padding",
+            "dilation",
+        ]:
             self.info[name] = to_tuple2(self.info[name])
 
 
 class Linear(OpProperty):
     def __init__(self, in_features=-1, out_features=-1, bias=True):
-        info = {"in_features": in_features, "out_features": out_features, "bias": bias}
+        info = {
+            "in_features": in_features,
+            "out_features": out_features,
+            "bias": bias,
+        }
         super().__init__(info)
 
     def get_output_shape(self, input_shape):

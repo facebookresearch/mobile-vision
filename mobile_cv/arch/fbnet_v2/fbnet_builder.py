@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
 """
 FBNet model builder
@@ -122,11 +123,11 @@ import copy
 import logging
 from collections import OrderedDict
 
-import mobile_cv.arch.utils.helper as hp
 import torch.nn as nn
 
-from .blocks_factory import PRIMITIVES
+import mobile_cv.arch.utils.helper as hp
 
+from .blocks_factory import PRIMITIVES
 
 logger = logging.getLogger(__name__)
 
@@ -428,7 +429,12 @@ class FBNetBuilder(object):
         hp.update_dict(self.basic_args, kwargs)
 
     def build_blocks(
-        self, blocks, stage_indices=None, dim_in=None, prefix_name="xif", **kwargs
+        self,
+        blocks,
+        stage_indices=None,
+        dim_in=None,
+        prefix_name="xif",
+        **kwargs,
     ):
         """ blocks: [{}, {}, ...]
 
@@ -458,7 +464,9 @@ class FBNetBuilder(object):
             block_op = block["block_op"]
             block_cfg = block["block_cfg"]
             cur_kwargs = update_with_block_kwargs(copy.deepcopy(kwargs), block)
-            nnblock = self.build_block(block_op, block_cfg, dim_in=None, **cur_kwargs)
+            nnblock = self.build_block(
+                block_op, block_cfg, dim_in=None, **cur_kwargs
+            )
             nn_name = f"{prefix_name}{stage_idx}_{block_idx}"
             assert nn_name not in modules
             modules[nn_name] = nnblock
@@ -472,7 +480,9 @@ class FBNetBuilder(object):
         assert "out_channels" in block_cfg
         block_cfg = copy.deepcopy(block_cfg)
         out_channels = block_cfg.pop("out_channels")
-        out_channels = self._get_divisible_width(out_channels * self.width_ratio)
+        out_channels = self._get_divisible_width(
+            out_channels * self.width_ratio
+        )
         # dicts appear later will override the configs in the earlier ones
         new_kwargs = hp.get_merged_dict(self.basic_args, block_cfg, kwargs)
         ret = PRIMITIVES.get(block_op)(dim_in, out_channels, **new_kwargs)
@@ -480,5 +490,7 @@ class FBNetBuilder(object):
         return ret
 
     def _get_divisible_width(self, width):
-        ret = hp.get_divisible_by(int(width), self.width_divisor, self.width_divisor)
+        ret = hp.get_divisible_by(
+            int(width), self.width_divisor, self.width_divisor
+        )
         return ret

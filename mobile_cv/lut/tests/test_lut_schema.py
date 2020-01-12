@@ -1,4 +1,5 @@
-from __future__ import absolute_import, division, print_function, unicode_literals
+#!/usr/bin/env python3
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
 import os
 import tempfile
@@ -25,7 +26,14 @@ class TestLutSchema(unittest.TestCase):
         )
         item2 = lut.LutItem(
             op=lut_ops.Conv2d(
-                20, 20, 5, stride=1, padding=0, dilation=(1, 1), groups=2, bias=False
+                20,
+                20,
+                5,
+                stride=1,
+                padding=0,
+                dilation=(1, 1),
+                groups=2,
+                bias=False,
             ),
             input_shapes=[[1, 20, 224, 224]],
         )
