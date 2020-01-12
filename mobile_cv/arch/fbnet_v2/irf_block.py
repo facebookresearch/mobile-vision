@@ -95,7 +95,7 @@ class IRFBlock(nn.Module):
         if pw_groups > 1:
             self.shuffle = bb.ChannelShuffle(pw_groups)
         # use negative stride for upsampling
-        self.upsample, stride = bb.build_upsample_neg_stride(
+        self.upsample, dw_stride = bb.build_upsample_neg_stride(
             stride=stride, **hp.unify_args(upsample_args)
         )
         self.dw = bb.ConvBNRelu(
@@ -103,7 +103,7 @@ class IRFBlock(nn.Module):
             out_channels=mid_channels,
             conv_args={
                 "kernel_size": kernel_size,
-                "stride": stride,
+                "stride": dw_stride,
                 "padding": kernel_size // 2,
                 "groups": mid_channels,
                 "bias": bias,

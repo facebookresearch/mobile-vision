@@ -98,7 +98,7 @@ _PRIMITIVES = {
     "ir_k5": lambda in_channels, out_channels, stride, **kwargs: irf_block.IRFBlock(
         in_channels, out_channels, stride=stride, kernel_size=5, **kwargs
     ),
-    "ir_k5_g2": lambda in_channels, out_channels, stride, **kwargs: irf_block.IRFBlock(
+    "ir_k5_g2": lambda in_channels, out_channels, stride, **kwargs: irf_block.IRFBlock(  # noqa
         in_channels,
         out_channels,
         stride=stride,
@@ -138,7 +138,7 @@ _PRIMITIVES = {
         se_args="se",
         **kwargs
     ),
-    "ir_k3_sehsig": lambda in_channels, out_channels, stride, **kwargs: irf_block.IRFBlock(
+    "ir_k3_sehsig": lambda in_channels, out_channels, stride, **kwargs: irf_block.IRFBlock(  # noqa
         in_channels,
         out_channels,
         stride=stride,
@@ -146,7 +146,7 @@ _PRIMITIVES = {
         se_args="se_hsig",
         **kwargs
     ),
-    "ir_k5_sehsig": lambda in_channels, out_channels, stride, **kwargs: irf_block.IRFBlock(
+    "ir_k5_sehsig": lambda in_channels, out_channels, stride, **kwargs: irf_block.IRFBlock(  # noqa
         in_channels,
         out_channels,
         stride=stride,
@@ -154,7 +154,7 @@ _PRIMITIVES = {
         se_args="se_hsig",
         **kwargs
     ),
-    "ir_k3_sehsig_hs": lambda in_channels, out_channels, stride, **kwargs: irf_block.IRFBlock(
+    "ir_k3_sehsig_hs": lambda in_channels, out_channels, stride, **kwargs: irf_block.IRFBlock(  # noqa
         in_channels,
         out_channels,
         stride=stride,
@@ -163,7 +163,7 @@ _PRIMITIVES = {
         se_args="se_hsig",
         **kwargs
     ),
-    "ir_k5_sehsig_hs": lambda in_channels, out_channels, stride, **kwargs: irf_block.IRFBlock(
+    "ir_k5_sehsig_hs": lambda in_channels, out_channels, stride, **kwargs: irf_block.IRFBlock(  # noqa
         in_channels,
         out_channels,
         stride=stride,
@@ -172,13 +172,13 @@ _PRIMITIVES = {
         se_args="se_hsig",
         **kwargs
     ),
-    "ir_pool": lambda in_channels, out_channels, stride, **kwargs: irf_block.IRPoolBlock(
+    "ir_pool": lambda in_channels, out_channels, stride, **kwargs: irf_block.IRPoolBlock(  # noqa
         in_channels,
         out_channels,
         stride=stride,
         **hp.filter_kwargs(irf_block.IRPoolBlock, kwargs)
     ),
-    "ir_pool_hs": lambda in_channels, out_channels, stride, **kwargs: irf_block.IRPoolBlock(
+    "ir_pool_hs": lambda in_channels, out_channels, stride, **kwargs: irf_block.IRPoolBlock(  # noqa
         in_channels,
         out_channels,
         stride=stride,

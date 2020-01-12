@@ -9,16 +9,21 @@ Usage:
 
 The output will look like:
 FBNet(
-  input_shapes=[[1, 3, 128, 128]], output_shapes=[1, 1000], nparams=5.99297, nflops=56.274952
+  input_shapes=[[1, 3, 128, 128]], output_shapes=[1, 1000],
+  nparams=5.99297, nflops=56.274952
   (backbone): FBNetBackbone(
-    input_shapes=[[1, 3, 128, 128]], output_shapes=[1, 1600, 1, 1], nparams=4.39297, nflops=54.673352
+    input_shapes=[[1, 3, 128, 128]], output_shapes=[1, 1600, 1, 1],
+    nparams=4.39297, nflops=54.673352
     (stages): Sequential(
-      input_shapes=[[1, 3, 128, 128]], output_shapes=[1, 1600, 1, 1], nparams=4.39297, nflops=54.673352
+      input_shapes=[[1, 3, 128, 128]], output_shapes=[1, 1600, 1, 1],
+      nparams=4.39297, nflops=54.673352
       (xif0_0): ConvBNRelu(
-        input_shapes=[[1, 3, 128, 128]], output_shapes=[1, 8, 64, 64], nparams=0.000216, nflops=0.884736
+        input_shapes=[[1, 3, 128, 128]], output_shapes=[1, 8, 64, 64],
+        nparams=0.000216, nflops=0.884736
         (conv): Conv2d(
           3, 8, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1),
-          input_shapes=[[1, 3, 128, 128]], output_shapes=[1, 8, 64, 64], nparams=0.000216, nflops=0.884736
+          input_shapes=[[1, 3, 128, 128]], output_shapes=[1, 8, 64, 64],
+          nparams=0.000216, nflops=0.884736
         )
     ...
 """

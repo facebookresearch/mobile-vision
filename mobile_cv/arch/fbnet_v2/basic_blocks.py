@@ -366,13 +366,12 @@ def build_upsample_neg_stride(name=None, stride=None, **kwargs):
         return None, stride
 
     scales = [-x for x in stride]
-    stride = 1
     if name == "default":
         ret = Upsample(scale_factor=scales, **kwargs)
     else:
         ret = UPSAMPLE_REGISTRY.get(name)(scales, **kwargs)
 
-    return ret, stride
+    return ret, 1
 
 
 class AddWithDropConnect(nn.Module):
