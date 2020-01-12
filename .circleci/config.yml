@@ -31,7 +31,8 @@ install_dep: &install_dep
   - run:
       name: Install Dependencies
       command: |
-        pip install --progress-bar off torch torchvision flake8 flake8-bugbear flake8-comprehensions isort black==19.3b0
+        pip install --pre torch torchvision -f https://download.pytorch.org/whl/nightly/cpu/torch_nightly.html
+        pip install --progress-bar off flake8 flake8-bugbear flake8-comprehensions isort black==19.3b0
 install_mobile_cv: &install_mobile_cv
   - run:
       name: Install Mobile CV
@@ -77,18 +78,12 @@ jobs:
       - run:
           name: black
           command: |
-            black --check -l 100 .
+            black --check -l 80 .
       - run:
           name: flake8
           command: |
             flake8 .
       - <<: *run_unittests
-      - store_artifacts:
-          path: ~/mobile-vision/dist
-      - persist_to_workspace:
-          root: ~/mobile-vision/dist
-          paths:
-            - "*"
 workflows:
   version: 2
   regular_test:
