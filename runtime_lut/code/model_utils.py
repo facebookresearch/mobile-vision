@@ -80,7 +80,7 @@ def create_fill_op(name, blob, device_option=None):
 
     try:
         blob_type = blob.dtype
-    except AttributeError as e:
+    except AttributeError:
         blob_type = type(blob)
     except Exception as e:
         print("Error when geting blob type {}: {}\n{}".format(name, blob, e))
@@ -137,7 +137,7 @@ def _get_blob(name):
     bb = None
     try:
         bb = workspace.FetchBlob(name)
-    except TypeError as e:
+    except TypeError:
         bb = workspace.FetchInt8Blob(name)
     except Exception as e:
         print("Get blob {} error: {}".format(name, e))
@@ -149,7 +149,7 @@ def _get_blob_shape(blob):
     bb = None
     try:
         bb = blob.shape
-    except AttributeError as e:
+    except AttributeError:
         try:
             bb = blob.data.shape
         except Exception as e:
@@ -164,7 +164,7 @@ def _get_blob_dtype(blob):
     bb = None
     try:
         bb = blob.dtype
-    except AttributeError as e:
+    except AttributeError:
         try:
             bb = blob.data.dtype
         except Exception as e:
