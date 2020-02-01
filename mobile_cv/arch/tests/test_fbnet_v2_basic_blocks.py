@@ -48,12 +48,15 @@ class TestFBNetV2BasicBlocks(unittest.TestCase):
 
 class TestFBNetV2BasicBlocksEmptyInput(unittest.TestCase):
     def test_conv_bn_relu_empty_input(self):
-        input_size = [0, 3, 4, 4]
+        # currently empty batch for dw conv is not supported
+        op = bb.ConvBNRelu(4, 4, stride=2, kernel_size=3, padding=1, groups=4)
+
+        input_size = [0, 4, 4, 4]
         inputs = torch.rand(input_size)
-        op = bb.ConvBNRelu(3, 4, stride=2, kernel_size=3, padding=1)
         output = op(inputs)
         self.assertEqual(output.shape, torch.Size([0, 4, 2, 2]))
 
-
-if __name__ == "__main__":
-    unittest.main()
+        input_size = [2, 4, 4, 4]
+        inputs = torch.rand(input_size)
+        output = op(inputs)
+        self.assertEqual(output.shape, torch.Size([2, 4, 2, 2]))

@@ -41,6 +41,41 @@ class _NewEmptyTensorOp(torch.autograd.Function):
         return _NewEmptyTensorOp.apply(grad, shape), None
 
 
+def _get_conv_2d_output_shape(conv_args, x):
+    # When input is empty, we want to return a empty tensor with "correct" shape,
+    # So that the following operations will not panic
+    # if they check for the shape of the tensor.
+    # This computes the height and width of the output tensor
+    output_shape = [
+        (i + 2 * p - (di * (k - 1) + 1)) // s + 1
+        for i, p, di, k, s in zip(
+            x.shape[-2:],
+            conv_args.padding,
+            conv_args.dilation,
+            conv_args.kernel_size,
+            conv_args.stride,
+        )
+    ]
+    output_shape = [x.shape[0], conv_args.out_channels] + output_shape
+    return output_shape
+
+
+class Conv2dEmptyOutput(torch.nn.Module):
+    def __init__(self, conv_op):
+        super().__init__()
+        assert isinstance(conv_op, torch.nn.Conv2d)
+        self.padding = conv_op.padding
+        self.dilation = conv_op.dilation
+        self.kernel_size = conv_op.kernel_size
+        self.stride = conv_op.stride
+        self.out_channels = conv_op.out_channels
+
+    def forward(self, x):
+        assert x.numel() == 0, "Only handle empty batch"
+        output_shape = _get_conv_2d_output_shape(self, x)
+        return _NewEmptyTensorOp.apply(x, output_shape)
+
+
 class Conv2d(torch.nn.Conv2d):
     def __init__(self, *args, **kwargs):
         """
@@ -57,21 +92,7 @@ class Conv2d(torch.nn.Conv2d):
 
     def forward(self, x):
         if x.numel() == 0:
-            # When input is empty, we want to return a empty tensor with "correct"
-            # shape, so that the following operations will not panic
-            # if they check for the shape of the tensor.
-            # This computes the height and width of the output tensor
-            output_shape = [
-                (i + 2 * p - (di * (k - 1) + 1)) // s + 1
-                for i, p, di, k, s in zip(
-                    x.shape[-2:],
-                    self.padding,
-                    self.dilation,
-                    self.kernel_size,
-                    self.stride,
-                )
-            ]
-            output_shape = [x.shape[0], self.weight.shape[0]] + output_shape
+            output_shape = _get_conv_2d_output_shape(self, x)
             return _NewEmptyTensorOp.apply(x, output_shape)
 
         x = super().forward(x)

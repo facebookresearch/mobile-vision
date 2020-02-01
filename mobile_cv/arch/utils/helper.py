@@ -113,3 +113,27 @@ def get_merged_dict(base, *new_dicts):
         assert isinstance(x, dict)
         update_dict(ret, x)
     return ret
+
+
+def format_dict_expanding_list_values(dic):
+    """
+    Formatting a dict into a multi-line string representation of its keys and
+    values, if the value is a list, expand every element of that list into a new
+    line with "-" in indentation (otherwise use space as indentation).
+    Eg. {"aaa": [1, [2, 3]], "bbb": (1, 2, 3)} will become:
+    aaa
+    - 1
+    - [2, 3]
+    bbb
+      (1, 2, 3)
+    """
+    dic = copy.deepcopy(dic)
+    lines = []
+    for k, v in dic.items():
+        lines.append(k)
+        if isinstance(v, list):
+            for elem in v:
+                lines.append("- {}".format(elem))
+        else:
+            lines.append("  {}".format(v))
+    return "\n".join(lines)

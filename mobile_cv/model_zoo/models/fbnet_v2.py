@@ -37,18 +37,33 @@ def _load_pretrained_info():
 
 PRETRAINED_MODELS = _load_pretrained_info()
 
+NAME_MAPPING = {
+    # external name : internal name
+    "FBNet_a": "fbnet_a",
+    "FBNet_b": "fbnet_b",
+    "FBNet_c": "fbnet_c",
+    "FBNet_ase": "fbnet_ase",
+    "FBNet_bse": "fbnet_ase",
+    "FBNet_cse": "fbnet_ase",
+    "MobileNetV3": "mnv3",
+    "FBNetV2_F1": "dmasking_f1",
+    "FBNetV2_F5": "dmasking_l2",
+}
+
 
 def _load_fbnet_state_dict(file_name, progress=True):
     if file_name.startswith("https://"):
         file_name = hub_utils.download_file(file_name, progress=progress)
+
     state_dict = torch.load(file_name, map_location="cpu")
-    state_dict = state_dict["state_dict"]
+    if "model_ema" in state_dict and state_dict["model_ema"] is not None:
+        state_dict = state_dict["model_ema"]
+    else:
+        state_dict = state_dict["state_dict"]
     ret = {}
     for name, val in state_dict.items():
-        assert name.startswith(
-            "module."
-        ), "Invalid name that is not start with 'module.'"
-        name = name[len("module.") :]
+        if name.startswith("module."):
+            name = name[len("module.") :]
         ret[name] = val
     return ret
 
@@ -69,7 +84,7 @@ def _create_builder(arch_name_or_def: typing.Union[str, dict]):
     scale_factor = 1.0
     width_divisor = 1
     bn_info = {"name": "bn", "momentum": 0.003}
-    drop_out = 0.0
+    drop_out = 0.2
 
     arch_def["dropout_ratio"] = drop_out
 
@@ -141,12 +156,17 @@ def fbnet(arch_name, pretrained=False, progress=True, **kwargs):
         pretrained (bool): If True, returns a model pre-trained on ImageNet
         progress (bool): If True, displays a progress bar of the download to stderr
     """
+    if isinstance(arch_name, str) and arch_name in NAME_MAPPING:
+        arch_name = NAME_MAPPING[arch_name]
+
     model = FBNet(arch_name, **kwargs)
     if pretrained:
         assert (
             arch_name in PRETRAINED_MODELS
         ), f"Invalid arch {arch_name}, supported arch {PRETRAINED_MODELS.keys()}"
-        model_path = PRETRAINED_MODELS[arch_name]["model_path"]
+        model_info = PRETRAINED_MODELS[arch_name]
+        model_path = model_info["model_path"]
         state_dict = _load_fbnet_state_dict(model_path, progress=progress)
         model.load_state_dict(state_dict)
+        model.model_info = model_info
     return model

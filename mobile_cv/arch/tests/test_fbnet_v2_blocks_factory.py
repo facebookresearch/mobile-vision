@@ -25,6 +25,7 @@ class TestFBNetV2BlocksFactory(unittest.TestCase):
         "stride": 2,
         "_inputs_": [1, 4, 4, 4],
         "_gt_shape_": [1, 4, 2, 2],
+        "bias": True,
     }
     OP_CFGS = {
         "default": OP_CFGS_DEFAULT,

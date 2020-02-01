@@ -8,13 +8,14 @@ FBNet model basic building blocks
 import logging
 import numbers
 
-import torch
 import torch.nn as nn
+from torch.nn.quantized.modules import FloatFunctional
 
+import mobile_cv.arch.layers.misc as layers_misc
 import mobile_cv.arch.utils.helper as hp
 import mobile_cv.arch.utils.misc as utils_misc
 import mobile_cv.common.misc.registry as registry
-from mobile_cv.arch.layers import NaiveSyncBatchNorm, interpolate
+from mobile_cv.arch.layers import GroupNorm, NaiveSyncBatchNorm, interpolate
 
 CONV_REGISTRY = registry.Registry("conv")
 BN_REGISTRY = registry.Registry("bn")
@@ -54,8 +55,12 @@ class Identity(nn.Module):
 class TorchAdd(nn.Module):
     """Wrapper around torch.add so that all ops can be found at build"""
 
+    def __init__(self):
+        super().__init__()
+        self.add_func = FloatFunctional()
+
     def forward(self, x, y):
-        return torch.add(x, y)
+        return self.add_func.add(x, y)
 
 
 class TorchAddScalar(nn.Module):
@@ -63,15 +68,23 @@ class TorchAddScalar(nn.Module):
         y must be a scalar, needed for quantization
     """
 
+    def __init__(self):
+        super().__init__()
+        self.add_func = FloatFunctional()
+
     def forward(self, x, y):
-        return torch.add(x, y)
+        return self.add_func.add_scalar(x, y)
 
 
 class TorchMultiply(nn.Module):
     """Wrapper around torch.mul so that all ops can be found at build"""
 
+    def __init__(self):
+        super().__init__()
+        self.mul_func = FloatFunctional()
+
     def forward(self, x, y):
-        return torch.mul(x, y)
+        return self.mul_func.mul(x, y)
 
 
 class TorchMulScalar(nn.Module):
@@ -79,15 +92,23 @@ class TorchMulScalar(nn.Module):
         y must be a scalar, needed for quantization
     """
 
+    def __init__(self):
+        super().__init__()
+        self.mul_func = FloatFunctional()
+
     def forward(self, x, y):
-        return torch.mul(x, y)
+        return self.mul_func.mul_scalar(x, y)
 
 
 class TorchCat(nn.Module):
     """Wrapper around torch.cat so that all ops can be found at build"""
 
+    def __init__(self):
+        super().__init__()
+        self.cat_func = FloatFunctional()
+
     def forward(self, tensors, dim):
-        return torch.cat(tensors, dim)
+        return self.cat_func.cat(tensors, dim)
 
 
 class ChannelShuffle(nn.Module):
@@ -152,6 +173,17 @@ def _init_conv_weight(op, weight_init="kaiming_normal"):
             nn.init.constant_(op.bias, 0.0)
 
 
+def build_empty_input_op(op):
+    """ Op to handle empty tensor input
+        Return proper output tensor if input is an empty tensor
+    """
+    if op is None:
+        return None
+    if isinstance(op, nn.Conv2d):
+        return layers_misc.Conv2dEmptyOutput(op)
+    return None
+
+
 def build_conv(
     name="conv",
     in_channels=None,
@@ -175,15 +207,25 @@ def build_conv(
     return CONV_REGISTRY.get(name)(in_channels, out_channels, **conv_args)
 
 
-def build_bn(name, num_channels, **bn_args):
+def build_bn(name, num_channels, zero_gamma=None, **bn_args):
     if name is None:
-        return None
-    if name == "bn":
-        return nn.BatchNorm2d(num_channels, **bn_args)
-    if name == "sync_bn":
-        return NaiveSyncBatchNorm(num_channels, **bn_args)
+        bn_op = None
+    elif name == "bn":
+        bn_op = nn.BatchNorm2d(num_channels, **bn_args)
+        if zero_gamma is True:
+            nn.init.constant_(bn_op.weight, 0.0)
+    elif name == "sync_bn":
+        bn_op = NaiveSyncBatchNorm(num_channels, **bn_args)
+        if zero_gamma is True:
+            nn.init.constant_(bn_op.weight, 0.0)
+    elif name == "gn":
+        bn_op = GroupNorm(num_channels=num_channels, **bn_args)
+    else:
+        bn_op = BN_REGISTRY.get(name)(
+            num_channels, zero_gamma=zero_gamma, **bn_args
+        )
 
-    return BN_REGISTRY.get(name)(num_channels, **bn_args)
+    return bn_op
 
 
 def build_relu(name=None, num_channels=None, **kwargs):
@@ -209,7 +251,7 @@ def build_relu(name=None, num_channels=None, **kwargs):
     return RELU_REGISTRY.get(name)(**kwargs)
 
 
-class ConvBNRelu(nn.Sequential):
+class ConvBNRelu(nn.Module):
     def __init__(
         self,
         in_channels,
@@ -226,26 +268,35 @@ class ConvBNRelu(nn.Sequential):
             out_channels=out_channels,
             **hp.merge_unify_args(conv_args, kwargs),
         )
-        if conv_op is not None:
-            self.add_module("conv", conv_op)
 
-        bn_op = (
+        # register in order
+        self.empty_input = build_empty_input_op(conv_op)
+        self.conv = conv_op
+
+        self.bn = (
             build_bn(num_channels=out_channels, **hp.unify_args(bn_args))
             if bn_args is not None
             else None
         )
-        if bn_op is not None:
-            self.add_module("bn", bn_op)
-
-        relu_op = (
+        self.relu = (
             build_relu(num_channels=out_channels, **hp.unify_args(relu_args))
             if relu_args is not None
             else None
         )
-        if relu_op is not None:
-            self.add_module("relu", relu_op)
 
         self.out_channels = out_channels
+
+    def forward(self, x):
+        if x.numel() > 0 or self.empty_input is None:
+            if self.conv:
+                x = self.conv(x)
+            if self.bn:
+                x = self.bn(x)
+            if self.relu:
+                x = self.relu(x)
+        else:
+            x = self.empty_input(x)
+        return x
 
 
 class SEModule(nn.Module):

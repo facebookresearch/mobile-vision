@@ -7,7 +7,6 @@ import torch
 
 import mobile_cv.arch.fbnet_v2.fbnet_builder as fbnet_builder
 import mobile_cv.arch.utils.fuse_utils as fuse_utils
-import mobile_cv.arch.utils.quantize_utils as quantize_utils
 
 
 def _build_model(arch_def, dim_in):
@@ -37,9 +36,8 @@ class TestFBNetV2Quantize(unittest.TestCase):
             ]
         }
 
-        with quantize_utils.build_model_context():
-            model = _build_model(arch_def, dim_in=3)
-        model = quantize_utils.QuantModel(model)
+        model = _build_model(arch_def, dim_in=3)
+        model = torch.quantization.QuantWrapper(model)
         model = fuse_utils.fuse_model(model, inplace=False)
 
         print(f"Fused model {model}")
@@ -58,4 +56,8 @@ class TestFBNetV2Quantize(unittest.TestCase):
         print(f"Quant model {quant_model}")
 
         quant_output = quant_model(torch.rand([2, 3, 8, 8]))
+
+        # Make sure model can be traced
+        torch.jit.trace(quant_model, torch.randn([2, 3, 8, 8]))
+
         self.assertEqual(quant_output.shape, torch.Size([2, 8, 2, 2]))

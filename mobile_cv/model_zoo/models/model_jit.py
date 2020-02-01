@@ -33,11 +33,12 @@ def load_jit_model(arch_name, progress=True):
     assert (
         arch_name in PRETRAINED_MODELS
     ), f"Invalid arch {arch_name}, supported arch {PRETRAINED_MODELS.keys()}"
-    model_path = PRETRAINED_MODELS[arch_name]["model_path"]
-
+    model_info = PRETRAINED_MODELS[arch_name]
+    model_path = model_info["model_path"]
     if model_path.startswith("https://"):
         model_path = hub_utils.download_file(model_path, progress=progress)
     model = torch.jit.load(model_path, map_location="cpu")
+    model.model_info = model_info
     return model
 
 

@@ -63,6 +63,7 @@ class IRFBlock(nn.Module):
         pw_groups=1,
         always_pw=False,
         less_se_channels=False,
+        zero_last_bn_gamma=True,
         drop_connect_rate=None,
     ):
         super().__init__()
@@ -73,6 +74,14 @@ class IRFBlock(nn.Module):
 
         mid_channels = hp.get_divisible_by(
             in_channels * expansion, width_divisor
+        )
+
+        res_conn = build_residual_connect(
+            in_channels=in_channels,
+            out_channels=out_channels,
+            stride=stride,
+            drop_connect_rate=drop_connect_rate,
+            **hp.unify_args(res_conn_args)
         )
 
         self.pw = None
@@ -132,16 +141,18 @@ class IRFBlock(nn.Module):
                 "groups": pw_groups,
                 **hp.merge_unify_args(conv_args, pwl_args),
             },
-            bn_args=bn_args,
+            bn_args={
+                **bn_args,
+                **{
+                    "zero_gamma": (
+                        zero_last_bn_gamma if res_conn is not None else False
+                    )
+                },
+            },
             relu_args=None,
         )
-        self.res_conn = build_residual_connect(
-            in_channels=in_channels,
-            out_channels=out_channels,
-            stride=stride,
-            drop_connect_rate=drop_connect_rate,
-            **hp.unify_args(res_conn_args)
-        )
+
+        self.res_conn = res_conn
         self.out_channels = out_channels
 
     def forward(self, x):
