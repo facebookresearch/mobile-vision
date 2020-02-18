@@ -1,0 +1,91 @@
+# Python CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-python/ for more details
+#
+version: 2
+
+# -------------------------------------------------------------------------------------
+# Environments to run the jobs in
+# -------------------------------------------------------------------------------------
+cpu: &cpu
+  docker:
+    - image: circleci/python:3.6.2
+  resource_class: medium
+
+# -------------------------------------------------------------------------------------
+# Re-usable commands
+# -------------------------------------------------------------------------------------
+setup_venv: &setup_venv
+  - run:
+      name: Setup Virtual Env
+      working_directory: ~/
+      command: |
+        python -m venv ~/venv
+        echo ". ~/venv/bin/activate" >> $BASH_ENV
+        . ~/venv/bin/activate
+        python --version
+        which python
+        which pip
+        pip install --upgrade pip
+install_dep: &install_dep
+  - run:
+      name: Install Dependencies
+      command: |
+        pip install --pre torch torchvision -f https://download.pytorch.org/whl/nightly/cpu/torch_nightly.html
+        pip install --progress-bar off flake8 flake8-bugbear flake8-comprehensions isort black==19.3b0
+install_mobile_cv: &install_mobile_cv
+  - run:
+      name: Install Mobile CV
+      command: |
+        python setup.py install sdist
+        python -c 'import mobile_cv; print(mobile_cv.__version__)'
+run_unittests: &run_unittests
+  - run:
+      name: Run Unit Tests
+      command: |
+        python -m unittest discover -v -s mobile_cv
+# -------------------------------------------------------------------------------------
+# Jobs to run
+# -------------------------------------------------------------------------------------
+jobs:
+  cpu_tests:
+    <<: *cpu
+
+    working_directory: ~/mobile-vision
+
+    steps:
+      - checkout
+      - <<: *setup_venv
+
+      # Cache the venv directory that contains dependencies
+      - restore_cache:
+          keys:
+            - cache-key-{{ .Branch }}-ID-0
+
+      - <<: *install_dep
+
+      - save_cache:
+          paths:
+            - ~/venv
+          key: cache-key-{{ .Branch }}-ID-0
+
+      - <<: *install_mobile_cv
+
+      - run:
+          name: isort
+          command: |
+            isort -c -sp .
+      - run:
+          name: black
+          command: |
+            black --check -l 80 .
+      - run:
+          name: flake8
+          command: |
+            flake8 .
+      - <<: *run_unittests
+workflows:
+  version: 2
+  regular_test:
+    jobs:
+      - cpu_tests
