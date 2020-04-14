@@ -3,7 +3,7 @@
 
 <sub>Alvin Wan, Xiaoliang Dai, Peizhao Zhang, Zijian He, Yuandong Tian, Saining Xie, Bichen Wu, Matthew Yu, Tao Xu, Kan Chen, Peter Vajda, Joseph E. Gonzalez</sub>
 
-Run a state-of-the-art family of models found by an augmented DNAS, which searches over both input resolutions and channels. Read the [full paper](https://arxiv.org/abs/2004.05565).
+Run a state-of-the-art family of models found by an augmented DNAS, which searches over both input resolutions and channels. Read the [full paper](https://arxiv.org/abs/2004.05565). Our work has been accepted to CVPR 2020.
 
 **Table of Contents**
 
