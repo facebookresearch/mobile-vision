@@ -1,9 +1,9 @@
 
-# FBNetV2: Differentiable Neural Architecture Search for Spatial and Channel Dimensions
+# [FBNetV2: Differentiable Neural Architecture Search for Spatial and Channel Dimensions](https://arxiv.org/abs/2004.05565)
 
 <sub>Alvin Wan, Xiaoliang Dai, Peizhao Zhang, Zijian He, Yuandong Tian, Saining Xie, Bichen Wu, Matthew Yu, Tao Xu, Kan Chen, Peter Vajda, Joseph E. Gonzalez</sub>
 
-Run a state-of-the-art family of models found by an augmented DNAS, which searches over both input resolutions and channels. 
+Run a state-of-the-art family of models found by an augmented DNAS, which searches over both input resolutions and channels. Read the [full paper](https://arxiv.org/abs/2004.05565).
 
 **Table of Contents**
 
