@@ -30,12 +30,20 @@ model.eval()
 
 The following FBNetV2 pre-trained models are provided. The models are trained and evaluated using the ImageNet1k (ILSVRC2012) dataset. Validation top-1 and top-5 accuracy for fp32 models are reported.
 
-|     Model      | Resolution | Flops (M) | Params (M) | Top-1 Accuracy | Top-5 Accuracy |
-| -------------- | ---------- | --------- | ---------- | -------------- | -------------- |
-| dmasking_f1    | 128x128    | 56.3      | 6.0        | 68.3           | 87.8           |
-| dmasking_f4    | 224x224    | 235.9     | 7.0        | 75.5           | 92.5           |
-| dmasking_l2_hs | 256x256    | 419.1     | 8.4        | 77.7           | 93.7           |
-| dmasking_l3    | 288x288    | 753.1     | 9.4        | 78.9           | 94.3           |
+|     Model      | Resolution | Flops (M) |  Top-1 Accuracy |
+| -------------- | ---------- | --------- | -------------- |
+| dmasking_f1    | 128x128    | 56        | 68.3           |
+| dmasking_f2    | 224x224    | 85        | 71.1           |
+| dmasking_f3    | 224x224    | 126     | 73.2           |
+| dmasking_f4    | 224x224    | 238     | 76.0           |
+| dmasking_l1    | 224x224    | 325     | 77.2           |
+| dmasking_l2    | 256x256    | 422     | 78.1           |
+
+|     Model      | Resolution | Params (M) |  Top-1 Accuracy |
+| -------------- | ---------- | --------- | -------------- |
+| dmasking_p1    | 288x288    | 2.64        | 73.9           |
+| dmasking_p2    | 288x288    | 2.99        | 74.8           |
+| dmasking_p3    | 288x288    | 4.00     | 75.9           |
 
 ## License
 
