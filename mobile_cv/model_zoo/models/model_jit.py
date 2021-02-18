@@ -17,7 +17,7 @@ Architectures with pretrained weights could be found in:
 
 import torch
 
-from mobile_cv.model_zoo.models import hub_utils, utils
+from mobile_cv.model_zoo.models import hub_utils, model_zoo_factory, utils
 
 
 def _load_pretrained_info():
@@ -42,6 +42,7 @@ def load_jit_model(arch_name, progress=True):
     return model
 
 
+@model_zoo_factory.MODEL_ZOO_FACTORY.register("jit")
 def model_jit(arch_name, pretrained=False, progress=True, **kwargs):
     """
     Constructs a model from traced model file defined in `PRETRAINED_MODELS`
