@@ -65,14 +65,14 @@ class Registry(object):
 
     def get(self, name, is_raise=True):
         """
-            Raise an exception if the key is not found if `is_raise` is True,
-              return None otherwise
+        Raise an exception if the key is not found if `is_raise` is True,
+          return None otherwise
         """
         ret = self._obj_map.get(name)
         if ret is None and is_raise:
             raise KeyError(
-                "No object named '{}' found in '{}' registry!".format(
-                    name, self._name
+                "No object named '{}' found in '{}' registry! Available names: {}".format(
+                    name, self._name, list(self._obj_map.keys())
                 )
             )
         return ret
