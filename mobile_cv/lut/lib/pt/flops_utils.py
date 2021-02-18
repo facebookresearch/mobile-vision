@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
+import typing
 import unittest.mock as mock
 from contextlib import contextmanager
 
@@ -11,9 +12,9 @@ from . import pt_converter, utils
 
 
 class FlopsEstimation(object):
-    """ Compute the flops of a pytorch model.
-        callback(module, module_data) will be called after the shapes/flops
-          are computed
+    """Compute the flops of a pytorch model.
+    callback(module, module_data) will be called after the shapes/flops
+      are computed
     """
 
     def __init__(self, model):
@@ -31,8 +32,7 @@ class FlopsEstimation(object):
         self.set_enable_repr_shape(False)
 
     def set_callback(self, callback):
-        """ callback(self, module, module_data)
-        """
+        """callback(self, module, module_data)"""
 
         def _adapter(model, model_data):
             callback(self, model, model_data)
@@ -64,8 +64,7 @@ class FlopsEstimation(object):
         self.set_enable(False)
 
     def add_flops_info(self, unit=1e6):
-        """ add flops info to hook_info after shape is available
-        """
+        """add flops info to hook_info after shape is available"""
         add_flops_info(self.model, self._hook.data, unit)
 
     def get_lut_ops(self):
@@ -76,14 +75,13 @@ class FlopsEstimation(object):
         return ret
 
     def get_flops(self, unit=1e6):
-        """ Returns: (num_params, num_flops)
-        """
+        """Returns: (num_params, num_flops)"""
         ops = self.get_lut_ops()
         return lut_helper.compute_flops(ops, unit)
 
     def _init_repr_shape(self):
-        """ Add patchers to modify nn.Module.extra_repr to add additional info
-              when the model is printted and the patchers are enabled.
+        """Add patchers to modify nn.Module.extra_repr to add additional info
+        when the model is printted and the patchers are enabled.
         """
         assert len(self._patchers) == 0
 
@@ -109,16 +107,16 @@ class FlopsEstimation(object):
             return new_extra_repr
 
         def _get_unique_parents(types):
-            """ Mocking a class method (patch.object) may fail in some cases when
-                  handling derived classes. To avoid this issue, we need to:
-                  1. For all subclasses that did not overwrite the class method,
-                     we should only mock the base class method.
-                  2. Mock the sublcass method if it is overwritten.
-                This could be done by grouping all the classes by their methods
-                  that will be mocked, and remove classes that are subclasses of
-                  others.
-                Inputs: [(Class, method), ...]
-                Outputs: Filtered input
+            """Mocking a class method (patch.object) may fail in some cases when
+              handling derived classes. To avoid this issue, we need to:
+              1. For all subclasses that did not overwrite the class method,
+                 we should only mock the base class method.
+              2. Mock the sublcass method if it is overwritten.
+            This could be done by grouping all the classes by their methods
+              that will be mocked, and remove classes that are subclasses of
+              others.
+            Inputs: [(Class, method), ...]
+            Outputs: Filtered input
             """
             assert all(isinstance(x, tuple) for x in types)
             types_unique = {x[1]: [] for x in types}
@@ -146,8 +144,7 @@ class FlopsEstimation(object):
         ]
 
     def set_enable_repr_shape(self, is_enable):
-        """ Enable or disable adding shapes/flops when str(model) is called
-        """
+        """Enable or disable adding shapes/flops when str(model) is called"""
         if self._is_patched == is_enable:
             return
         if is_enable:
@@ -160,8 +157,7 @@ class FlopsEstimation(object):
 
 
 def get_unique_parent_types(type_list):
-    """ Given a list of types, remove types that are subclasses of others
-    """
+    """Given a list of types, remove types that are subclasses of others"""
     ret = []
     for idx, x in enumerate(type_list):
         if issubclass(x, tuple(type_list[idx + 1 :])):
@@ -190,12 +186,41 @@ def add_flops_info(model, model_info, unit=1e6):
     model.apply(_set_flops)
 
 
-def print_model_flops(model, input):
+def print_model_flops(
+    model: torch.nn.Module,
+    inputs: typing.Tuple[typing.Any, ...],
+    forward_func_name: typing.Optional[str] = None,
+    print_per_layer_flops: bool = True,
+):
+    """inputs: a list of inputs to the model, one for each argument for
+    `model.forward()`
+    """
+    assert isinstance(inputs, (tuple, list)), f"Invalid input types {inputs}"
     fest = FlopsEstimation(model)
     with fest.enable():
-        output = model(input)
+        if forward_func_name is None:
+            output = model(*inputs)
+        else:
+            func = getattr(model, forward_func_name)
+            output = func(*inputs)
         fest.add_flops_info()
         nparams, nflops = fest.get_flops()
-        print(model)
+        if print_per_layer_flops:
+            print(model)
         print(f"nparams: {nparams}, nflops {nflops}")
     return output
+
+
+def get_model_flops(
+    model: torch.nn.Module, inputs: typing.Tuple[typing.Any, ...]
+):
+    """inputs: a list of inputs to the model, one for each argument for
+    `model.forward()`
+    """
+    assert isinstance(inputs, (tuple, list)), f"Invalid input types {inputs}"
+    fest = FlopsEstimation(model)
+    with fest.enable():
+        model(*inputs)
+        fest.add_flops_info()
+        nparams, nflops = fest.get_flops()
+    return nparams, nflops

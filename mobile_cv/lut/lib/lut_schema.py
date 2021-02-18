@@ -38,8 +38,7 @@ Device.__new__.__defaults__ = ("", "", "")
 
 
 class TensorShape(object):
-    """ Shape of a tensor, always store in NCHW format
-    """
+    """Shape of a tensor, always store in NCHW format"""
 
     def __init__(self, shape):
         if isinstance(shape, TensorShape):
@@ -131,10 +130,10 @@ class LutItem(object):
 
     def __init__(
         self,
-        op: OpBase = None,
+        op: typing.Optional[OpBase] = None,
         input_shapes=None,
         latency=None,
-        op_info: OpInfo = None,
+        op_info: typing.Optional[OpInfo] = None,
     ):
         has_op = op is not None and input_shapes is not None
         has_op_info = op_info is not None

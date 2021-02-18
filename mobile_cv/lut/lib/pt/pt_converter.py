@@ -32,6 +32,38 @@ def convert_Conv2d(m, input_shapes):
     return ret
 
 
+@PT_CONVERTER.register("Conv1d")
+def convert_Conv1d(m, input_shapes):
+    op = lut_ops.Conv1d(
+        m.in_channels,
+        m.out_channels,
+        m.kernel_size,
+        m.stride,
+        m.padding,
+        m.dilation,
+        m.groups,
+        m.bias is not None,
+    )
+    ret = lut_schema.OpInfo(op, input_shapes)
+    return ret
+
+
+@PT_CONVERTER.register("Conv3d")
+def convert_Conv3d(m, input_shapes):
+    op = lut_ops.Conv3d(
+        m.in_channels,
+        m.out_channels,
+        m.kernel_size,
+        m.stride,
+        m.padding,
+        m.dilation,
+        m.groups,
+        m.bias is not None,
+    )
+    ret = lut_schema.OpInfo(op, input_shapes)
+    return ret
+
+
 @PT_CONVERTER.register("ConvTranspose2d")
 def convert_ConvTranspose2d(m, input_shapes):
     op = lut_ops.ConvTranspose2d(
@@ -59,6 +91,25 @@ def convert_Linear(m, input_shapes):
 @PT_CONVERTER.register("AdaptiveAvgPool2d")
 def convert_AdaptiveAvgPool2d(m, input_shapes):
     op = lut_ops.AdaptiveAvgPool2d(m.output_size)
+    ret = lut_schema.OpInfo(op, input_shapes)
+    return ret
+
+
+@PT_CONVERTER.register("MatMul")
+def convert_MatMul(m, input_shapes):
+    op = lut_ops.MatMul()
+    ret = lut_schema.OpInfo(op, input_shapes)
+    return ret
+
+
+@PT_CONVERTER.register("MultiheadAttention")
+def convert_MultiheadAttention(m, input_shapes):
+    op = lut_ops.MultiheadAttention(
+        m.embed_dim,
+        m.num_heads,
+        kdim=m.kdim,
+        vdim=m.vdim,
+    )
     ret = lut_schema.OpInfo(op, input_shapes)
     return ret
 
