@@ -2,14 +2,17 @@
 #
 # Check https://circleci.com/docs/2.0/language-python/ for more details
 #
-version: 2
+version: 2.1
 
 # -------------------------------------------------------------------------------------
 # Environments to run the jobs in
 # -------------------------------------------------------------------------------------
 cpu: &cpu
   docker:
-    - image: circleci/python:3.6.2
+    - image: circleci/python:3.7
+      auth:
+        username: $DOCKERHUB_USERNAME
+        password: $DOCKERHUB_TOKEN
   resource_class: medium
 
 # -------------------------------------------------------------------------------------
@@ -27,23 +30,27 @@ setup_venv: &setup_venv
         which python
         which pip
         pip install --upgrade pip
+
 install_dep: &install_dep
   - run:
       name: Install Dependencies
       command: |
         pip install --pre torch torchvision -f https://download.pytorch.org/whl/nightly/cpu/torch_nightly.html
-        pip install --progress-bar off flake8 flake8-bugbear flake8-comprehensions isort black==19.3b0
+
 install_mobile_cv: &install_mobile_cv
   - run:
       name: Install Mobile CV
       command: |
-        python setup.py install sdist
+        pip install . -U
+        python setup.py sdist
         python -c 'import mobile_cv; print(mobile_cv.__version__)'
+
 run_unittests: &run_unittests
   - run:
       name: Run Unit Tests
       command: |
         python -m unittest discover -v -s mobile_cv
+
 # -------------------------------------------------------------------------------------
 # Jobs to run
 # -------------------------------------------------------------------------------------
@@ -51,7 +58,7 @@ jobs:
   cpu_tests:
     <<: *cpu
 
-    working_directory: ~/mobile-vision
+    working_directory: ~/mobile_vision
 
     steps:
       - checkout
@@ -60,32 +67,30 @@ jobs:
       # Cache the venv directory that contains dependencies
       - restore_cache:
           keys:
-            - cache-key-{{ .Branch }}-ID-0
+            - cache-key-{{ .Branch }}-ID-20210217
 
       - <<: *install_dep
 
       - save_cache:
           paths:
             - ~/venv
-          key: cache-key-{{ .Branch }}-ID-0
+          key: cache-key-{{ .Branch }}-ID-20210217
 
       - <<: *install_mobile_cv
 
-      - run:
-          name: isort
-          command: |
-            isort -c -sp .
-      - run:
-          name: black
-          command: |
-            black --check -l 80 .
-      - run:
-          name: flake8
-          command: |
-            flake8 .
       - <<: *run_unittests
+
+      - store_artifacts:
+          path: ~/mobile_vision/dist
+      - persist_to_workspace:
+          root: ~/mobile_vision/dist
+          paths:
+            - "*"
+
 workflows:
   version: 2
   regular_test:
     jobs:
-      - cpu_tests
+      - cpu_tests:
+          context:
+            - DOCKERHUB_TOKEN

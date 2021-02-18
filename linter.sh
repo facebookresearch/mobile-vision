@@ -4,17 +4,17 @@
 # Run this script at project root by "./linter.sh" before you commit.
 
 {
-	black --version | grep "19.3b0" > /dev/null
+  black --version | grep -E "20.8b1" > /dev/null
 } || {
-	echo "Linter requires black==19.3b0 !"
-	exit 1
+  echo "Linter requires 'black==20.8b1' !"
+  exit 1
 }
 
 echo "Running isort..."
 isort -y -sp .
 
 echo "Running black..."
-black -l 80 .
+black .
 
 echo "Running flake8..."
 if [ -x "$(command -v flake8-3)" ]; then
