@@ -6,5 +6,6 @@ from . import (
     fbnet_modeldef_cls_efficient_net,
     fbnet_modeldef_cls_fbnet,
     fbnet_modeldef_cls_fbnetv2,
+    fbnet_modeldef_cls_fbnetv3,
     fbnet_modeldef_cls_mnv3,
 )
