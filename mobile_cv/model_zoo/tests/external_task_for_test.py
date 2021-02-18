@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import torch
-
 from mobile_cv.model_zoo.tasks import task_factory
 from mobile_cv.model_zoo.tasks.task_base import TaskBase
 

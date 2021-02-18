@@ -5,9 +5,8 @@
 FBNet model inverse residual building block
 """
 
-import torch.nn as nn
-
 import mobile_cv.arch.utils.helper as hp
+import torch.nn as nn
 
 from . import basic_blocks as bb
 
@@ -51,9 +50,7 @@ class IRFBlock(nn.Module):
         bn_args = hp.unify_args(bn_args)
         relu_args = hp.unify_args(relu_args)
 
-        mid_channels = hp.get_divisible_by(
-            in_channels * expansion, width_divisor
-        )
+        mid_channels = hp.get_divisible_by(in_channels * expansion, width_divisor)
 
         res_conn = bb.build_residual_connect(
             in_channels=in_channels,
@@ -190,9 +187,7 @@ class IRPoolBlock(nn.Module):
     ):
         super().__init__()
 
-        mid_channels = hp.get_divisible_by(
-            in_channels * expansion, width_divisor
-        )
+        mid_channels = hp.get_divisible_by(in_channels * expansion, width_divisor)
 
         self.pw = None
         if in_channels != mid_channels or always_pw:

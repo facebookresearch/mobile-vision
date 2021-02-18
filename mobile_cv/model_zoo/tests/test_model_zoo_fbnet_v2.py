@@ -3,9 +3,8 @@
 
 import unittest
 
-import torch
-
 import mobile_cv.lut.lib.pt.flops_utils as flops_utils
+import torch
 from mobile_cv.model_zoo.models.fbnet_v2 import fbnet, fbnet_backbone
 
 
@@ -60,9 +59,7 @@ class TestModelZooFBNetV2(unittest.TestCase):
         print(f"Test res: {res}")
         data = torch.zeros([1, 3, res, res])
         out = model(data)
-        self.assertEqual(
-            out.size(), torch.Size([1, out_chan, 224 // 4, 224 // 4])
-        )
+        self.assertEqual(out.size(), torch.Size([1, out_chan, 224 // 4, 224 // 4]))
 
     def test_fbnet_arch_def(self):
         model_arch = {

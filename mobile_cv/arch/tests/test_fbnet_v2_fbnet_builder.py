@@ -3,12 +3,11 @@
 
 import unittest
 
-import torch
-
 import mobile_cv.arch.fbnet_v2.basic_blocks as basic_blocks
 import mobile_cv.arch.fbnet_v2.blocks_factory as blocks_factory
 import mobile_cv.arch.fbnet_v2.fbnet_builder as fbnet_builder
 import mobile_cv.arch.fbnet_v2.irf_block as irf_block
+import torch
 
 
 def _build_model(arch_def, dim_in):
@@ -66,9 +65,7 @@ class TestFBNetBuilder(unittest.TestCase):
                 super().__init__()
                 assert kwargs["width_divisor"] == WIDTH_DIVISOR
                 self.check_out_channels = check_out_channels
-                self.conv = basic_blocks.ConvBNRelu(
-                    in_channels, out_channels, **kwargs
-                )
+                self.conv = basic_blocks.ConvBNRelu(in_channels, out_channels, **kwargs)
 
             def forward(self, x):
                 ret = self.conv(x)
@@ -82,9 +79,7 @@ class TestFBNetBuilder(unittest.TestCase):
                 super().__init__()
                 assert kwargs["width_divisor"] == WIDTH_DIVISOR
                 self.check_out_channels = check_out_channels
-                self.op = irf_block.IRFBlock(
-                    in_channels, out_channels, **kwargs
-                )
+                self.op = irf_block.IRFBlock(in_channels, out_channels, **kwargs)
 
             def forward(self, x):
                 ret = self.op(x)

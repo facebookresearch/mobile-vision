@@ -3,11 +3,10 @@
 import os
 from functools import wraps
 
+import mobile_cv.common.misc.iter_utils as iu
 import numpy as np
 import torch
 import torch.distributed as dist
-
-import mobile_cv.common.misc.iter_utils as iu
 
 
 def skip_if_no_gpu(func):

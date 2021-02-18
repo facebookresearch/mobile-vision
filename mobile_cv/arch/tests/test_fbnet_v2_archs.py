@@ -3,18 +3,15 @@
 
 import unittest
 
-import torch
-
 import mobile_cv.arch.fbnet_v2.fbnet_builder as fbnet_builder
 import mobile_cv.arch.fbnet_v2.fbnet_modeldef_cls as fbnet_modeldef_cls
 import mobile_cv.lut.lib.pt.flops_utils as flops_utils
+import torch
 
 
 def _create_and_run(self, arch_name, model_arch):
     arch = fbnet_builder.unify_arch_def(model_arch, ["blocks"])
-    builder = fbnet_builder.FBNetBuilder(
-        basic_args=arch.get("basic_args", None)
-    )
+    builder = fbnet_builder.FBNetBuilder(basic_args=arch.get("basic_args", None))
     model = builder.build_blocks(arch["blocks"], dim_in=3)
     model.eval()
     res = model_arch.get("input_size", 224)

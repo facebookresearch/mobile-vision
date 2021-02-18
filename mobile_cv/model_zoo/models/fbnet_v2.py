@@ -23,9 +23,10 @@ import typing
 
 import torch
 import torch.nn as nn
-
-from mobile_cv.arch.fbnet_v2 import fbnet_builder as mbuilder
-from mobile_cv.arch.fbnet_v2 import fbnet_modeldef_cls as modeldef
+from mobile_cv.arch.fbnet_v2 import (
+    fbnet_builder as mbuilder,
+    fbnet_modeldef_cls as modeldef,
+)
 from mobile_cv.model_zoo.models import hub_utils, model_zoo_factory, utils
 
 
@@ -65,17 +66,12 @@ def _load_fbnet_state_dict(file_name, progress=True, ignore_prefix="module."):
 
 
 def _create_builder(arch_name_or_def: typing.Union[str, dict]):
-    if (
-        isinstance(arch_name_or_def, str)
-        and arch_name_or_def in modeldef.MODEL_ARCH
-    ):
+    if isinstance(arch_name_or_def, str) and arch_name_or_def in modeldef.MODEL_ARCH:
         arch_def = modeldef.MODEL_ARCH[arch_name_or_def]
     elif isinstance(arch_name_or_def, str):
         try:
             arch_def = json.loads(arch_name_or_def)
-            assert isinstance(
-                arch_def, dict
-            ), f"Invalid arch type {arch_name_or_def}"
+            assert isinstance(arch_def, dict), f"Invalid arch type {arch_name_or_def}"
         except ValueError:
             assert arch_name_or_def in modeldef.MODEL_ARCH, (
                 f"Invalid arch name {arch_name_or_def}, "
@@ -127,9 +123,7 @@ class FBNetBackbone(nn.Module):
 
 
 class FBNet(nn.Module):
-    def __init__(
-        self, arch_name, dim_in=3, num_classes=1000, stage_indices=None
-    ):
+    def __init__(self, arch_name, dim_in=3, num_classes=1000, stage_indices=None):
         super().__init__()
         self.backbone = FBNetBackbone(
             arch_name, dim_in=dim_in, stage_indices=stage_indices

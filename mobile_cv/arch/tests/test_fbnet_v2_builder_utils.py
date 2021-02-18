@@ -96,12 +96,8 @@ class TestFBNetV2BuilderUtils(unittest.TestCase):
 
         gt_strides_blocks1 = [2, 2, 1, 1]
         gt_strides_blocks2 = [2, 0.5, 1, 0.5]
-        count_strides1 = mbuilder.count_stride_each_block(
-            unified_arch["blocks1"]
-        )
-        count_strides2 = mbuilder.count_stride_each_block(
-            unified_arch["blocks2"]
-        )
+        count_strides1 = mbuilder.count_stride_each_block(unified_arch["blocks1"])
+        count_strides2 = mbuilder.count_stride_each_block(unified_arch["blocks2"])
         self.assertEqual(gt_strides_blocks1, count_strides1)
         self.assertEqual(gt_strides_blocks2, count_strides2)
 
@@ -127,18 +123,12 @@ class TestFBNetV2BuilderUtils(unittest.TestCase):
             ],
         }
 
-        unified_arch_v = mbuilder.unify_arch_def(
-            arch_def_v, ["blocks1", "blocks2"]
-        )
+        unified_arch_v = mbuilder.unify_arch_def(arch_def_v, ["blocks1", "blocks2"])
 
         gt_strides_blocks1_v = [[2, 1], 2, 1, 1]
         gt_strides_blocks2_v = [2, [1, 2], 1, 0.5]
-        count_strides1_v = mbuilder.count_stride_each_block(
-            unified_arch_v["blocks1"]
-        )
-        count_strides2_v = mbuilder.count_stride_each_block(
-            unified_arch_v["blocks2"]
-        )
+        count_strides1_v = mbuilder.count_stride_each_block(unified_arch_v["blocks1"])
+        count_strides2_v = mbuilder.count_stride_each_block(unified_arch_v["blocks2"])
         self.assertEqual(gt_strides_blocks1_v, count_strides1_v)
         self.assertEqual(gt_strides_blocks2_v, count_strides2_v)
 

@@ -5,9 +5,8 @@ import os
 import tempfile
 import unittest
 
-import torch
-
 import mobile_cv.arch.fbnet_v2.blocks_factory as blocks_factory
+import torch
 from mobile_cv.model_zoo.tools import model_exporter
 
 
@@ -24,9 +23,7 @@ class TestToolsModelExporter(unittest.TestCase):
                 "--task",
                 "general",
                 "--task_args",
-                json.dumps(
-                    {"model_args": fbnet_args, "dataset_args": dataset_args}
-                ),
+                json.dumps({"model_args": fbnet_args, "dataset_args": dataset_args}),
                 "--output_dir",
                 output_dir,
                 "--export_types",
@@ -62,9 +59,7 @@ class TestToolsModelExporter(unittest.TestCase):
                 self.is_traceable = True
 
         blocks_factory.PRIMITIVES.register_dict(
-            {
-                "trace_test": lambda in_channels, out_channels, stride, **kwargs: Model()
-            }
+            {"trace_test": lambda in_channels, out_channels, stride, **kwargs: Model()}
         )
         arch = {"blocks": [[("trace_test", 1, 1, 1)]]}
 
@@ -82,9 +77,7 @@ class TestToolsModelExporter(unittest.TestCase):
                 "--task",
                 "general",
                 "--task_args",
-                json.dumps(
-                    {"model_args": fbnet_args, "dataset_args": dataset_args}
-                ),
+                json.dumps({"model_args": fbnet_args, "dataset_args": dataset_args}),
                 "--output_dir",
                 output_dir,
                 "--export_types",

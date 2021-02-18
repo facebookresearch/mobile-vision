@@ -9,20 +9,20 @@ import logging
 import numbers
 from typing import List
 
-import torch
-import torch.nn as nn
-from torch.nn.quantized.modules import FloatFunctional
-
 import mobile_cv.arch.utils.helper as hp
 import mobile_cv.arch.utils.misc as utils_misc
 import mobile_cv.common.misc.iter_utils as iu
 import mobile_cv.common.misc.registry as registry
+import torch
+import torch.nn as nn
 from mobile_cv.arch.layers import (
     GroupNorm,
     NaiveSyncBatchNorm,
     NaiveSyncBatchNorm1d,
     NaiveSyncBatchNorm3d,
 )
+from torch.nn.quantized.modules import FloatFunctional
+
 
 BN_REGISTRY = registry.Registry("bn")
 CONV_REGISTRY = registry.Registry("conv")
@@ -87,9 +87,7 @@ class TorchNLengthAdd(nn.Module):
     def __init__(self, num_inputs=2):
         super().__init__()
         self.num_inputs = num_inputs
-        self.add_funcs = nn.ModuleList(
-            [TorchAdd() for _ in range(self.num_inputs - 1)]
-        )
+        self.add_funcs = nn.ModuleList([TorchAdd() for _ in range(self.num_inputs - 1)])
 
     def forward(self, x):
         assert isinstance(x, (list, tuple))
@@ -197,14 +195,11 @@ class ChannelShuffle1d(nn.Module):
         """Channel shuffle: [N,C,D] -> [N,g,C/g,D] -> [N,C/g,g,D] -> [N,C,D]"""
         N, C, D = x.size()
         g = self.groups
-        assert (
-            C % g == 0
-        ), "Incompatible group size {} for input channel {}".format(g, C)
+        assert C % g == 0, "Incompatible group size {} for input channel {}".format(
+            g, C
+        )
         return (
-            x.view(N, g, int(C / g), D)
-            .permute(0, 2, 1, 3)
-            .contiguous()
-            .view(N, C, D)
+            x.view(N, g, int(C / g), D).permute(0, 2, 1, 3).contiguous().view(N, C, D)
         )
 
 
@@ -369,9 +364,7 @@ def build_residual_connect(
                 return AddWithDropConnect(drop_connect_rate)
         else:
             return None
-    return RESIDUAL_REGISTRY.get(name)(
-        in_channels, out_channels, stride, **res_args
-    )
+    return RESIDUAL_REGISTRY.get(name)(in_channels, out_channels, stride, **res_args)
 
 
 class ConvNormAct(nn.Module):
@@ -462,9 +455,7 @@ def _se_op_fc(in_channels, mid_channels, relu_args, sigmoid_type):
     return ret
 
 
-def _se_op_conv(
-    in_channels, mid_channels, relu_args, sigmoid_type, conv_type="conv2d"
-):
+def _se_op_conv(in_channels, mid_channels, relu_args, sigmoid_type, conv_type="conv2d"):
     conv1_relu = ConvBNRelu(
         in_channels,
         mid_channels,
@@ -567,9 +558,7 @@ class SE3DModule(nn.Module):
         return self.mul(x, y)
 
 
-def build_se(
-    name=None, in_channels=None, mid_channels=None, width_divisor=1, **kwargs
-):
+def build_se(name=None, in_channels=None, mid_channels=None, width_divisor=1, **kwargs):
     if name is None:
         return None
     mid_channels = hp.get_divisible_by(mid_channels, width_divisor)
@@ -578,15 +567,11 @@ def build_se(
     if name == "se_fc":
         return SEModule(in_channels, mid_channels, fc=True, **kwargs)
     if name == "se_hsig":
-        return SEModule(
-            in_channels, mid_channels, sigmoid_type="hsigmoid", **kwargs
-        )
+        return SEModule(in_channels, mid_channels, sigmoid_type="hsigmoid", **kwargs)
     if name == "se3d":
         return SE3DModule(in_channels, mid_channels, **kwargs)
     if name == "se3d_hsig":
-        return SE3DModule(
-            in_channels, mid_channels, sigmoid_type="hsigmoid", **kwargs
-        )
+        return SE3DModule(in_channels, mid_channels, sigmoid_type="hsigmoid", **kwargs)
     raise Exception(f"Invalid SEModule arugments {name}")
 
 
@@ -672,9 +657,7 @@ class AddWithDropConnect(nn.Module):
         self.add = TorchAdd()
 
     def forward(self, x, y):
-        xx = utils_misc.drop_connect_batch(
-            x, self.drop_connect_rate, self.training
-        )
+        xx = utils_misc.drop_connect_batch(x, self.drop_connect_rate, self.training)
         return self.add(xx, y)
 
     def extra_repr(self):

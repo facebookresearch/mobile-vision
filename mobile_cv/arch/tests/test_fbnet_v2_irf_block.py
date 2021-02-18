@@ -3,18 +3,16 @@
 
 import unittest
 
+import mobile_cv.arch.fbnet_v2.irf_block as irf_block
 import torch
 
-import mobile_cv.arch.fbnet_v2.irf_block as irf_block
 
 TEST_CUDA = torch.cuda.is_available()
 
 
 def create_test_irf(self, out_channels, op_args, input_shape, gt_output_dim):
     N, C_in, H, W = input_shape
-    op = irf_block.IRFBlock(
-        in_channels=C_in, out_channels=out_channels, **op_args
-    )
+    op = irf_block.IRFBlock(in_channels=C_in, out_channels=out_channels, **op_args)
     print(op)
 
     input = torch.rand(input_shape, dtype=torch.float32)
@@ -52,7 +50,7 @@ class TestIRFBlocks(unittest.TestCase):
                     gt_output_dim=input_dim,
                 )
 
-        with self.subTest(f"skip_bnrelu=True"):
+        with self.subTest("skip_bnrelu=True"):
             create_test_irf(
                 self,
                 C_out,

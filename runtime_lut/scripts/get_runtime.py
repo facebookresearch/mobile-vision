@@ -7,10 +7,10 @@ import json
 import os
 import sys
 
-from caffe2.python import workspace
-
 import model_utils
 from api import RunTimeAPI
+from caffe2.python import workspace
+
 
 sys.path.append("runtime_lut/code/")
 
@@ -60,9 +60,7 @@ def load_pb(model_path):
         else None
     )
 
-    model, _ = model_utils.load_model_pb(
-        model_path, model_init_path, is_run_init=True
-    )
+    model, _ = model_utils.load_model_pb(model_path, model_init_path, is_run_init=True)
 
     return model
 

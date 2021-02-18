@@ -3,10 +3,9 @@
 
 import unittest
 
-import torch
-
 import mobile_cv.arch.fbnet_v2.fbnet_builder as fbnet_builder
 import mobile_cv.arch.utils.fuse_utils as fuse_utils
+import torch
 
 
 def _build_model(arch_def, dim_in):

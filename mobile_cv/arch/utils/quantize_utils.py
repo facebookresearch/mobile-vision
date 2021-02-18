@@ -5,12 +5,11 @@ import copy
 import typing
 from contextlib import contextmanager
 
+import mobile_cv.common.misc.iter_utils as iu
 import torch
 import torch.nn as nn
-from torch.quantization.stubs import DeQuantStub, QuantStub
-
-import mobile_cv.common.misc.iter_utils as iu
 from mobile_cv.arch.layers import NaiveSyncBatchNorm
+from torch.quantization.stubs import DeQuantStub, QuantStub
 
 from . import fuse_utils
 
@@ -166,9 +165,7 @@ class QuantStubNested(nn.Module):
         return data_iter.value
 
 
-def wrap_quant_subclass(
-    module, n_inputs, n_outputs, wrapped_method_name="forward"
-):
+def wrap_quant_subclass(module, n_inputs, n_outputs, wrapped_method_name="forward"):
     """Create a subclass of type(module) but quantize the input and dequant
     the output
     Similar to `QuantWrapper` but the return object is a subclass of
@@ -178,9 +175,7 @@ def wrap_quant_subclass(
 
     def wrapped_method(self, *args, **kwargs):
         (q_args, q_kwargs) = self.quant_stubs((args, kwargs))
-        q_outputs = getattr(ModuleType, wrapped_method_name)(
-            self, *q_args, **q_kwargs
-        )
+        q_outputs = getattr(ModuleType, wrapped_method_name)(self, *q_args, **q_kwargs)
         outputs = self.dequant_stubs(q_outputs)
         return outputs
 

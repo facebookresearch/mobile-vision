@@ -5,13 +5,12 @@
 FBNet model building blocks factory
 """
 
-from torch import nn
-
 import mobile_cv.arch.utils.helper as hp
 import mobile_cv.common.misc.registry as registry
+from torch import nn
 
-from . import basic_blocks as bb
-from . import irf_block
+from . import basic_blocks as bb, irf_block
+
 
 PRIMITIVES = registry.Registry("blocks_factory")
 
@@ -24,7 +23,7 @@ _PRIMITIVES = {
     "upsample": lambda in_channels, out_channels, stride, **kwargs: bb.Upsample(
         scale_factor=stride, mode="nearest"
     ),
-    "downsample": lambda in_channels, out_channels, stride, mode="bicubic", **kwargs: bb.Upsample(
+    "downsample": lambda in_channels, out_channels, stride, mode="bicubic", **kwargs: bb.Upsample(  # noqa
         scale_factor=(1.0 / stride), mode=mode
     ),
     "skip": lambda in_channels, out_channels, stride, **kwargs: bb.Identity(
@@ -68,9 +67,7 @@ _PRIMITIVES = {
     "conv_hs": lambda in_channels, out_channels, stride, **kwargs: bb.ConvBNRelu(
         in_channels,
         out_channels,
-        **hp.merge(
-            conv_args={"stride": stride}, relu_args="hswish", kwargs=kwargs
-        )
+        **hp.merge(conv_args={"stride": stride}, relu_args="hswish", kwargs=kwargs)
     ),
     "conv_k1_hs": lambda in_channels, out_channels, stride, **kwargs: bb.ConvBNRelu(
         in_channels,
@@ -106,23 +103,13 @@ _PRIMITIVES = {
         in_channels, out_channels, stride=stride, kernel_size=3, **kwargs
     ),
     "ir_k3_g2": lambda in_channels, out_channels, stride, **kwargs: irf_block.IRFBlock(
-        in_channels,
-        out_channels,
-        stride=stride,
-        kernel_size=3,
-        pw_groups=2,
-        **kwargs
+        in_channels, out_channels, stride=stride, kernel_size=3, pw_groups=2, **kwargs
     ),
     "ir_k5": lambda in_channels, out_channels, stride, **kwargs: irf_block.IRFBlock(
         in_channels, out_channels, stride=stride, kernel_size=5, **kwargs
     ),
     "ir_k5_g2": lambda in_channels, out_channels, stride, **kwargs: irf_block.IRFBlock(  # noqa
-        in_channels,
-        out_channels,
-        stride=stride,
-        kernel_size=5,
-        pw_groups=2,
-        **kwargs
+        in_channels, out_channels, stride=stride, kernel_size=5, pw_groups=2, **kwargs
     ),
     "ir_k3_hs": lambda in_channels, out_channels, stride, **kwargs: irf_block.IRFBlock(
         in_channels,
@@ -141,20 +128,10 @@ _PRIMITIVES = {
         **kwargs
     ),
     "ir_k3_se": lambda in_channels, out_channels, stride, **kwargs: irf_block.IRFBlock(
-        in_channels,
-        out_channels,
-        stride=stride,
-        kernel_size=3,
-        se_args="se",
-        **kwargs
+        in_channels, out_channels, stride=stride, kernel_size=3, se_args="se", **kwargs
     ),
     "ir_k5_se": lambda in_channels, out_channels, stride, **kwargs: irf_block.IRFBlock(
-        in_channels,
-        out_channels,
-        stride=stride,
-        kernel_size=5,
-        se_args="se",
-        **kwargs
+        in_channels, out_channels, stride=stride, kernel_size=5, se_args="se", **kwargs
     ),
     "ir_k3_sehsig": lambda in_channels, out_channels, stride, **kwargs: irf_block.IRFBlock(  # noqa
         in_channels,

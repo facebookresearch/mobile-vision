@@ -11,16 +11,16 @@ import logging
 import os
 import typing
 
-import torch
-from torch.utils.mobile_optimizer import optimize_for_mobile
-
 import mobile_cv.arch.utils.fuse_utils as fuse_utils
 import mobile_cv.arch.utils.jit_utils as ju
 import mobile_cv.arch.utils.quantize_utils as quantize_utils
 import mobile_cv.common.misc.registry as registry
 import mobile_cv.lut.lib.pt.flops_utils as flops_utils
 import mobile_cv.model_zoo.tasks.task_factory as task_factory
+import torch
 from mobile_cv.model_zoo.models import model_utils
+from torch.utils.mobile_optimizer import optimize_for_mobile
+
 
 logger = logging.getLogger("model_zoo_tools.export")
 
@@ -38,12 +38,8 @@ def parse_args(args_list=None):
         help="Task name, if @ is inside the name, use the str after it as the "
         "path to import",
     )
-    parser.add_argument(
-        "--task_args", type=json.loads, default={}, help="Task args"
-    )
-    parser.add_argument(
-        "--output_dir", type=str, required=True, help="Output base dir"
-    )
+    parser.add_argument("--task_args", type=json.loads, default={}, help="Task args")
+    parser.add_argument("--output_dir", type=str, required=True, help="Output base dir")
     parser.add_argument(
         "--export_types",
         type=str,
@@ -152,9 +148,7 @@ def export_to_torchscript(args, task, model, inputs, output_base_dir, **kwargs):
 
 
 @ExportFactory.register("torchscript_int8")
-def export_to_torchscript_int8(
-    args, task, model, inputs, output_base_dir, data_iter
-):
+def export_to_torchscript_int8(args, task, model, inputs, output_base_dir, data_iter):
     if args.use_graph_mode_quant:
         print(f"Post quantization using {args.post_quant_backend} backend...")
         print("Converting to int8 jit...")
@@ -182,9 +176,7 @@ def export_to_torchscript_int8(
         qa_model = task.get_quantizable_model(model)
         post_quant = quantize_utils.PostQuantization(qa_model)
         post_quant.fuse_bn().set_quant_backend(args.post_quant_backend)
-        ptq_model = (
-            post_quant.prepare().calibrate_model(cur_loader, 1).convert_model()
-        )
+        ptq_model = post_quant.prepare().calibrate_model(cur_loader, 1).convert_model()
 
     print(ptq_model)
     ptq_model(*inputs)

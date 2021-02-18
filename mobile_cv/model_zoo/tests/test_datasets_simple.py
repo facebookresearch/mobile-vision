@@ -4,7 +4,6 @@
 import unittest
 
 import torch
-
 from mobile_cv.model_zoo.datasets import dataset_factory
 
 

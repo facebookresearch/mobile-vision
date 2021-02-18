@@ -5,11 +5,11 @@ import json
 import os
 
 import caffe2.proto.caffe2_pb2 as pb2
+import model_utils
 import numpy as np
 from caffe2.python import core
-
-import model_utils
 from lut_schema import LUTSchema, load_caffe2_op
+
 
 DB_DIR = "../"
 
@@ -50,17 +50,13 @@ def decode_dtype(caffe2_dtype):
 def get_ops_from_net(model, blobs, input_dims):
     # Extract all operators and corresponding input shapes from a model
     blobs = {x: blobs[x] for x in blobs if not isinstance(blobs[x], str)}
-    blobs.update(
-        {x: np.ones(input_dims[x], dtype=np.float32) for x in input_dims}
-    )
+    blobs.update({x: np.ones(input_dims[x], dtype=np.float32) for x in input_dims})
 
     blobs_dims, blobs_dtypes = model_utils.infer_model_shape_by_ops(
         model, extra_inputs=blobs, get_dtype=True
     )
 
-    blobs = {
-        x: np.zeros(blobs_dims[x], dtype=blobs_dtypes[x]) for x in blobs_dims
-    }
+    blobs = {x: np.zeros(blobs_dims[x], dtype=blobs_dtypes[x]) for x in blobs_dims}
 
     if type(model) == pb2.NetDef:
         proto = model
@@ -80,8 +76,7 @@ def get_ops_from_net(model, blobs, input_dims):
             np.array(blobs[str(param_blob)]).shape for param_blob in op_inputs
         ]
         param_dtypes = [
-            encode_dtype(str(blobs[str(param_blob)].dtype))
-            for param_blob in op_inputs
+            encode_dtype(str(blobs[str(param_blob)].dtype)) for param_blob in op_inputs
         ]
 
         input_shapes.append(param_shape)
@@ -218,17 +213,13 @@ class RunTimeAPI(object):
             device: device used for benchmarking
             wait: if not found, whether to wait for the result
         """
-        db_file = os.path.join(
-            self.db_dir, device + "-" + "op_lut_database.json"
-        )
+        db_file = os.path.join(self.db_dir, device + "-" + "op_lut_database.json")
 
         if self.current_db != db_file:
             self.current_db = db_file
             self.op_lut.load(db_file)
 
-        ops, input_shapes, input_dtypes = get_ops_from_net(
-            model, blobs, input_dims
-        )
+        ops, input_shapes, input_dtypes = get_ops_from_net(model, blobs, input_dims)
 
         for i in range(len(input_shapes)):
             input_shapes[i] = map(lambda x: list(x), input_shapes[i])
@@ -248,9 +239,7 @@ class RunTimeAPI(object):
                     model_name=str(model),
                 )
 
-                latency = self.get_op_runtime(
-                    op_query, mode=mode, verbose=verbose
-                )
+                latency = self.get_op_runtime(op_query, mode=mode, verbose=verbose)
 
                 op_time.append({"op": op_query, "time": latency})
 

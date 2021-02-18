@@ -6,6 +6,7 @@ import json
 import caffe2
 from caffe2.python import core
 
+
 # These two int8 operator args are not required to be matched.
 ARGS_IGNORE = ["Y_scale", "Y_zero_point"]
 

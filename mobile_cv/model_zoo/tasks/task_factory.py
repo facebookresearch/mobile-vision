@@ -16,6 +16,7 @@ To create a task, use
 
 import mobile_cv.common.misc.registry as registry
 
+
 TASK_FACTORY = registry.Registry("task_factory")
 
 

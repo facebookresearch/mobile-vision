@@ -1,18 +1,15 @@
 #!/usr/bin/env python3
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
 import copy
 import os
 
-import numpy as np
-import torch
-from torch.utils.mobile_optimizer import (
-    generate_mobile_module_lints,
-)  # optimize_for_mobile,
-
 import mobile_cv.arch.utils.jit_utils as ju
 import mobile_cv.common.misc.iter_utils as iu
-from mobile_cv.arch.utils import fuse_utils
-from mobile_cv.arch.utils import quantize_utils as qu
+import numpy as np
+import torch
+from mobile_cv.arch.utils import fuse_utils, quantize_utils as qu
+from torch.utils.mobile_optimizer import generate_mobile_module_lints
 
 
 def convert_torch_script(
@@ -104,9 +101,7 @@ def convert_int8_jit(
     #     else torch.quantization.get_default_qconfig()
     # )
     qconfig = torch.quantization.QConfig(
-        activation=torch.quantization.MinMaxObserver.with_args(
-            reduce_range=False
-        ),
+        activation=torch.quantization.MinMaxObserver.with_args(reduce_range=False),
         weight=torch.quantization.default_weight_observer,
     )
     quant_model = qu.quantize_model(

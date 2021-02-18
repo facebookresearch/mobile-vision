@@ -16,9 +16,7 @@ class TaskBase(ABC):
         """Return a pytorch model for the task"""
         pass
 
-    def get_quantizable_model(
-        self, full_model: torch.nn.Module
-    ) -> torch.nn.Module:
+    def get_quantizable_model(self, full_model: torch.nn.Module) -> torch.nn.Module:
         """Return a quantizabile pytorch model for the task
         full_model: model from `get_model()`
         """

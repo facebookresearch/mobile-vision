@@ -65,9 +65,7 @@ class Conv2dArgs(NamedTuple):
         )
 
 
-def _get_conv_2d_output_shape(
-    conv_args: Conv2dArgs, x: torch.Tensor
-) -> List[int]:
+def _get_conv_2d_output_shape(conv_args: Conv2dArgs, x: torch.Tensor) -> List[int]:
     # When input is empty, we want to return a empty tensor with "correct" shape,
     # So that the following operations will not panic
     # if they check for the shape of the tensor.

@@ -3,10 +3,9 @@
 
 import unittest
 
+import mobile_cv.arch.utils.jit_utils as ju
 import torch
 import torch.nn as nn
-
-import mobile_cv.arch.utils.jit_utils as ju
 
 
 class SubModule(nn.Module):

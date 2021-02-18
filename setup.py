@@ -12,9 +12,7 @@ def get_version():
         path.abspath(path.dirname(__file__)), "mobile_cv", "__init__.py"
     )
     init_py = open(init_py_path, "r").readlines()
-    version_line = [l.strip() for l in init_py if l.startswith("__version__")][
-        0
-    ]
+    version_line = [l.strip() for l in init_py if l.startswith("__version__")][0]
     version = version_line.split("=")[-1].strip().strip("'\"")
 
     # Used by CI to build nightly packages. Users should never use it.

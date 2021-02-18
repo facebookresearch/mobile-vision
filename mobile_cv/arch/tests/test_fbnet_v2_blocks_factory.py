@@ -5,11 +5,10 @@ import copy
 import unittest
 from typing import List, Tuple, Union
 
-import numpy as np
-import torch
-
 import mobile_cv.arch.fbnet_v2.fbnet_builder as fbnet_builder
 import mobile_cv.common.misc.iter_utils as iu
+import numpy as np
+import torch
 
 
 def _create_single_input(input_dims: List[int], device: str):
@@ -21,9 +20,7 @@ def _create_single_input(input_dims: List[int], device: str):
     return ret
 
 
-def _create_input(
-    input_dims: Union[List[int], Tuple[List[int], ...]], device: str
-):
+def _create_input(input_dims: Union[List[int], Tuple[List[int], ...]], device: str):
     """Could be List or Tuple of Lists"""
     if isinstance(input_dims, tuple):
         return tuple(_create_single_input(x, device) for x in input_dims)
@@ -214,9 +211,7 @@ class TestFBNetV2BlocksFactory(unittest.TestCase):
             return
         _compare_output_shape(self, output, gt_shape)
 
-        computed_str = _get_computed_tensor_to_list(
-            op_name, op_cfg_name, output
-        )
+        computed_str = _get_computed_tensor_to_list(op_name, op_cfg_name, output)
         if gt_value is not None:
             _compare_outputs(output, gt_value, error_msg=computed_str)
         else:
@@ -229,8 +224,7 @@ class TestFBNetV2BlocksFactory(unittest.TestCase):
         """ Make sures the primitives produce expected results """
         op_names = list(TEST_OP_EXPECTED_OUTPUT.keys())
         op_names = {
-            (x, "default") if isinstance(x, str) else x
-            for x in sorted(op_names)
+            (x, "default") if isinstance(x, str) else x for x in sorted(op_names)
         }
 
         for op_name_info in op_names:
