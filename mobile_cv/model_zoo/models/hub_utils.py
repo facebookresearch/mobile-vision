@@ -12,8 +12,8 @@ logger = logging.getLogger(__name__)
 
 
 def download_file(url, model_dir=None, progress=True):
-    """ Download url to `model_dir`
-        Append hash of the url to the filename to make it unique.
+    """Download url to `model_dir`
+    Append hash of the url to the filename to make it unique.
     """
     # Issue warning to move data if old env is set
     if os.getenv("TORCH_MODEL_ZOO"):
