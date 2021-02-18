@@ -4,9 +4,15 @@
 from .fbnet_modeldef_cls import MODEL_ARCH
 from .modeldef_utils import e1, e6
 
-BASIC_ARGS = {"relu_args": "swish"}
+BASIC_ARGS = {
+    "relu_args": "swish",
+    "width_divisor": 8,
+}
 
-IRF_CFG = {"less_se_channels": True, "zero_last_bn_gamma": True}
+IRF_CFG = {
+    "less_se_channels": True,
+    "zero_last_bn_gamma": True,
+}
 
 
 MODEL_ARCH_EFFICIENT_NET = {
@@ -255,6 +261,34 @@ MODEL_ARCH_EFFICIENT_NET = {
             ],
             # stage 6
             [["conv_k1", 2824, 1, 1]],
+        ],
+    },
+    "eff_l2": {
+        # width: 4.3, depth: 5.3, res: 800
+        "input_size": 800,
+        "basic_args": BASIC_ARGS,
+        "blocks": [
+            # [c, s, n, ...]
+            # stage 0
+            [["conv_k3", 152, 2, 1]],
+            # stage 1
+            [["ir_k3_se", 80, 1, 5, e1, IRF_CFG]],
+            # stage 2
+            [["ir_k3_se", 120, 2, 11, e6, IRF_CFG]],
+            # stage 3
+            [["ir_k5_se", 184, 2, 11, e6, IRF_CFG]],
+            # stage 4
+            [
+                ["ir_k3_se", 360, 2, 16, e6, IRF_CFG],
+                ["ir_k5_se", 496, 1, 16, e6, IRF_CFG],
+            ],
+            # stage 5
+            [
+                ["ir_k5_se", 840, 2, 21, e6, IRF_CFG],
+                ["ir_k3_se", 1392, 1, 5, e6, IRF_CFG],
+            ],
+            # stage 6
+            [["conv_k1", 5520, 1, 1]],
         ],
     },
 }

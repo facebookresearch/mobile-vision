@@ -25,6 +25,8 @@ def create_test_irf(self, out_channels, op_args, input_shape, gt_output_dim):
         torch.Size([N, out_channels, gt_output_dim, gt_output_dim]),
     )
 
+    return op
+
 
 class TestIRFBlocks(unittest.TestCase):
     def test_irf_block(self):
@@ -131,3 +133,22 @@ class TestIRFBlocks(unittest.TestCase):
             input_shape=[N, C_in, input_dim, input_dim],
             gt_output_dim=input_dim * 2,
         )
+
+    def test_irf_block_width_divisor(self):
+        N, C_in, C_out = 2, 3, 4
+        input_dim = 8
+
+        op = create_test_irf(
+            self,
+            C_out,
+            op_args={
+                "expansion": 5,
+                "kernel_size": 3,
+                "stride": 2,
+                "width_divisor": 8,
+            },
+            input_shape=[N, C_in, input_dim, input_dim],
+            gt_output_dim=input_dim // 2,
+        )
+        print(op)
+        self.assertEqual(op.dw.out_channels, 16)

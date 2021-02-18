@@ -12,11 +12,13 @@ import mobile_cv.lut.lib.pt.flops_utils as flops_utils
 
 def _create_and_run(self, arch_name, model_arch):
     arch = fbnet_builder.unify_arch_def(model_arch, ["blocks"])
-    builder = fbnet_builder.FBNetBuilder()
+    builder = fbnet_builder.FBNetBuilder(
+        basic_args=arch.get("basic_args", None)
+    )
     model = builder.build_blocks(arch["blocks"], dim_in=3)
     model.eval()
     res = model_arch.get("input_size", 224)
-    inputs = torch.zeros([1, 3, res, res])
+    inputs = (torch.zeros([1, 3, res, res]),)
     output = flops_utils.print_model_flops(model, inputs)
     self.assertEqual(output.shape[0], 1)
 
@@ -35,12 +37,12 @@ class TestFBNetV2Archs(unittest.TestCase):
     def test_selected_arches(self):
         arch_factory = fbnet_modeldef_cls.MODEL_ARCH
         selected_archs = [
+            "fbnet_a",
+            "FBNetV2_F1",
+            "FBNetV2_L2",
+            "eff_0",
             "default",
             "mnv3",
-            "fbnet_a",
-            "fbnet_cse",
-            "eff_0",
-            "dmasking_l2_hs",
         ]
 
         for name in selected_archs:

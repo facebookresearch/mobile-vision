@@ -146,6 +146,7 @@ logger = logging.getLogger(__name__)
 
 
 def parse_block_cfg(block_op, out_channels, stride=1, repeat=1, *args):
+    args = tuple(dict(x) for x in args)
     assert all(isinstance(x, dict) for x in args), f"{args}"
     cfg = {"out_channels": out_channels, "stride": stride}
     [hp.update_dict(cfg, x) for x in args]
@@ -156,48 +157,48 @@ def parse_block_cfg(block_op, out_channels, stride=1, repeat=1, *args):
 
 
 def parse_block_cfgs(block_cfgs):
-    """ Parse block_cfgs like
+    """Parse block_cfgs like
+        [
             [
-                [
-                    ("ir_k3", 32, 2, 1)
-                ],
-                [
-                    (
-                        "ir_k3", 32, 2, 2,
-                        {"expansion": 6, "dw_skip_bnrelu": True},
-                        {"width_divisor": 8}
-                    ),
-                    ["conv_k1", 16, 1, 1]
-                ],
-            ]
-        to:
+                ("ir_k3", 32, 2, 1)
+            ],
             [
-                [
-                    {
-                        "block_op": "ir_k3",
-                        "block_cfg": {"out_channels": 32, "stride": 2}
-                        "repeat: 1,
-                    }
-                ],
-                [
-                    {
-                        "block_op": "ir_k3",
-                        "block_cfg": {
-                            "out_channels": 32, "stride": 2,
-                            "expansion": 6, "dw_skip_bnrelu": True,
-                            "width_divisor": 8
-                        },
-                        "repeat": 2,
+                (
+                    "ir_k3", 32, 2, 2,
+                    {"expansion": 6, "dw_skip_bnrelu": True},
+                    {"width_divisor": 8}
+                ),
+                ["conv_k1", 16, 1, 1]
+            ],
+        ]
+    to:
+        [
+            [
+                {
+                    "block_op": "ir_k3",
+                    "block_cfg": {"out_channels": 32, "stride": 2}
+                    "repeat: 1,
+                }
+            ],
+            [
+                {
+                    "block_op": "ir_k3",
+                    "block_cfg": {
+                        "out_channels": 32, "stride": 2,
+                        "expansion": 6, "dw_skip_bnrelu": True,
+                        "width_divisor": 8
                     },
-                    {
-                        "block_op": "conv_k1",
-                        "block_cfg": {"out_channels": 16, "stride": 1},
-                        "repeat": 1,
-                    },
-                ]
+                    "repeat": 2,
+                },
+                {
+                    "block_op": "conv_k1",
+                    "block_cfg": {"out_channels": 16, "stride": 1},
+                    "repeat": 1,
+                },
             ]
-        The optional cfgs in each block (dicts) will be merged together in the
-          order they appear in the dict.
+        ]
+    The optional cfgs in each block (dicts) will be merged together in the
+      order they appear in the dict.
     """
     assert isinstance(block_cfgs, list)
     ret = []
@@ -224,9 +225,9 @@ def _check_lists_equal_size(*args):
 
 
 def expand_repeats(blocks_info):
-    """ Expand repeats in block cfg to multiple blocks and remove `_repeat_`
-        Special handling for stride when repeat > 1 that the additionally expanded
-            blocks will have stride 1
+    """Expand repeats in block cfg to multiple blocks and remove `_repeat_`
+    Special handling for stride when repeat > 1 that the additionally expanded
+        blocks will have stride 1
     """
     _check_is_list(blocks_info)
     ret = []
@@ -253,8 +254,8 @@ def expand_repeats(blocks_info):
 
 
 def flatten_stages(blocks_info):
-    """ Flatten the blocks info from a list of list to a list
-        Add 'stage_idx' and 'block_idx' to the blocks
+    """Flatten the blocks info from a list of list to a list
+    Add 'stage_idx' and 'block_idx' to the blocks
     """
     _check_is_list(blocks_info)
     ret = []
@@ -268,24 +269,24 @@ def flatten_stages(blocks_info):
 
 
 def unify_arch_def_blocks(arch_def_blocks):
-    """ unify an arch_def list
-        [
-            # [op, c, s, n, ...]
-            # stage 0
-            [("conv_k3", 32, 2, 1)],
-            # stage 1
-            [("ir_k3", 16, 1, 1, e1)],
-        ]
-        to
-        [
-            {
-                "stage_idx": idx,
-                "block_idx": idx,
-                "block_cfg": {"out_channels": 32, "stride": 1, ...},
-                "block_op": "conv_k3",
-            },
-            {}, ...
-        ]
+    """unify an arch_def list
+    [
+        # [op, c, s, n, ...]
+        # stage 0
+        [("conv_k3", 32, 2, 1)],
+        # stage 1
+        [("ir_k3", 16, 1, 1, e1)],
+    ]
+    to
+    [
+        {
+            "stage_idx": idx,
+            "block_idx": idx,
+            "block_cfg": {"out_channels": 32, "stride": 1, ...},
+            "block_op": "conv_k3",
+        },
+        {}, ...
+    ]
     """
     assert isinstance(arch_def_blocks, list)
 
@@ -297,28 +298,28 @@ def unify_arch_def_blocks(arch_def_blocks):
 
 
 def unify_arch_def(arch_def, unify_names):
-    """ unify an arch_def list
-        {
-            "blocks": [
-                # [op, c, s, n, ...]
-                # stage 0
-                [("conv_k3", 32, 2, 1)],
-                # stage 1
-                [("ir_k3", 16, 1, 1, e1)],
-            ]
-        }
-        to
-        [
-            "blocks": [
-                {
-                    "stage_idx": idx,
-                    "block_idx": idx,
-                    "block_cfg": {"out_channels": 32, "stride": 1, ...},
-                    "block_op": "conv_k3",
-                },
-                {}, ...
-            ],
+    """unify an arch_def list
+    {
+        "blocks": [
+            # [op, c, s, n, ...]
+            # stage 0
+            [("conv_k3", 32, 2, 1)],
+            # stage 1
+            [("ir_k3", 16, 1, 1, e1)],
         ]
+    }
+    to
+    [
+        "blocks": [
+            {
+                "stage_idx": idx,
+                "block_idx": idx,
+                "block_cfg": {"out_channels": 32, "stride": 1, ...},
+                "block_op": "conv_k3",
+            },
+            {}, ...
+        ],
+    ]
     """
     assert isinstance(arch_def, dict)
     assert isinstance(unify_names, list)
@@ -343,7 +344,7 @@ def get_num_stages(arch_def_blocks):
 
 
 def get_stages_dim_out(arch_def_blocks):
-    """ Calculates the output channels of stage_idx
+    """Calculates the output channels of stage_idx
 
     Assuming the blocks in a stage are ordered, returns the c of tcns in the
     last block of the stage by going through all blocks in arch def
@@ -361,7 +362,7 @@ def get_stages_dim_out(arch_def_blocks):
 
 
 def get_num_blocks_in_stage(arch_def_blocks):
-    """ Calculates the number of blocks in stage_idx
+    """Calculates the number of blocks in stage_idx
 
     Iterates over arch_def and counts the number of blocks
     Inputs: (dict) architecture definition
@@ -382,7 +383,14 @@ def count_strides(arch_def_blocks):
     assert all("block_cfg" in x for x in arch_def_blocks)
     ret = 1
     for stride in count_stride_each_block(arch_def_blocks):
-        ret *= stride
+        if isinstance(stride, list) or isinstance(ret, list):
+            if not isinstance(ret, list):
+                ret = [ret] * len(stride)
+            if not isinstance(stride, list):
+                stride = [stride] * len(ret)
+            ret = [x * y for x, y in zip(ret, stride)]
+        else:
+            ret *= stride
     return ret
 
 
@@ -392,11 +400,16 @@ def count_stride_each_block(arch_def_blocks):
     ret = []
     for block in arch_def_blocks:
         stride = block["block_cfg"]["stride"]
-        assert stride != 0, stride
-        if stride > 0:
-            ret.append(stride)
+
+        def parse_stride(stride):
+            assert stride != 0, stride
+            return stride if stride > 0 else -1.0 / stride
+
+        if isinstance(stride, list):
+            ret_entry = [parse_stride(x) for x in stride]
         else:
-            ret.append(1.0 / -stride)
+            ret_entry = parse_stride(stride)
+        ret.append(ret_entry)
     return ret
 
 
@@ -424,20 +437,32 @@ def update_with_block_kwargs(dest, block):
 
 
 class FBNetBuilder(object):
-    def __init__(self, width_ratio=1.0, bn_args="bn", width_divisor=1):
+    def __init__(
+        self, width_ratio=1.0, bn_args=None, width_divisor=1, basic_args=None
+    ):
         self.width_ratio = width_ratio
         self.last_depth = -1
-        self.width_divisor = width_divisor
         # basic arguments that will be provided to all primitivies, they could be
         #   overrided by primitive parameters
         self.basic_args = {
-            "bn_args": hp.unify_args(bn_args),
+            **({"bn_args": hp.unify_args(bn_args)} if bn_args else {}),
             "width_divisor": width_divisor,
         }
+        if basic_args is not None:
+            assert isinstance(basic_args, dict)
+            self.add_basic_args(**basic_args)
+
+    @property
+    def width_divisor(self):
+        return self.basic_args["width_divisor"]
+
+    @width_divisor.setter
+    def width_divisor(self, val):
+        self.basic_args["width_divisor"] = val
 
     def add_basic_args(self, **kwargs):
-        """ args that will be passed to all primitives, they could be
-              overrided by primitive parameters
+        """args that will be passed to all primitives, they could be
+        overrided by primitive parameters
         """
         hp.update_dict(self.basic_args, kwargs)
 
@@ -449,7 +474,7 @@ class FBNetBuilder(object):
         prefix_name="xif",
         **kwargs,
     ):
-        """ blocks: [{}, {}, ...]
+        """blocks: [{}, {}, ...]
 
         Inputs: (list(int)) stages to add
                 (list(int)) if block[0] is not connected to the most
@@ -478,27 +503,40 @@ class FBNetBuilder(object):
             block_cfg = block["block_cfg"]
             cur_kwargs = update_with_block_kwargs(copy.deepcopy(kwargs), block)
             nnblock = self.build_block(
-                block_op, block_cfg, dim_in=None, **cur_kwargs
+                block_op, block_cfg, in_channels=None, **cur_kwargs
             )
             nn_name = f"{prefix_name}{stage_idx}_{block_idx}"
-            assert nn_name not in modules
+            assert nn_name not in modules, f"{nn_name} existed in {modules}"
             modules[nn_name] = nnblock
         ret = nn.Sequential(modules)
         ret.out_channels = self.last_depth
         return ret
 
-    def build_block(self, block_op, block_cfg, dim_in=None, **kwargs):
-        if dim_in is None:
-            dim_in = self.last_depth
+    def build_block(self, block_op, block_cfg, in_channels=None, **kwargs):
         assert "out_channels" in block_cfg
         block_cfg = copy.deepcopy(block_cfg)
         out_channels = block_cfg.pop("out_channels")
-        out_channels = self._get_divisible_width(
-            out_channels * self.width_ratio
-        )
+
+        # width_divisor should only be applied to computed values
+        if "width_ratio" in block_cfg:
+            width_ratio = block_cfg["width_ratio"]
+            del block_cfg["width_ratio"]
+        else:
+            width_ratio = self.width_ratio
+        if width_ratio != 1.0:
+            out_channels = self._get_divisible_width(out_channels * width_ratio)
+
         # dicts appear later will override the configs in the earlier ones
-        new_kwargs = hp.get_merged_dict(self.basic_args, block_cfg, kwargs)
-        ret = PRIMITIVES.get(block_op)(dim_in, out_channels, **new_kwargs)
+        new_kwargs = hp.get_merged_dict(
+            {"in_channels": self.last_depth},
+            self.basic_args,
+            block_cfg,
+            kwargs,
+            {"in_channels": in_channels} if in_channels is not None else {},
+        )
+        in_channels = new_kwargs.pop("in_channels")
+
+        ret = PRIMITIVES.get(block_op)(in_channels, out_channels, **new_kwargs)
         self.last_depth = getattr(ret, "out_channels", out_channels)
         return ret
 
