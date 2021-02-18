@@ -138,8 +138,7 @@ class TestFlopsEstimation(unittest.TestCase):
         self.assertEqual(unique_types, gt_types)
 
     def test_duplicated(self):
-        """ Make sure handles subclasses propertly for mock
-        """
+        """Make sure handles subclasses propertly for mock"""
         model = nn.Sequential(
             M1(), M2(), nn.Conv2d(3, 4, 3), nn.ConvTranspose2d(4, 4, 3), M1()
         )

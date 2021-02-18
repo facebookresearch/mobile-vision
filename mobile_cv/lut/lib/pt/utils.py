@@ -7,12 +7,10 @@ from . import pt_converter
 
 
 class ModuleHook(object):
-    """ Hook for nn.Module that will expire after running `life_count` times
-    """
+    """Hook for nn.Module that will expire after running `life_count` times"""
 
     def __init__(self, hook_func, life_count=-1):
-        """ will never expire if life_count <= 0
-        """
+        """will never expire if life_count <= 0"""
         self.hook_func = hook_func
         self.max_count = life_count
         self.handle = None
@@ -70,8 +68,8 @@ class ModuleData(object):
         self.data[id(module)] = info
 
     def __getitem__(self, key):
-        """ Get a subset of ModuleData with values from `key` only
-            Set to None if `key` does not exist
+        """Get a subset of ModuleData with values from `key` only
+        Set to None if `key` does not exist
         """
         ret_data = {x: y.get(key, None) for x, y in self.data.items()}
         return ModuleData(ret_data)
@@ -81,8 +79,8 @@ class ModuleData(object):
 
 
 class NestedModuleHook(object):
-    """ Apply hooks to module and/or its children, store hook output in self.data
-        The stored hook data will be returned if with is used
+    """Apply hooks to module and/or its children, store hook output in self.data
+    The stored hook data will be returned if with is used
     """
 
     def __init__(self, hook_func, leaf_only=True, life_count=-1):
@@ -98,8 +96,8 @@ class NestedModuleHook(object):
         self.remove_hook()
 
     def set_callback(self, callback):
-        """ callback will be called after all hooks are called
-              callback(module, module_data)
+        """callback will be called after all hooks are called
+        callback(module, module_data)
         """
         assert not self.is_registered(), "set_callback before registering"
         self._callback = callback
