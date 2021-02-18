@@ -13,9 +13,10 @@ is implemented
 """
 
 import math
+from typing import List, NamedTuple, Tuple
 
 import torch
-from torch.nn.modules.utils import _ntuple, _pair
+from torch.nn.modules.utils import _pair
 
 
 def cat(tensors, dim=0):
@@ -41,15 +42,42 @@ class _NewEmptyTensorOp(torch.autograd.Function):
         return _NewEmptyTensorOp.apply(grad, shape), None
 
 
-def _get_conv_2d_output_shape(conv_args, x):
+class Conv2dArgs(NamedTuple):
+    kernel_size: Tuple[int, int]
+    padding: Tuple[int, int]
+    stride: Tuple[int, int]
+    dilation: Tuple[int, int]
+    out_channels: int
+
+    @classmethod
+    # pyre-fixme[47]: `Conv2dArgs` cannot be the type of `cls`.
+    def FromConv2d(cls: "Conv2dArgs", conv: torch.nn.Conv2d) -> "Conv2dArgs":
+        # pyre-fixme[29]: `Conv2dArgs` is not a function.
+        return cls(
+            # pyre-fixme[16]: `Conv2d` has no attribute `kernel_size`.
+            conv.kernel_size,
+            conv.padding,
+            conv.stride,
+            # pyre-fixme[16]: `Conv2d` has no attribute `dilation`.
+            conv.dilation,
+            # pyre-fixme[16]: `Conv2d` has no attribute `out_channels`.
+            conv.out_channels,
+        )
+
+
+def _get_conv_2d_output_shape(
+    conv_args: Conv2dArgs, x: torch.Tensor
+) -> List[int]:
     # When input is empty, we want to return a empty tensor with "correct" shape,
     # So that the following operations will not panic
     # if they check for the shape of the tensor.
     # This computes the height and width of the output tensor
+    assert len(x.shape) == 4
+    x_res: Tuple[int, int] = (x.shape[2], x.shape[3])
     output_shape = [
         (i + 2 * p - (di * (k - 1) + 1)) // s + 1
         for i, p, di, k, s in zip(
-            x.shape[-2:],
+            x_res,
             conv_args.padding,
             conv_args.dilation,
             conv_args.kernel_size,
@@ -61,18 +89,20 @@ def _get_conv_2d_output_shape(conv_args, x):
 
 
 class Conv2dEmptyOutput(torch.nn.Module):
-    def __init__(self, conv_op):
+    def __init__(self, conv_op: torch.nn.Conv2d):
         super().__init__()
         assert isinstance(conv_op, torch.nn.Conv2d)
-        self.padding = conv_op.padding
-        self.dilation = conv_op.dilation
-        self.kernel_size = conv_op.kernel_size
-        self.stride = conv_op.stride
-        self.out_channels = conv_op.out_channels
+        self.conv_args: Conv2dArgs = Conv2dArgs.FromConv2d(conv_op)
 
+    # NOTE: `torch.autograd.Function` (used for empty batch) is not supported
+    # for scripting now, so we skip it in scripting mode
+    # We should remove empty batch function after empty batch is fully supported
+    # by pytorch
+    # See https://github.com/pytorch/pytorch/issues/22329
+    @torch.jit.unused
     def forward(self, x):
         assert x.numel() == 0, "Only handle empty batch"
-        output_shape = _get_conv_2d_output_shape(self, x)
+        output_shape = _get_conv_2d_output_shape(Conv2dArgs(*self.conv_args), x)
         return _NewEmptyTensorOp.apply(x, output_shape)
 
 
@@ -91,10 +121,6 @@ class Conv2d(torch.nn.Conv2d):
         self.activation = activation
 
     def forward(self, x):
-        if x.numel() == 0:
-            output_shape = _get_conv_2d_output_shape(self, x)
-            return _NewEmptyTensorOp.apply(x, output_shape)
-
         x = super().forward(x)
         if self.norm is not None:
             x = self.norm(x)
@@ -124,15 +150,7 @@ class ConvTranspose2d(torch.nn.ConvTranspose2d):
         return _NewEmptyTensorOp.apply(x, output_shape)
 
 
-class BatchNorm2d(torch.nn.BatchNorm2d):
-    def forward(self, x):
-        if x.numel() > 0:
-            return super(BatchNorm2d, self).forward(x)
-        # get output shape
-        output_shape = x.shape
-        return _NewEmptyTensorOp.apply(x, output_shape)
-
-
+# pyre-fixme[11]: Annotation `AvgPool2d` is not defined as a type.
 class AvgPool2d(torch.nn.AvgPool2d):
     def forward(self, x):
         if x.numel() > 0:
@@ -152,6 +170,7 @@ class AvgPool2d(torch.nn.AvgPool2d):
         return _NewEmptyTensorOp.apply(x, output_shape)
 
 
+# pyre-fixme[11]: Annotation `GroupNorm` is not defined as a type.
 class GroupNorm(torch.nn.GroupNorm):
     def forward(self, x):
         if x.numel() > 0:
@@ -160,46 +179,3 @@ class GroupNorm(torch.nn.GroupNorm):
         # get output shape
         output_shape = x.shape
         return _NewEmptyTensorOp.apply(x, output_shape)
-
-
-def interpolate(
-    input, size=None, scale_factor=None, mode="nearest", align_corners=None
-):
-    if input.numel() > 0:
-        return torch.nn.functional.interpolate(
-            input, size, scale_factor, mode, align_corners
-        )
-
-    def _check_size_scale_factor(dim):
-        if size is None and scale_factor is None:
-            raise ValueError("either size or scale_factor should be defined")
-        if size is not None and scale_factor is not None:
-            raise ValueError(
-                "only one of size or scale_factor should be defined"
-            )
-        if (
-            scale_factor is not None
-            and isinstance(scale_factor, tuple)
-            and len(scale_factor) != dim
-        ):
-            raise ValueError(
-                "scale_factor shape must match input shape. "
-                "Input is {}D, scale_factor size is {}".format(
-                    dim, len(scale_factor)
-                )
-            )
-
-    def _output_size(dim):
-        _check_size_scale_factor(dim)
-        if size is not None:
-            return size
-        scale_factors = _ntuple(dim)(scale_factor)
-        # math.floor might return float in py2.7
-        return [
-            int(math.floor(input.size(i + 2) * scale_factors[i]))
-            for i in range(dim)
-        ]
-
-    output_shape = tuple(_output_size(2))
-    output_shape = input.shape[:-2] + output_shape
-    return _NewEmptyTensorOp.apply(input, output_shape)

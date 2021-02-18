@@ -24,7 +24,12 @@ def _ex(x, always_pw=None):
     return ret
 
 
+e12 = _ex(12)
+e11 = _ex(11)
+e10 = _ex(10)
+e9 = _ex(9)
 e6 = _ex(6)
+e5 = _ex(5)
 e4 = _ex(4)
 e3 = _ex(3)
 e2 = _ex(2)

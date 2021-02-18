@@ -30,7 +30,7 @@ class TestFBNetV2Quantize(unittest.TestCase):
                 [("conv_k3", 4, 2, 1, bn_args)],
                 # stage 1
                 [
-                    ("ir_k3", 8, 2, 2, e6, dw_skip_bnrelu, bn_args),
+                    ("ir_k3_sehsig", 8, 2, 2, e6, dw_skip_bnrelu, bn_args),
                     ("ir_k5", 8, 1, 1, e6, bn_args),
                 ],
             ]
@@ -55,9 +55,11 @@ class TestFBNetV2Quantize(unittest.TestCase):
         quant_model = torch.quantization.convert(model, inplace=False)
         print(f"Quant model {quant_model}")
 
+        # Run quantized model
         quant_output = quant_model(torch.rand([2, 3, 8, 8]))
-
-        # Make sure model can be traced
-        torch.jit.trace(quant_model, torch.randn([2, 3, 8, 8]))
-
         self.assertEqual(quant_output.shape, torch.Size([2, 8, 2, 2]))
+
+        # Trace quantized model
+        jit_model = torch.jit.trace(quant_model, data)
+        jit_quant_output = jit_model(torch.rand([2, 3, 8, 8]))
+        self.assertEqual(jit_quant_output.shape, torch.Size([2, 8, 2, 2]))

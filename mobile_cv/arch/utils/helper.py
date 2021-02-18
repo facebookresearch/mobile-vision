@@ -19,22 +19,39 @@ def get_divisible_by(num, divisible_by, min_val=None):
         min_val = divisible_by
     if divisible_by > 0 and num % divisible_by != 0:
         ret = int((py2_round(num / divisible_by) or 1) * divisible_by)
-        if ret < 0.9 * num:
+        if ret < 0.95 * num:
             ret += divisible_by
+    if ret < min_val:
+        ret = min_val
     return ret
 
 
 def filter_kwargs(func, kwargs, log_skipped=True):
-    """ Filter kwargs based on signature of `func`
-        Return arguments that matches `func`
+    """Filter kwargs based on signature of `func`
+    Return arguments that matches `func`
     """
     import inspect
 
     sig = inspect.signature(func)
+
+    # if *args or **kwargs in the function, return all arguments
+    param_types = {param.kind for param in sig.parameters.values()}
+    var_types = {
+        inspect.Parameter.VAR_KEYWORD,
+        inspect.Parameter.VAR_POSITIONAL,
+    }
+    if len(param_types.intersection(var_types)) > 0:
+        return kwargs
+
     filter_keys = [
         param.name
         for param in sig.parameters.values()
-        if param.kind == param.POSITIONAL_OR_KEYWORD
+        if param.kind
+        in [
+            param.POSITIONAL_OR_KEYWORD,
+            param.KEYWORD_ONLY,
+            param.POSITIONAL_ONLY,
+        ]
     ]
 
     if log_skipped:
@@ -53,8 +70,8 @@ def filter_kwargs(func, kwargs, log_skipped=True):
 
 
 def filtered_func(func, **additional_args):
-    """ Wrap `func` to take any input dict, arguments not used by `func` will be
-          ignored
+    """Wrap `func` to take any input dict, arguments not used by `func` will be
+    ignored
     """
 
     def ret_func(**kwargs):
@@ -76,17 +93,19 @@ def unify_args(aargs):
 
 
 def merge_unify_args(*args):
+    """Unify and merge the dicts, merge in the order of the list"""
     from collections import ChainMap
 
-    unified_args = [unify_args(x) for x in args]
+    # ChainMap merges the dicts from right to left, so swap the order here
+    unified_args = [unify_args(x) for x in reversed(args)]
     ret = dict(ChainMap(*unified_args))
     return ret
 
 
 def update_dict(dest, src):
-    """ Update the dict 'dest' recursively.
-        Elements in src could be a callable function with signature
-            f(key, curr_dest_val)
+    """Update the dict 'dest' recursively.
+    Elements in src could be a callable function with signature
+        f(key, curr_dest_val)
     """
     for key, val in src.items():
         if isinstance(val, collections.Mapping):

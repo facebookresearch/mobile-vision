@@ -5,39 +5,11 @@
 FBNet model inverse residual building block
 """
 
-import numbers
-
 import torch.nn as nn
 
 import mobile_cv.arch.utils.helper as hp
-import mobile_cv.common.misc.registry as registry
 
 from . import basic_blocks as bb
-
-RESIDUAL_REGISTRY = registry.Registry("residual_connect")
-
-
-def build_residual_connect(
-    name, in_channels, out_channels, stride, drop_connect_rate=None, **res_args
-):
-    if name is None:
-        return None
-    if name == "default":
-        assert isinstance(stride, (numbers.Number, tuple, list))
-        if isinstance(stride, (tuple, list)):
-            stride_one = all(x == 1 for x in stride)
-        else:
-            stride_one = stride == 1
-        if in_channels == out_channels and stride_one:
-            if drop_connect_rate is None:
-                return bb.TorchAdd()
-            else:
-                return bb.AddWithDropConnect(drop_connect_rate)
-        else:
-            return None
-    return RESIDUAL_REGISTRY.get(name)(
-        in_channels, out_channels, stride, **res_args
-    )
 
 
 class IRFBlock(nn.Module):
@@ -48,22 +20,29 @@ class IRFBlock(nn.Module):
         expansion=6,
         kernel_size=3,
         stride=1,
-        bias=True,
+        bias=False,
         conv_args="conv",
         bn_args="bn",
         relu_args="relu",
         se_args=None,
+        round_se_channels=False,
         res_conn_args="default",
         upsample_args="default",
         width_divisor=8,
         pw_args=None,
+        pw_bn_args=None,
         dw_args=None,
+        dw_bn_args=None,
         pwl_args=None,
+        pwl_bn_args=None,
         dw_skip_bnrelu=False,
+        skip_pwl_bn=False,
         pw_groups=1,
+        dw_group_ratio=1,  # dw_group == mid_channels // dw_group_ratio
+        pwl_groups=1,
         always_pw=False,
         less_se_channels=False,
-        zero_last_bn_gamma=True,
+        zero_last_bn_gamma=False,
         drop_connect_rate=None,
     ):
         super().__init__()
@@ -76,7 +55,7 @@ class IRFBlock(nn.Module):
             in_channels * expansion, width_divisor
         )
 
-        res_conn = build_residual_connect(
+        res_conn = bb.build_residual_connect(
             in_channels=in_channels,
             out_channels=out_channels,
             stride=stride,
@@ -98,7 +77,7 @@ class IRFBlock(nn.Module):
                     "groups": pw_groups,
                     **hp.merge_unify_args(conv_args, pw_args),
                 },
-                bn_args=bn_args,
+                bn_args=hp.merge_unify_args(bn_args, pw_bn_args),
                 relu_args=relu_args,
             )
         if pw_groups > 1:
@@ -107,18 +86,26 @@ class IRFBlock(nn.Module):
         self.upsample, dw_stride = bb.build_upsample_neg_stride(
             stride=stride, **hp.unify_args(upsample_args)
         )
+
+        dw_padding = (
+            kernel_size // 2
+            if not (dw_args and "padding" in dw_args)
+            else dw_args.pop("padding")
+        )
         self.dw = bb.ConvBNRelu(
             in_channels=mid_channels,
             out_channels=mid_channels,
             conv_args={
                 "kernel_size": kernel_size,
                 "stride": dw_stride,
-                "padding": kernel_size // 2,
-                "groups": mid_channels,
+                "padding": dw_padding,
+                "groups": mid_channels // dw_group_ratio,
                 "bias": bias,
                 **hp.merge_unify_args(conv_args, dw_args),
             },
-            bn_args=bn_args if not dw_skip_bnrelu else None,
+            bn_args=hp.merge_unify_args(bn_args, dw_bn_args)
+            if not dw_skip_bnrelu
+            else None,
             relu_args=relu_args if not dw_skip_bnrelu else None,
         )
         se_ratio = 0.25
@@ -126,7 +113,11 @@ class IRFBlock(nn.Module):
             se_ratio /= expansion
         self.se = bb.build_se(
             in_channels=mid_channels,
-            mid_channels=int(mid_channels * se_ratio),
+            mid_channels=(
+                int(mid_channels * se_ratio)
+                if not round_se_channels
+                else round(mid_channels * se_ratio)
+            ),
             width_divisor=width_divisor,
             **hp.merge(relu_args=relu_args, kwargs=hp.unify_args(se_args))
         )
@@ -138,17 +129,19 @@ class IRFBlock(nn.Module):
                 "stride": 1,
                 "padding": 0,
                 "bias": bias,
-                "groups": pw_groups,
+                "groups": pwl_groups,
                 **hp.merge_unify_args(conv_args, pwl_args),
             },
             bn_args={
-                **bn_args,
+                **hp.merge_unify_args(bn_args, pwl_bn_args),
                 **{
                     "zero_gamma": (
                         zero_last_bn_gamma if res_conn is not None else False
                     )
                 },
-            },
+            }
+            if not skip_pwl_bn
+            else None,
             relu_args=None,
         )
 
@@ -157,19 +150,19 @@ class IRFBlock(nn.Module):
 
     def forward(self, x):
         y = x
-        if self.pw:
+        if self.pw is not None:
             y = self.pw(y)
-        if self.shuffle:
+        if self.shuffle is not None:
             y = self.shuffle(y)
-        if self.upsample:
+        if self.upsample is not None:
             y = self.upsample(y)
-        if self.dw:
+        if self.dw is not None:
             y = self.dw(y)
-        if self.se:
+        if self.se is not None:
             y = self.se(y)
-        if self.pwl:
+        if self.pwl is not None:
             y = self.pwl(y)
-        if self.res_conn:
+        if self.res_conn is not None:
             y = self.res_conn(y, x)
         return y
 
@@ -182,13 +175,14 @@ class IRPoolBlock(nn.Module):
         expansion=6,
         kernel_size=-1,
         stride=1,
-        bias=True,
+        bias=False,
         pw_args="conv",
         pwl_args="conv",
         pool_args=None,
         bn_args="bn",
         relu_args="relu",
-        se_args=None,
+        se_args=None,  # se after pool
+        pw_se_args=None,  # se after pw conv
         res_conn_args="default",
         width_divisor=8,
         always_pw=False,
@@ -216,6 +210,16 @@ class IRPoolBlock(nn.Module):
                 relu_args=relu_args,
             )
 
+        pw_se_ratio = 0.25
+        if less_se_channels:
+            pw_se_ratio /= expansion
+        self.pw_se = bb.build_se(
+            in_channels=mid_channels,
+            mid_channels=(mid_channels * pw_se_ratio),
+            width_divisor=width_divisor,
+            **hp.merge_unify_args({"relu_args": relu_args}, pw_se_args)
+        )
+
         if kernel_size == -1:
             self.dw = nn.AdaptiveAvgPool2d(1)
         else:
@@ -230,8 +234,7 @@ class IRPoolBlock(nn.Module):
             in_channels=mid_channels,
             mid_channels=(mid_channels * se_ratio),
             width_divisor=width_divisor,
-            relu_args=relu_args,
-            **hp.unify_args(se_args)
+            **hp.merge_unify_args({"relu_args": relu_args}, se_args)
         )
         self.pwl = bb.ConvBNRelu(
             in_channels=mid_channels,
@@ -248,7 +251,7 @@ class IRPoolBlock(nn.Module):
             # has relu
             relu_args=relu_args,
         )
-        self.res_conn = build_residual_connect(
+        self.res_conn = bb.build_residual_connect(
             in_channels=in_channels,
             out_channels=out_channels,
             stride=stride,
@@ -260,6 +263,8 @@ class IRPoolBlock(nn.Module):
         y = x
         if self.pw:
             y = self.pw(y)
+        if self.pw_se:
+            y = self.pw_se(y)
         if self.dw:
             y = self.dw(y)
         if self.se:

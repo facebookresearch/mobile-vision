@@ -5,6 +5,8 @@
 FBNet model building blocks factory
 """
 
+from torch import nn
+
 import mobile_cv.arch.utils.helper as hp
 import mobile_cv.common.misc.registry as registry
 
@@ -15,8 +17,24 @@ PRIMITIVES = registry.Registry("blocks_factory")
 
 
 _PRIMITIVES = {
+    "noop": lambda in_channels, out_channels, stride, **kwargs: bb.TorchNoOp(),
+    "unsqueeze": lambda in_channels, out_channels, stride, dim, **kwargs: bb.TorchUnsqueeze(
+        dim
+    ),
+    "upsample": lambda in_channels, out_channels, stride, **kwargs: bb.Upsample(
+        scale_factor=stride, mode="nearest"
+    ),
+    "downsample": lambda in_channels, out_channels, stride, mode="bicubic", **kwargs: bb.Upsample(
+        scale_factor=(1.0 / stride), mode=mode
+    ),
     "skip": lambda in_channels, out_channels, stride, **kwargs: bb.Identity(
         in_channels, out_channels, stride
+    ),
+    "maxpool": lambda in_channels, out_channels, stride, kernel_size=3, padding=0, **kwargs: nn.MaxPool2d(  # noqa
+        kernel_size=kernel_size,
+        stride=stride,
+        padding=padding,
+        **hp.filter_kwargs(func=nn.MaxPool2d, kwargs=kwargs)
     ),
     "conv": lambda in_channels, out_channels, stride, **kwargs: bb.ConvBNRelu(
         in_channels,

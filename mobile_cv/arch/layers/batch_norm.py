@@ -56,6 +56,7 @@ class AllReduce(Function):
         return grad_output
 
 
+# pyre-fixme[11]: Annotation `BatchNorm2d` is not defined as a type.
 class NaiveSyncBatchNorm(nn.BatchNorm2d):
     """
     torch.nn.SyncBatchNorm has bugs. Use this before it is fixed.
@@ -83,4 +84,67 @@ class NaiveSyncBatchNorm(nn.BatchNorm2d):
         bias = self.bias - mean * scale
         scale = scale.reshape(1, -1, 1, 1)
         bias = bias.reshape(1, -1, 1, 1)
+        return input * scale + bias
+
+
+class NaiveSyncBatchNorm1d(nn.BatchNorm1d):
+    """
+    torch.nn.SyncBatchNorm has bugs. Use this before it is fixed.
+    only supports input shape of (N, C, L)
+    """
+
+    def forward(self, input):
+        if get_world_size() == 1 or not self.training:
+            return super().forward(input)
+
+        assert input.shape[0] > 0, "SyncBatchNorm does not support empty inputs"
+        C = input.shape[1]
+        mean = torch.mean(input, dim=[0, 2])
+        meansqr = torch.mean(input * input, dim=[0, 2])
+
+        vec = torch.cat([mean, meansqr], dim=0)
+        vec = AllReduce.apply(vec) * (1.0 / dist.get_world_size())
+
+        mean, meansqr = torch.split(vec, C)
+        var = meansqr - mean * mean
+        self.running_mean += self.momentum * (mean.detach() - self.running_mean)
+        self.running_var += self.momentum * (var.detach() - self.running_var)
+
+        invstd = torch.rsqrt(var + self.eps)
+        scale = self.weight * invstd
+        bias = self.bias - mean * scale
+        scale = scale.reshape(1, -1, 1)
+        bias = bias.reshape(1, -1, 1)
+        return input * scale + bias
+
+
+# pyre-fixme[11]: Annotation `BatchNorm3d` is not defined as a type.
+class NaiveSyncBatchNorm3d(nn.BatchNorm3d):
+    """
+    torch.nn.SyncBatchNorm has bugs. Use this before it is fixed.
+    only supports input shape of (N, C, T, H, W)
+    """
+
+    def forward(self, input):
+        if get_world_size() == 1 or not self.training:
+            return super().forward(input)
+
+        assert input.shape[0] > 0, "SyncBatchNorm does not support empty inputs"
+        C = input.shape[1]
+        mean = torch.mean(input, dim=[0, 2, 3, 4])
+        meansqr = torch.mean(input * input, dim=[0, 2, 3, 4])
+
+        vec = torch.cat([mean, meansqr], dim=0)
+        vec = AllReduce.apply(vec) * (1.0 / dist.get_world_size())
+
+        mean, meansqr = torch.split(vec, C)
+        var = meansqr - mean * mean
+        self.running_mean += self.momentum * (mean.detach() - self.running_mean)
+        self.running_var += self.momentum * (var.detach() - self.running_var)
+
+        invstd = torch.rsqrt(var + self.eps)
+        scale = self.weight * invstd
+        bias = self.bias - mean * scale
+        scale = scale.reshape(1, -1, 1, 1, 1)
+        bias = bias.reshape(1, -1, 1, 1, 1)
         return input * scale + bias

@@ -45,6 +45,107 @@ class TestFBNetV2BasicBlocks(unittest.TestCase):
         ).reshape([1, 2, 2, 2])
         np.testing.assert_allclose(output, gt_output, rtol=0, atol=1e-4)
 
+    def test_chooserightpath(self):
+        input_r = torch.randn(1, 2, 2, 2)
+        input_l = torch.randn(1, 2, 2, 2)
+        op = bb.ChooseRightPath()
+        output = op(input_l, input_r)
+        np.testing.assert_equal(output.numpy(), input_r.numpy())
+
+    def test_conv_bn_relu_upsample(self):
+        # currently empty batch for dw conv is not supported
+        op = bb.ConvBNRelu(4, 4, stride=-2, kernel_size=3, padding=1)
+
+        input_size = [1, 4, 4, 4]
+        inputs = torch.rand(input_size)
+        output = op(inputs)
+        self.assertEqual(output.shape, torch.Size([1, 4, 8, 8]))
+
+    def test_channel_shuffle(self):
+        # currently empty batch for dw conv is not supported
+        op = bb.ChannelShuffle(2)
+
+        #  4D tensor
+        x = torch.tensor(
+            [
+                [
+                    [[1, 2], [3, 4]],
+                    [[5, 6], [7, 8]],
+                    [[9, 10], [11, 12]],
+                    [[13, 14], [15, 16]],
+                ]
+            ]
+        )
+        y_ref = torch.tensor(
+            [
+                [
+                    [[1, 2], [3, 4]],
+                    [[9, 10], [11, 12]],
+                    [[5, 6], [7, 8]],
+                    [[13, 14], [15, 16]],
+                ]
+            ]
+        )
+        y = op(x)
+        np.testing.assert_equal(y.numpy(), y_ref.numpy())
+
+    def test_torchwhere(self):
+        """Check that the torchwhere wrapper is the same as the torch.where"""
+        op = bb.TorchWhere()
+        input0 = torch.randn(5, 3)
+        input1 = torch.randn(5, 3)
+        condition = input0 > 0
+        np.testing.assert_equal(
+            op(condition, input0, input1).numpy(),
+            torch.where(condition, input0, input1).numpy(),
+        )
+
+    def test_ignorewhereselectx1(self):
+        """Check that module returns x1"""
+        op = bb.IgnoreWhereSelectX1()
+        input0 = torch.randn(5, 3)
+        input1 = torch.randn(5, 3)
+        condition = input0 > 0
+        np.testing.assert_equal(
+            op(condition, input0, input1).numpy(), input0.numpy()
+        )
+
+    def test_se(self):
+        """Test 2d se module"""
+        op = bb.build_se("se", 8, 2).eval()
+        print(op)
+        input0 = torch.randn(2, 8, 4, 4)
+        out = op(input0)
+        self.assertEqual(out.shape, torch.Size([2, 8, 4, 4]))
+
+        op = bb.build_se("se", 8, 2, fc=True).eval()
+        print(op)
+        out = op(input0)
+        self.assertEqual(out.shape, torch.Size([2, 8, 4, 4]))
+
+        op = bb.build_se("se_hsig", 8, 2).eval()
+        print(op)
+        out = op(input0)
+        self.assertEqual(out.shape, torch.Size([2, 8, 4, 4]))
+
+    def test_se3d(self):
+        """Test 3d se module"""
+        op = bb.build_se("se3d", 8, 2).eval()
+        print(op)
+        input0 = torch.randn(2, 8, 4, 4, 4)
+        out = op(input0)
+        self.assertEqual(out.shape, torch.Size([2, 8, 4, 4, 4]))
+
+        op = bb.build_se("se3d", 8, 2, fc=True).eval()
+        print(op)
+        out = op(input0)
+        self.assertEqual(out.shape, torch.Size([2, 8, 4, 4, 4]))
+
+        op = bb.build_se("se3d_hsig", 8, 2).eval()
+        print(op)
+        out = op(input0)
+        self.assertEqual(out.shape, torch.Size([2, 8, 4, 4, 4]))
+
 
 class TestFBNetV2BasicBlocksEmptyInput(unittest.TestCase):
     def test_conv_bn_relu_empty_input(self):
@@ -60,3 +161,48 @@ class TestFBNetV2BasicBlocksEmptyInput(unittest.TestCase):
         inputs = torch.rand(input_size)
         output = op(inputs)
         self.assertEqual(output.shape, torch.Size([2, 4, 2, 2]))
+
+    def test_conv_bn_relu_upsample_empty_input(self):
+        op = bb.ConvBNRelu(4, 4, stride=-2, kernel_size=3, padding=1)
+
+        input_size = [0, 4, 4, 4]
+        inputs = torch.rand(input_size)
+        output = op(inputs)
+        self.assertEqual(output.shape, torch.Size([0, 4, 8, 8]))
+
+    def test_dw_conv_empty_input(self):
+        op = torch.nn.Conv2d(4, 4, stride=2, kernel_size=3, padding=1, groups=4)
+
+        input_size = [0, 4, 4, 4]
+        inputs = torch.rand(input_size)
+        output = op(inputs)
+        self.assertEqual(output.shape, torch.Size([0, 4, 2, 2]))
+
+        input_size = [2, 4, 4, 4]
+        inputs = torch.rand(input_size)
+        output = op(inputs)
+        self.assertEqual(output.shape, torch.Size([2, 4, 2, 2]))
+
+    def test_bn_empty_input(self):
+        op = torch.nn.BatchNorm2d(1)
+
+        input_size = [0, 1, 4, 4]
+        inputs = torch.rand(input_size)
+        output = op(inputs)
+        self.assertEqual(output.shape, torch.Size([0, 1, 4, 4]))
+
+        input_size = [2, 1, 4, 4]
+        inputs = torch.rand(input_size)
+        output = op(inputs)
+        self.assertEqual(output.shape, torch.Size([2, 1, 4, 4]))
+
+    def test_interpolate_empty_input(self):
+        input_size = [0, 1, 4, 4]
+        inputs = torch.rand(input_size)
+        output = torch.nn.functional.interpolate(inputs, scale_factor=0.5)
+        self.assertEqual(output.shape, torch.Size([0, 1, 2, 2]))
+
+        input_size = [2, 1, 4, 4]
+        inputs = torch.rand(input_size)
+        output = torch.nn.functional.interpolate(inputs, scale_factor=0.5)
+        self.assertEqual(output.shape, torch.Size([2, 1, 2, 2]))
