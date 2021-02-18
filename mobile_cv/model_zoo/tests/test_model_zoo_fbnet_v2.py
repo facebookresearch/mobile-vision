@@ -21,6 +21,13 @@ class TestModelZooFBNetV2(unittest.TestCase):
             "FBNetV2_F4",
             "FBNetV2_L1",
             "FBNetV2_L2",
+            "FBNetV3_A",
+            "FBNetV3_B",
+            "FBNetV3_C",
+            "FBNetV3_D",
+            "FBNetV3_E",
+            "FBNetV3_F",
+            "FBNetV3_G",
         ]:
             with self.subTest(arch=name):
                 print(f"Testing {name}...")
