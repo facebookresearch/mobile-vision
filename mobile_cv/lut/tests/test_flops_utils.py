@@ -3,10 +3,9 @@
 
 import unittest
 
+import mobile_cv.lut.lib.pt.flops_utils as flops_utils
 import torch
 import torch.nn as nn
-
-import mobile_cv.lut.lib.pt.flops_utils as flops_utils
 
 
 class EmptyJitScriptModule(torch.jit.ScriptModule):

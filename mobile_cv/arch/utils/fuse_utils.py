@@ -4,21 +4,21 @@
 import copy
 import typing
 
+import mobile_cv.arch.fbnet_v2.basic_blocks as bb
+import mobile_cv.common.misc.registry as registry
 import torch
 import torch.nn as nn
+from mobile_cv.arch.layers.batch_norm import (
+    NaiveSyncBatchNorm,
+    NaiveSyncBatchNorm1d,
+    NaiveSyncBatchNorm3d,
+)
 from torch.quantization.fuse_modules import (
     fuse_conv_bn,
     fuse_conv_bn_relu,
     fuse_known_modules,
 )
 
-import mobile_cv.arch.fbnet_v2.basic_blocks as bb
-import mobile_cv.common.misc.registry as registry
-from mobile_cv.arch.layers.batch_norm import (
-    NaiveSyncBatchNorm,
-    NaiveSyncBatchNorm1d,
-    NaiveSyncBatchNorm3d,
-)
 
 # Registry to get the names for fusing the supported module
 # returns the list of list for the sub module to fuse
@@ -44,7 +44,8 @@ CONV_BN_RELU_SUPPORTED_FUSING_TYPES = {
 }
 
 
-# TODO: Is this the same as fuse_known_modules? should we just refactor this using `additioanl_fuser_method_mapping`?
+# TODO: Is this the same as fuse_known_modules? should we just refactor this
+# using `additioanl_fuser_method_mapping`?
 def fuse_more_modules(
     mod_list: typing.List[nn.Module], additional_fuser_method_mapping=None
 ):

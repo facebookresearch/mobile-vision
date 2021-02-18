@@ -4,7 +4,6 @@
 import unittest
 
 import torch
-
 from mobile_cv.model_zoo.tasks import task_factory
 
 
@@ -22,9 +21,7 @@ class TestTaskGeneral(unittest.TestCase):
         count = 0
         for data in data_loader:
             self.assertEqual(len(data), 1)
-            self.assertEqual(
-                data[0].shape, torch.Size(dataset_args["input_shapes"][0])
-            )
+            self.assertEqual(data[0].shape, torch.Size(dataset_args["input_shapes"][0]))
             output = model(*data)
             self.assertEqual(output.shape, torch.Size([1, 1000]))
             count += 1

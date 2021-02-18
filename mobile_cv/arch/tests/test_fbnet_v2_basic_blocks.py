@@ -3,10 +3,9 @@
 
 import unittest
 
+import mobile_cv.arch.fbnet_v2.basic_blocks as bb
 import numpy as np
 import torch
-
-import mobile_cv.arch.fbnet_v2.basic_blocks as bb
 
 
 def _create_input(input_dims):
@@ -106,9 +105,7 @@ class TestFBNetV2BasicBlocks(unittest.TestCase):
         input0 = torch.randn(5, 3)
         input1 = torch.randn(5, 3)
         condition = input0 > 0
-        np.testing.assert_equal(
-            op(condition, input0, input1).numpy(), input0.numpy()
-        )
+        np.testing.assert_equal(op(condition, input0, input1).numpy(), input0.numpy())
 
     def test_se(self):
         """Test 2d se module"""

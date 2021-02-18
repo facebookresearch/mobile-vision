@@ -8,6 +8,7 @@ import os
 
 import torch
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -41,8 +42,6 @@ def download_file(url, model_dir=None, progress=True):
     cached_file = os.path.join(model_dir, filename)
     if not os.path.exists(cached_file):
         logger.info('Downloading: "{}" to {}\n'.format(url, cached_file))
-        torch.hub.download_url_to_file(
-            url, cached_file, None, progress=progress
-        )
+        torch.hub.download_url_to_file(url, cached_file, None, progress=progress)
 
     return cached_file

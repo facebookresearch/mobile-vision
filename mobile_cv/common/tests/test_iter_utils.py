@@ -16,9 +16,7 @@ class TestIterUtils(unittest.TestCase):
         self.assertEqual(list(iu.recursive_iterate({})), [])
 
     def test_recursive_iter_simple_no_wait_on_send(self):
-        self.assertEqual(
-            list(iu.recursive_iterate(None, wait_on_send=False)), [None]
-        )
+        self.assertEqual(list(iu.recursive_iterate(None, wait_on_send=False)), [None])
         self.assertEqual(
             list(iu.recursive_iterate([1, 2, None], wait_on_send=False)),
             [1, 2, None],
@@ -63,17 +61,13 @@ class TestIterUtils(unittest.TestCase):
         values = [{"k1": [1, 2, 3], "k2": ["v2", 3, "v4"], "k3": 5}]
         # List of ints are not considered as a list
         val_list = list(
-            iu.recursive_iterate(
-                values, seq_check_func=lambda x: not _is_int_list(x)
-            )
+            iu.recursive_iterate(values, seq_check_func=lambda x: not _is_int_list(x))
         )
         self.assertEqual(val_list, [[1, 2, 3], "v2", 3, "v4", 5])
 
     def test_recursive_iter_map_check_func(self):
         def _is_int_dict_key(x):
-            return isinstance(x, dict) and all(
-                isinstance(yk, int) for yk in x.keys()
-            )
+            return isinstance(x, dict) and all(isinstance(yk, int) for yk in x.keys())
 
         values = [{"k1": {1: 1, 2: 2, 3: 3}, "k2": ["v2", 3, "v4"], "k3": 5}]
         # dict where keys are ints are not considered as a map

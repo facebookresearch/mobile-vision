@@ -4,11 +4,10 @@
 import copy
 import unittest
 
-import torch
-import torch.nn as nn
-
 import mobile_cv.lut.lib.lut_ops as lut_ops
 import mobile_cv.lut.lib.pt.utils as pt_utils
+import torch
+import torch.nn as nn
 from mobile_cv.lut.lib.lut_schema import OpInfo
 
 
@@ -115,9 +114,7 @@ class TestPTUtils(unittest.TestCase):
 
             return _check_hook_output
 
-        with pt_utils.NestedModuleHook(_hook).register_forward_hook(
-            model
-        ) as data:
+        with pt_utils.NestedModuleHook(_hook).register_forward_hook(model) as data:
             model(input)
             model.apply(_get_check_result(data))
         self.assertEqual(sum(counts), 5)

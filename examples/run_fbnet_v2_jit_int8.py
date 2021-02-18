@@ -12,10 +12,9 @@ Usage:
 import urllib
 
 import torch
-from PIL import Image
-
 from mobile_cv.model_zoo.models.model_jit import model_jit
 from mobile_cv.model_zoo.models.preprocess import get_preprocess
+from PIL import Image
 
 
 def _get_input():

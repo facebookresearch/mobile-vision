@@ -16,7 +16,6 @@ Architectures with pretrained weights could be found in:
 """
 
 import torch
-
 from mobile_cv.model_zoo.models import hub_utils, model_zoo_factory, utils
 
 

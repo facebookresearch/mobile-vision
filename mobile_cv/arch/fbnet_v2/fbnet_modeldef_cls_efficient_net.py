@@ -4,6 +4,7 @@
 from .fbnet_modeldef_cls import MODEL_ARCH
 from .modeldef_utils import e1, e6
 
+
 BASIC_ARGS = {
     "relu_args": "swish",
     "width_divisor": 8,

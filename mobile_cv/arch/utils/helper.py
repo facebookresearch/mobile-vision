@@ -6,6 +6,7 @@ import copy
 import logging
 import math
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -57,9 +58,7 @@ def filter_kwargs(func, kwargs, log_skipped=True):
     if log_skipped:
         skipped_args = [x for x in kwargs.keys() if x not in filter_keys]
         if skipped_args:
-            logger.warning(
-                f"Arguments {skipped_args} skipped for op {func.__name__}"
-            )
+            logger.warning(f"Arguments {skipped_args} skipped for op {func.__name__}")
 
     filtered_dict = {
         filter_key: kwargs[filter_key]

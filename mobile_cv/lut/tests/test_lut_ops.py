@@ -98,13 +98,9 @@ class TestLutOps(unittest.TestCase):
         self.assertAlmostEqual(op1.get_flops(op1_input), 163840)
         self.assertAlmostEqual(op1.get_output_shape(op1_input), [[16, 2, 32]])
 
-        op1 = lut_ops.MultiheadAttention(
-            embed_dim=32, num_heads=4, kdim=64, vdim=16
-        )
+        op1 = lut_ops.MultiheadAttention(embed_dim=32, num_heads=4, kdim=64, vdim=16)
         op1_input = [[16, 2, 32], [8, 2, 64], [8, 2, 16]]
-        self.assertAlmostEqual(
-            op1.get_nparams(), 32 * 32 * 2 + 32 * 64 + 32 * 16
-        )
+        self.assertAlmostEqual(op1.get_nparams(), 32 * 32 * 2 + 32 * 64 + 32 * 16)
         self.assertAlmostEqual(op1.get_flops(op1_input), 122880)
         self.assertAlmostEqual(op1.get_output_shape(op1_input), [[16, 2, 32]])
 

@@ -38,9 +38,7 @@ def create_blobs_if_not_existed(blob_names):
             workspace.CreateBlob(str(xx))
 
 
-def load_model_pb(
-    net_file, init_file=None, is_run_init=True, is_create_net=True
-):
+def load_model_pb(net_file, init_file=None, is_run_init=True, is_create_net=True):
     net = core.Net("net")
     if net_file is not None:
         net.Proto().ParseFromString(open(net_file, "rb").read())
@@ -64,8 +62,8 @@ def load_model_pb(
 
 
 def create_fill_op(name, blob, device_option=None):
-    """ Create an operator to store the tensor 'blob',
-        return the operator
+    """Create an operator to store the tensor 'blob',
+    return the operator
     """
     kTypeNameMapper = {
         np.dtype("float32"): "GivenTensorFill",
@@ -122,8 +120,8 @@ def create_fill_op(name, blob, device_option=None):
 
 
 def get_ws_blobs(ws=None, blob_names=None):
-    """ Get blobs in 'blob_names' in workspace 'ws',
-        get all blobs if blob_names is None """
+    """Get blobs in 'blob_names' in workspace 'ws',
+    get all blobs if blob_names is None"""
     blobs = {}
     with ScopedWS(ws, False):
         if blob_names is None:
@@ -340,9 +338,7 @@ def infer_model_shape_by_ops_shape(
         print("Extra inputs:")
         for x in _extra_inputs:
             print("  {}: {}".format(x, _extra_inputs[x].shape))
-    return infer_model_shape_by_ops(
-        net, param_init_net, _extra_inputs, is_run_gpu
-    )
+    return infer_model_shape_by_ops(net, param_init_net, _extra_inputs, is_run_gpu)
 
 
 def get_device_option_cpu():

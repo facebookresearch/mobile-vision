@@ -3,9 +3,8 @@
 
 import unittest
 
-import torch
-
 import mobile_cv.arch.utils.misc as misc
+import torch
 
 
 class TestUtilsMisc(unittest.TestCase):

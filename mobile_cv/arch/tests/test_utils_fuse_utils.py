@@ -5,12 +5,11 @@ import copy
 import typing
 import unittest
 
-import numpy as np
-import torch
-
 import mobile_cv.arch.fbnet_v2.basic_blocks as bb
 import mobile_cv.arch.fbnet_v2.fbnet_builder as fbnet_builder
 import mobile_cv.arch.utils.fuse_utils as fuse_utils
+import numpy as np
+import torch
 from mobile_cv.arch.layers.batch_norm import (
     NaiveSyncBatchNorm,
     NaiveSyncBatchNorm1d,

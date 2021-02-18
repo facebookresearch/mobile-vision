@@ -106,22 +106,12 @@ class Conv2d(OpProperty):
     def get_output_shape(self, input_shape):
         N, C, H, W = input_shape[0][:]
         oH = int(
-            (
-                H
-                + self.padding[0] * 2
-                - self.dilation[0] * (self.kernel_size[0] - 1)
-                - 1
-            )
+            (H + self.padding[0] * 2 - self.dilation[0] * (self.kernel_size[0] - 1) - 1)
             // self.stride[0]
             + 1
         )
         oW = int(
-            (
-                W
-                + self.padding[1] * 2
-                - self.dilation[1] * (self.kernel_size[1] - 1)
-                - 1
-            )
+            (W + self.padding[1] * 2 - self.dilation[1] * (self.kernel_size[1] - 1) - 1)
             // self.stride[1]
             + 1
         )
@@ -194,12 +184,7 @@ class Conv1d(OpProperty):
     def get_output_shape(self, input_shape):
         N, _, L = input_shape[0][:]
         oL = int(
-            (
-                L
-                + self.padding[0] * 2
-                - self.dilation[0] * (self.kernel_size[0] - 1)
-                - 1
-            )
+            (L + self.padding[0] * 2 - self.dilation[0] * (self.kernel_size[0] - 1) - 1)
             // self.stride[0]
             + 1
         )
@@ -265,32 +250,17 @@ class Conv3d(OpProperty):
     def get_output_shape(self, input_shape):
         N, C, D, H, W = input_shape[0][:]
         oD = int(
-            (
-                D
-                + self.padding[0] * 2
-                - self.dilation[0] * (self.kernel_size[0] - 1)
-                - 1
-            )
+            (D + self.padding[0] * 2 - self.dilation[0] * (self.kernel_size[0] - 1) - 1)
             // self.stride[0]
             + 1
         )
         oH = int(
-            (
-                H
-                + self.padding[1] * 2
-                - self.dilation[1] * (self.kernel_size[1] - 1)
-                - 1
-            )
+            (H + self.padding[1] * 2 - self.dilation[1] * (self.kernel_size[1] - 1) - 1)
             // self.stride[1]
             + 1
         )
         oW = int(
-            (
-                W
-                + self.padding[2] * 2
-                - self.dilation[2] * (self.kernel_size[2] - 1)
-                - 1
-            )
+            (W + self.padding[2] * 2 - self.dilation[2] * (self.kernel_size[2] - 1) - 1)
             // self.stride[2]
             + 1
         )

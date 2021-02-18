@@ -16,6 +16,7 @@ To create a data loader from a dataset, use
 
 import mobile_cv.common.misc.registry as registry
 
+
 DATASET_FACTORY = registry.Registry("dataset_factory")
 
 

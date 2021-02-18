@@ -4,10 +4,9 @@
 import copy
 import unittest
 
-import torch
-
 import mobile_cv.arch.fbnet_v2.fbnet_builder as fbnet_builder
 import mobile_cv.arch.utils.quantize_utils as qu
+import torch
 from mobile_cv.arch.layers import NaiveSyncBatchNorm
 
 

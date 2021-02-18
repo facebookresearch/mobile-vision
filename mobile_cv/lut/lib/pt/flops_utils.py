@@ -20,9 +20,7 @@ class FlopsEstimation(object):
     def __init__(self, model):
         assert isinstance(model, torch.nn.Module)
         self.model = model
-        self._hook = utils.NestedModuleHook(
-            utils.collect_op_shape, leaf_only=False
-        )
+        self._hook = utils.NestedModuleHook(utils.collect_op_shape, leaf_only=False)
         self._patchers = []
         self._is_patched = False
         self._init_repr_shape()
@@ -93,9 +91,7 @@ class FlopsEstimation(object):
                 info_str = []
                 if info is not None:
                     # input and output shapes
-                    info_str = [
-                        f"{k}={v}" for k, v in info.items() if k in REPR_ITEMS
-                    ]
+                    info_str = [f"{k}={v}" for k, v in info.items() if k in REPR_ITEMS]
 
                 ret = orig_extra_repr(module)
                 info_str = ", ".join(info_str)
@@ -211,9 +207,7 @@ def print_model_flops(
     return output
 
 
-def get_model_flops(
-    model: torch.nn.Module, inputs: typing.Tuple[typing.Any, ...]
-):
+def get_model_flops(model: torch.nn.Module, inputs: typing.Tuple[typing.Any, ...]):
     """inputs: a list of inputs to the model, one for each argument for
     `model.forward()`
     """

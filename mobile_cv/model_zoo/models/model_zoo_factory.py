@@ -16,6 +16,7 @@ To create a model, use
 
 import mobile_cv.common.misc.registry as registry
 
+
 MODEL_ZOO_FACTORY = registry.Registry("model_zoo_factory")
 
 

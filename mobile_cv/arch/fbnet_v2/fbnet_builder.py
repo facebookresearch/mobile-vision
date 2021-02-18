@@ -136,11 +136,11 @@ import copy
 import logging
 from collections import OrderedDict
 
+import mobile_cv.arch.utils.helper as hp
 import torch.nn as nn
 
-import mobile_cv.arch.utils.helper as hp
-
 from .blocks_factory import PRIMITIVES
+
 
 logger = logging.getLogger(__name__)
 
@@ -437,9 +437,7 @@ def update_with_block_kwargs(dest, block):
 
 
 class FBNetBuilder(object):
-    def __init__(
-        self, width_ratio=1.0, bn_args=None, width_divisor=1, basic_args=None
-    ):
+    def __init__(self, width_ratio=1.0, bn_args=None, width_divisor=1, basic_args=None):
         self.width_ratio = width_ratio
         self.last_depth = -1
         # basic arguments that will be provided to all primitivies, they could be
@@ -541,7 +539,5 @@ class FBNetBuilder(object):
         return ret
 
     def _get_divisible_width(self, width):
-        ret = hp.get_divisible_by(
-            int(width), self.width_divisor, self.width_divisor
-        )
+        ret = hp.get_divisible_by(int(width), self.width_divisor, self.width_divisor)
         return ret

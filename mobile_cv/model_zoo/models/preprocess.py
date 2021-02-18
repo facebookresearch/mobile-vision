@@ -19,9 +19,7 @@ def get_preprocess(crop_res, resize_res=0):
             transforms.Resize(resize_res),
             transforms.CenterCrop(crop_res),
             transforms.ToTensor(),
-            transforms.Normalize(
-                mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
-            ),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
         ]
     )
     return preprocess

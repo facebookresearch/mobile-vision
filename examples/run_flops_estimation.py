@@ -28,9 +28,8 @@ FBNet(
     ...
 """
 
-import torch
-
 import mobile_cv.lut.lib.pt.flops_utils as flops_utils
+import torch
 from mobile_cv.model_zoo.models.fbnet_v2 import fbnet
 
 
