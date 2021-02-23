@@ -235,3 +235,93 @@ def swap_bn_to_syncbn(module):
     Note: this function is recursive, and it modifies module inplace.
     """
     _swap_bn(module, torch.nn.BatchNorm2d, NaiveSyncBatchNorm)
+
+
+
+class QuantizableModule(nn.Module):
+    """
+    This class helps create quantize/dequantize stubs that are needed for eager
+    mode quantization.
+    """
+
+    def __init__(self, eager_mode, qconfig=None, n_inputs=1, n_outputs=1, **kwargs):
+        super(QuantizableModule, self).__init__(**kwargs)
+        self.eager_mode = eager_mode
+        if self.eager_mode:
+            self.quant_stubs = QuantStubNested.FromCount(
+                n_inputs, stub_func=QuantStub, stub_func_args=[qconfig]
+            )
+            self.dequant_stubs = QuantStubNested.FromCount(
+                n_outputs, stub_func=DeQuantStub
+            )
+
+    @staticmethod
+    def quant_dequant(bypass_kwargs: typing.Optional[typing.List] = None):
+        """ wrap the forward function, run quant/dequant stubs before/after it """
+        bypass_kwargs = bypass_kwargs or []
+
+        def decorator(forward_func):
+            def quant_forward_dequant(self, *args, **kwargs):
+                assert isinstance(self, QuantizableModule)
+                if self.eager_mode:
+                    bypassed_kwargs = {x: kwargs.pop(x) for x in bypass_kwargs}
+                    (q_args, q_kwargs) = self.quant_stubs((args, kwargs))
+                    q_kwargs.update(bypassed_kwargs)
+                    q_outputs = forward_func(self, *q_args, **q_kwargs)
+                    return self.dequant_stubs(q_outputs)
+                else:
+                    return forward_func(self, *args, **kwargs)
+
+            return quant_forward_dequant
+
+        return decorator
+
+    @staticmethod
+    def dequant_quant(bypass_kwargs: typing.Optional[typing.List] = None):
+        """ wrap the forward function, run dequant/quant stubs before/after it """
+        bypass_kwargs = bypass_kwargs or []
+
+        def decorator(forward_func):
+            def dequant_forward_quant(self, *args, **kwargs):
+                assert isinstance(self, QuantizableModule)
+                if self.eager_mode:
+                    bypassed_kwargs = {x: kwargs.pop(x) for x in bypass_kwargs}
+                    (q_args, q_kwargs) = self.dequant_stubs((args, kwargs))
+                    q_kwargs.update(bypassed_kwargs)
+                    q_outputs = forward_func(self, *q_args, **q_kwargs)
+                    return self.quant_stubs(q_outputs)
+                else:
+                    return forward_func(self, *args, **kwargs)
+
+            return dequant_forward_quant
+
+        return decorator
+
+class QuantWrapper(QuantizableModule):
+    def __init__(self, module, **kwargs):
+        qconfig = module.qconfig if hasattr(module, "qconfig") else None
+        super().__init__(eager_mode=True, qconfig=qconfig, **kwargs)
+        self.module = module
+
+    @QuantizableModule.quant_dequant()
+    def forward(self, *args, **kwargs):
+        return self.module(*args, **kwargs)
+
+
+class NonQuantWrapper(QuantizableModule):
+    def __init__(self, module):
+        super().__init__(eager_mode=True)
+        self.module = module
+
+    @QuantizableModule.dequant_quant()
+    def forward(self, *args, **kwargs):
+        return self.module(*args, **kwargs)
+
+
+def wrap_non_quant_group_norm(module):
+    if isinstance(module, nn.GroupNorm):
+        return NonQuantWrapper(module)
+    for name, child in module.named_children():
+        module._modules[name] = wrap_non_quant_group_norm(child)
+    return module
+
