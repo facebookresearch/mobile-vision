@@ -15,6 +15,7 @@ import traceback
 logger = logging.getLogger(__name__)
 
 
+# from https://stackoverflow.com/questions/67631/how-to-import-a-module-given-the-full-path  # NOQA
 def import_file(module_name, file_path, make_importable=False):
     import importlib
     import importlib.util
@@ -27,7 +28,6 @@ def import_file(module_name, file_path, make_importable=False):
     return module
 
 
-# from https://stackoverflow.com/questions/67631/how-to-import-a-module-given-the-full-path  # NOQA
 def dynamic_import(obj_full_name):
     """
     Dynamically import an object (class or function or global variable).
