@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
 """ python utils """
 
@@ -53,7 +54,6 @@ def dynamic_import(obj_full_name):
     return ret
 
 
-# borrowed from fbcode/rebalancer/common/utils.py
 class FolderLock:
     """
     Locks a folder to synchronize potentially conflicting operations.
