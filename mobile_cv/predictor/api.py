@@ -4,17 +4,19 @@ import copy
 import json
 import logging
 import os
-import torch.nn as nn
 from typing import Any, Dict, NamedTuple, Optional
+
+import torch.nn as nn
+from fvcore.common.file_io import PathManager
 
 from mobile_cv.common.misc.py import dynamic_import
 from mobile_cv.predictor.builtin_functions import (
-    IdentityPreprocess,
     IdentityPostprocess,
+    IdentityPreprocess,
     NaiveRunFunc,
 )
 from mobile_cv.predictor.model_wrappers import load_model
-from fvcore.common.file_io import PathManager
+
 
 logger = logging.getLogger(__name__)
 

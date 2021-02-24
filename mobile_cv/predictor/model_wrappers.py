@@ -10,6 +10,8 @@ import torch.nn as nn
 from caffe2.proto import caffe2_pb2
 from caffe2.python import core
 from fvcore.common.file_io import PathManager
+
+
 #from mobile_cv.torch.utils_caffe2.protobuf import infer_device_type
 #from mobile_cv.torch.utils_caffe2.ws_utils import ScopedWS
 
