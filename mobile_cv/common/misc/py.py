@@ -7,7 +7,6 @@ import fcntl
 import logging
 import os
 import pdb
-import pydoc
 import sys
 import threading
 import traceback
@@ -28,6 +27,7 @@ def import_file(module_name, file_path, make_importable=False):
     return module
 
 
+# from https://stackoverflow.com/questions/67631/how-to-import-a-module-given-the-full-path  # NOQA
 def dynamic_import(obj_full_name):
     """
     Dynamically import an object (class or function or global variable).
@@ -38,6 +38,8 @@ def dynamic_import(obj_full_name):
     Returns:
         The imported object.
     """
+    import pydoc
+
     ret = pydoc.locate(obj_full_name)
     if ret is None:
         raise ImportError("Cannot dynamically locate {}".format(obj_full_name))
