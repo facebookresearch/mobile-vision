@@ -18,6 +18,10 @@ from typing import List, NamedTuple, Tuple
 import torch
 from torch.nn.modules.utils import _pair
 
+# for backward compatibility
+BatchNorm2d = torch.nn.BatchNorm2d
+interpolate = torch.nn.functional.interpolate
+
 
 def cat(tensors, dim=0):
     """
@@ -148,13 +152,6 @@ class ConvTranspose2d(torch.nn.ConvTranspose2d):
         return _NewEmptyTensorOp.apply(x, output_shape)
 
 
-# pyre-fixme[11]: Annotation `BatchNorm2d` is not defined as a type.
-class BatchNorm2d(torch.nn.BatchNorm2d):
-    # TODO(future diff): remove this class, since BN handles empty
-    # input correctly now there is no more need for this.
-    pass
-
-
 # pyre-fixme[11]: Annotation `AvgPool2d` is not defined as a type.
 class AvgPool2d(torch.nn.AvgPool2d):
     def forward(self, x):
@@ -184,14 +181,3 @@ class GroupNorm(torch.nn.GroupNorm):
         # get output shape
         output_shape = x.shape
         return _NewEmptyTensorOp.apply(x, output_shape)
-
-
-def interpolate(
-    input, size=None, scale_factor=None, mode="nearest", align_corners=None
-):
-    # TODO(future diff): remove this function. Since torch.nn.interpolate
-    # behaves correctly for empty tensors now, there is no longer a need
-    # for this.
-    return torch.nn.functional.interpolate(
-        input, size, scale_factor, mode, align_corners
-    )
