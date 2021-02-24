@@ -8,7 +8,6 @@ from typing import Any, Dict, NamedTuple, Optional
 
 import torch.nn as nn
 from fvcore.common.file_io import PathManager
-
 from mobile_cv.common.misc.py import dynamic_import
 from mobile_cv.predictor.builtin_functions import (
     IdentityPostprocess,

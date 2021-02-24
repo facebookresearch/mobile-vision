@@ -324,4 +324,3 @@ def wrap_non_quant_group_norm(module):
     for name, child in module.named_children():
         module._modules[name] = wrap_non_quant_group_norm(child)
     return module
-

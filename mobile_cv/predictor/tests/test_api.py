@@ -7,7 +7,6 @@ import unittest
 
 import torch
 import torch.nn as nn
-
 from mobile_cv.common.misc.file_utils import make_temp_directory
 from mobile_cv.predictor.api import FuncInfo, ModelInfo, PredictorInfo, create_predictor
 
