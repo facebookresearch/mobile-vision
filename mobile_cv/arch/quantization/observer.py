@@ -37,7 +37,7 @@ class FixedMinMaxObserver(MinMaxObserver):
         self.min_val = torch.tensor(float(fixed_min_val))
         self.max_val = torch.tensor(float(fixed_max_val))
 
-    # pyre-fixme Undefined or invalid type [11]: Annotation `torch.tensor` is not defined as a type
+    # pyre-fixme Undefined or invalid type [11]: Annotation `torch.tensor` is not defined as a type # noqa: B950
     def forward(self, x_orig: torch.tensor) -> torch.tensor:
         return x_orig
 
@@ -92,7 +92,7 @@ class UpdatableSymmetricMovingAverageMinMaxObserver(
     """Assumes activations are symmetric about the zero point"""
 
     def update_stat(self) -> None:
-        # pyre-fixme Undefined attribute [16]: `UpdatableSymmetricMovingAverageMinMaxObserver` has no attribute `max_stat`
+        # pyre-fixme Undefined attribute [16]: `UpdatableSymmetricMovingAverageMinMaxObserver` has no attribute `max_stat` # noqa: B950
         if self.max_stat == torch.tensor(float("inf")):
             return
 
@@ -104,7 +104,7 @@ class UpdateableReLUMovingAverageMinMaxObserver(UpdatableMovingAverageMaxStatObs
     """Assumes activations are non-negative and include the zero point"""
 
     def update_stat(self) -> None:
-        # pyre-fixme Undefined attribute [16]: `UpdateableReLUMovingAverageMinMaxObserver` has no attribute `max_stat`
+        # pyre-fixme Undefined attribute [16]: `UpdateableReLUMovingAverageMinMaxObserver` has no attribute `max_stat` # noqa: B950
         if self.max_stat == torch.tensor(float("inf")):
             return
 
