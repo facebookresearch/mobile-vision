@@ -1,29 +1,29 @@
 #!/usr/bin/env python3
 
 
-class IdentityPreprocess():
+class IdentityPreprocess:
     def __call__(self, x):
         inputs = x
         return inputs
 
 
-class IdentityPostprocess():
+class IdentityPostprocess:
     def __call__(self, x, inputs, outputs):
         return outputs
 
 
-class BatchPreprocess():
+class BatchPreprocess:
     def __call__(self, x):
         """ Batch all tensors recursively """
         raise NotImplementedError()
 
 
-class DebatchPostprocess():
+class DebatchPostprocess:
     def __call__(self, x, inputs, outputs):
         """ Debatch all tensors recursively """
         raise NotImplementedError()
 
 
-class NaiveRunFunc():
+class NaiveRunFunc:
     def __call__(self, model_or_models, inputs):
         return model_or_models(inputs)

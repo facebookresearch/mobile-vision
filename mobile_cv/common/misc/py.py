@@ -116,8 +116,9 @@ def post_mortem_if_fail(pdb_=None):
             # being handled, otherwise it returns None
             t = sys.exc_info()[2]
         if t is None:
-            raise ValueError("A valid traceback must be passed if no "
-                             "exception is being handled")
+            raise ValueError(
+                "A valid traceback must be passed if no " "exception is being handled"
+            )
 
         pdb_ = pdb_ or pdb.Pdb()
         pdb_.reset()
@@ -131,5 +132,7 @@ def post_mortem_if_fail(pdb_=None):
                 extype, value, tb = sys.exc_info()
                 traceback.print_exc()
                 post_mortem(pdb_, tb)
+
         return new_func
+
     return decorator

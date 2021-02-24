@@ -12,8 +12,8 @@ from caffe2.python import core
 from fvcore.common.file_io import PathManager
 
 
-#from mobile_cv.torch.utils_caffe2.protobuf import infer_device_type
-#from mobile_cv.torch.utils_caffe2.ws_utils import ScopedWS
+# from mobile_cv.torch.utils_caffe2.protobuf import infer_device_type
+# from mobile_cv.torch.utils_caffe2.ws_utils import ScopedWS
 
 
 logger = logging.getLogger(__name__)
@@ -46,8 +46,7 @@ def load_model(model_info, model_root):
 
 
 class TorchscriptWrapper(nn.Module):
-    """
-    """
+    """"""
 
     def __init__(self, module, int8_backend=None):
         super().__init__()

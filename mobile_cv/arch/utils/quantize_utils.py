@@ -237,7 +237,6 @@ def swap_bn_to_syncbn(module):
     _swap_bn(module, torch.nn.BatchNorm2d, NaiveSyncBatchNorm)
 
 
-
 class QuantizableModule(nn.Module):
     """
     This class helps create quantize/dequantize stubs that are needed for eager
@@ -296,6 +295,7 @@ class QuantizableModule(nn.Module):
             return dequant_forward_quant
 
         return decorator
+
 
 class QuantWrapper(QuantizableModule):
     def __init__(self, module, **kwargs):

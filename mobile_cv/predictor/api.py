@@ -30,6 +30,7 @@ class ModelInfo(NamedTuple):
             predict and init net).
         type (str): The type of model used to determine how the model will be loaded.
     """
+
     path: str
     type: str
 
@@ -45,6 +46,7 @@ class FuncInfo(NamedTuple):
             name and object name (eg. foo.bar.MyPreprocessFunc).
         params (str): the kwargs used to construct the object.
     """
+
     name: str
     params: Dict[str, Any]
 
@@ -56,7 +58,7 @@ class FuncInfo(NamedTuple):
     def gen_func_info(class_obj, params):
         return FuncInfo(
             name="{}.{}".format(class_obj.__module__, class_obj.__qualname__),
-            params=params
+            params=params,
         )
 
 
@@ -138,8 +140,7 @@ def _create_predictor(info_json, model_root):
         model_or_models = load_model(predictor_info.model, model_root)
     else:
         model_or_models = {
-            k: load_model(info, model_root)
-            for k, info in predictor_info.models.items()
+            k: load_model(info, model_root) for k, info in predictor_info.models.items()
         }
 
     return PredictorWrapper(
