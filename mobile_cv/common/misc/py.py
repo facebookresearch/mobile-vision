@@ -6,10 +6,11 @@ import fcntl
 import logging
 import os
 import pdb
+import pydoc
 import sys
 import threading
 import traceback
-import pydoc
+
 
 logger = logging.getLogger(__name__)
 
