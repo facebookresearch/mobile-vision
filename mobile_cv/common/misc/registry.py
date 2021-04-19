@@ -18,21 +18,23 @@ class Registry(object):
         BACKBONE_REGISTRY.register(name="MyBackbone", obj=MyBackbone)
     """
 
-    def __init__(self, name):
+    def __init__(self, name, allow_override=False):
         """
         Args:
             name (str): the name of this registry
         """
         self._name = name
+        self._allow_override = allow_override
 
         self._obj_map = {}
 
     def _do_register(self, name, obj):
-        assert (
-            name not in self._obj_map
-        ), "An object named '{}' was already registered in '{}' registry!".format(
-            name, self._name
-        )
+        if name in self._obj_map and not self._allow_override:
+            raise ValueError(
+                "An object named '{}' was already registered in '{}' registry!".format(
+                    name, self._name
+                )
+            )
         self._obj_map[name] = obj
 
     def register(self, name=None, obj=None):
