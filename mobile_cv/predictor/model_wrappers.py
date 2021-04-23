@@ -7,7 +7,6 @@ import torch
 import torch.nn as nn
 from mobile_cv.common.fb import utils_io
 
-
 path_manager = utils_io.get_path_manager()
 logger = logging.getLogger(__name__)
 

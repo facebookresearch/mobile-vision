@@ -9,11 +9,9 @@ from typing import Any, Dict, NamedTuple, Optional
 import torch.nn as nn
 from mobile_cv.common.fb import utils_io
 from mobile_cv.common.misc.py import dynamic_import
-from mobile_cv.predictor.builtin_functions import (
-    IdentityPostprocess,
-    IdentityPreprocess,
-    NaiveRunFunc,
-)
+from mobile_cv.predictor.builtin_functions import (IdentityPostprocess,
+                                                   IdentityPreprocess,
+                                                   NaiveRunFunc)
 
 path_manager = utils_io.get_path_manager()
 logger = logging.getLogger(__name__)
