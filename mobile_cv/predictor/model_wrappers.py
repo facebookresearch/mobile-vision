@@ -2,9 +2,7 @@
 
 import logging
 import os
-from itertools import count
 
-import numpy as np
 import torch
 import torch.nn as nn
 from mobile_cv.common.fb import utils_io

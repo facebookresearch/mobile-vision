@@ -8,7 +8,7 @@ import unittest
 import torch
 import torch.nn as nn
 from mobile_cv.common.misc.file_utils import make_temp_directory
-from mobile_cv.predictor.api import ModelInfo, FuncInfo, PredictorInfo, create_predictor
+from mobile_cv.predictor.api import FuncInfo, ModelInfo, PredictorInfo, create_predictor
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +41,7 @@ class TestAPI(unittest.TestCase):
             model_info = ModelInfo(path=tmp_dir, type="torchscript")
             # NOTE: decide if load_model is a public API or class method of ModelInfo
             from mobile_cv.predictor.model_wrappers import load_model
+
             model = load_model(model_info, model_root="")
             self.assertEqual(torch.tensor(2), model(torch.tensor(1)))
 
