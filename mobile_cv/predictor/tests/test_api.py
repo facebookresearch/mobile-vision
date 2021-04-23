@@ -14,7 +14,7 @@ from mobile_cv.predictor.api import FuncInfo, ModelInfo, PredictorInfo, create_p
 logger = logging.getLogger(__name__)
 
 
-class TestPreprocess():
+class TestPreprocess:
     def __init__(self, weight):
         self.weight = weight
 
@@ -48,8 +48,7 @@ class TestAPI(unittest.TestCase):
 
     def test_func_info(self):
         test_preprocess_info = FuncInfo(
-            name=f"{__name__}.TestPreprocess",
-            params={"weight": 2}
+            name=f"{__name__}.TestPreprocess", params={"weight": 2}
         )
         test_preprocess = test_preprocess_info.instantiate()
         self.assertEqual(4, test_preprocess(2))
