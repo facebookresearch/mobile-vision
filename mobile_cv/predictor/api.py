@@ -7,16 +7,15 @@ import os
 from typing import Any, Dict, NamedTuple, Optional
 
 import torch.nn as nn
-from fvcore.common.file_io import PathManager
+from mobile_cv.common.fb import utils_io
 from mobile_cv.common.misc.py import dynamic_import
 from mobile_cv.predictor.builtin_functions import (
-    IdentityPostprocess,
     IdentityPreprocess,
+    IdentityPostprocess,
     NaiveRunFunc,
 )
-from mobile_cv.predictor.model_wrappers import load_model
 
-
+path_manager = utils_io.get_path_manager()
 logger = logging.getLogger(__name__)
 
 
@@ -28,11 +27,14 @@ class ModelInfo(NamedTuple):
         path (str): A single string to identify the (relative) path of model, it can be
             a single file (eg. a torchscript) or a directory (eg. caffe2 model that has
             predict and init net).
-        type (str): The type of model used to determine how the model will be loaded.
+        export_method (str): The name of ModelExportMethod which is responsible to load
+            the exported model.
+        load_kwargs (dict): The kwargs that will be used when loading the exported model
     """
 
     path: str
-    type: str
+    export_method: str
+    load_kwargs: Dict[str, Any]
 
 
 class FuncInfo(NamedTuple):
@@ -88,22 +90,27 @@ class PredictorInfo(NamedTuple):
         if "model" in dic:
             dic["model"] = ModelInfo(**dic["model"])
         if "models" in dic:
-            dic["models"] = ModelInfo(**dic["models"])
+            dic["models"] = {k: ModelInfo(**v) for k, v in dic["models"].items()}
         dic["preprocess_info"] = FuncInfo(**dic["preprocess_info"])
         dic["postprocess_info"] = FuncInfo(**dic["postprocess_info"])
         dic["run_func_info"] = FuncInfo(**dic["run_func_info"])
         return PredictorInfo(**dic)
 
     def to_dict(self):
-        ret = {}
-        for k, v in self._asdict().items():
-            if v is None:
-                # don't store None items in predictor_info.json
-                continue
-            if isinstance(v, (ModelInfo, FuncInfo)):
-                v = v._asdict()
-            ret[k] = v
-        return ret
+        def _to_dict(x):
+            ret = {}
+            if hasattr(x, "_fields"):  # NamedTuple like ModelInfo, FuncInfo
+                x = x._asdict()
+            if not isinstance(x, dict):
+                return x
+            for k, v in x.items():
+                if v is None:
+                    # don't store None items in predictor_info.json
+                    continue
+                ret[k] = _to_dict(v)
+            return ret
+
+        return _to_dict(self)
 
 
 class PredictorWrapper(nn.Module):
@@ -131,16 +138,24 @@ def create_predictor(predictor_dir):
 
 def _create_predictor(info_json, model_root):
     logger.info("Loading predictor info from {}".format(info_json))
-    with PathManager.open(info_json) as f:
+    with path_manager.open(info_json) as f:
         info_dict = json.load(f)
         predictor_info = PredictorInfo.from_dict(info_dict)
 
+    def _load_from_model_info(model_info, root):
+        model_export_method = dynamic_import(model_info.export_method)
+        save_path = os.path.join(root, model_info.path)
+        # remove "." from path, eg: "uri_prefix://root_dir/./model_dir"
+        save_path = os.path.normpath(save_path)
+        return model_export_method.load(save_path, **model_info.load_kwargs)
+
     assert (predictor_info.model is None) ^ (predictor_info.models is None)
     if predictor_info.model is not None:
-        model_or_models = load_model(predictor_info.model, model_root)
+        model_or_models = _load_from_model_info(predictor_info.model, model_root)
     else:
         model_or_models = {
-            k: load_model(info, model_root) for k, info in predictor_info.models.items()
+            k: _load_from_model_info(info, model_root)
+            for k, info in predictor_info.models.items()
         }
 
     return PredictorWrapper(
