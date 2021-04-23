@@ -34,6 +34,7 @@ def _save_test_model(path):
     ts.save(os.path.join(path, "model.jit"))
 
 
+@unittest.skip("Pending moving base ModelExportMethod from d2go to mobile_cv")
 class TestAPI(unittest.TestCase):
     def test_model_info(self):
         with make_temp_directory("test_model_info") as tmp_dir:
