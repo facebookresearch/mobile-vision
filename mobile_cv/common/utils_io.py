@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
-from iopath.common.file_io import PathManager
 from functools import lru_cache
+
+from iopath.common.file_io import PathManager
 
 
 @lru_cache()
