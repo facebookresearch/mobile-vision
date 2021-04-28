@@ -5,7 +5,7 @@ import os
 
 import torch
 import torch.nn as nn
-from mobile_cv.common.fb import utils_io
+from mobile_cv.common import utils_io
 
 
 path_manager = utils_io.get_path_manager()
