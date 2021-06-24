@@ -38,11 +38,16 @@ def dynamic_import(obj_full_name):
     Returns:
         The imported object.
     """
+    import importlib
     import pydoc
 
     ret = pydoc.locate(obj_full_name)
     if ret is None:
-        raise ImportError("Cannot dynamically locate {}".format(obj_full_name))
+        # pydoc.locate imports in forward order, sometimes causing circular import,
+        # fallback to use importlib if pydoc.locate doesn't work
+        module_name, obj_name = obj_full_name.rsplit(".", 1)
+        module = importlib.import_module(module_name)
+        ret = getattr(module, obj_name)
     return ret
 
 
