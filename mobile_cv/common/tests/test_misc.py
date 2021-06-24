@@ -33,11 +33,12 @@ class TestMisc(unittest.TestCase):
             with open(os.path.join(test_dir, "test_package/lib/a.py"), "w") as f:
                 f.write(
                     "from mobile_cv.common.misc.py import dynamic_import\n"
-                    "bar = dynamic_import(\"test_package.lib.b.foo\")\n"
+                    'bar = dynamic_import("test_package.lib.b.foo")\n'
                 )
             with open(os.path.join(test_dir, "test_package/lib/b.py"), "w") as f:
                 f.write("foo = 42\n")
 
             sys.path.append(test_dir)
             from test_package.lib.a import bar
+
             self.assertEqual(bar, 42)
