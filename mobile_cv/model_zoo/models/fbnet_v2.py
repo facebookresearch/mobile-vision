@@ -64,7 +64,7 @@ def _load_fbnet_state_dict(file_name, progress=True, ignore_prefix="module."):
     ret = {}
     for name, val in state_dict.items():
         if name.startswith(ignore_prefix):
-            name = name[len(ignore_prefix):]
+            name = name[len(ignore_prefix) :]
         ret[name] = val
     return ret
 

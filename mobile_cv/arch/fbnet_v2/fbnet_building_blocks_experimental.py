@@ -2,7 +2,7 @@
 
 import math
 
-import torch # noqa
+import torch  # noqa
 import torch.nn as nn
 import torch.nn.functional as F
 from mobile_cv.arch.utils.resize import space2depth

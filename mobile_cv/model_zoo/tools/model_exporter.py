@@ -267,7 +267,7 @@ def export_to_torchscript_dynamic(
 
     assert hasattr(task, "get_model_by_name")
     assert export_format.startswith("torchscript_")
-    model_name = export_format[len("torchscript_"):]
+    model_name = export_format[len("torchscript_") :]
     model = task.get_model_by_name(model_name, model)
 
     print(f"Converting to {model_name}...")

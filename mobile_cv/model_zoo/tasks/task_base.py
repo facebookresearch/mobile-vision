@@ -35,7 +35,7 @@ class TaskBase(ABC):
         func = getattr(self, func_name, None)
         if func is None:
             raise Exception(
-                f"Invalid model type name {name}, please implement Task.{func_name}(), or register the model type with task.register_model_type()" # noqa
+                f"Invalid model type name {name}, please implement Task.{func_name}(), or register the model type with task.register_model_type()"  # noqa
             )
         return func(*args, **kwargs)
 

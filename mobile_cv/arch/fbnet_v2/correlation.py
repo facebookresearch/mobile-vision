@@ -161,7 +161,7 @@ class MatMulCorrelationBlock(nn.Module):
 
         # Downsample the the correlation. The sampling co-ordinates calculated above
         # assume that the input stride is already applied.
-        corr = corr[:, 0: ht: self.stride1H, 0: wd: self.stride1W, :, :, :]
+        corr = corr[:, 0 : ht : self.stride1H, 0 : wd : self.stride1W, :, :, :]
         corr = corr.view(-1, dim, h2, w2)
 
         # Sample the all-pair correlations to return what we need.

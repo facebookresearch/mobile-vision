@@ -162,7 +162,7 @@ class AttDownsample(torch.nn.Module):
         if self.compute_kq:
             kq = self.compute_kq(x)
             k = kq[:, : self.kq_dim, :, :]
-            q = kq[:, self.kq_dim:, :, :]
+            q = kq[:, self.kq_dim :, :, :]
         else:
             k, q = x, x
 

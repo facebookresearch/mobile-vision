@@ -10,7 +10,7 @@ import torch.nn as nn
 
 from . import basic_blocks as bb
 from .blocks_factory import PRIMITIVES
-from .visual_transformer_3d import VisualTransformer3D # noqa
+from .visual_transformer_3d import VisualTransformer3D  # noqa
 
 
 PRIMITIVES.register_dict(

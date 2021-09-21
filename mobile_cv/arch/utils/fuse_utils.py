@@ -283,7 +283,7 @@ def _fuse_model_fx_recursive(model: torch.nn.Module):
     traceable = True
     try:
         model = _fuse_model_fx_single(model)
-    except Exception as e: # noqa
+    except Exception as e:  # noqa
         # print(f"Error in tracing {model}: {e}")
         traceable = False
 

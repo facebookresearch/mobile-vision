@@ -42,7 +42,7 @@ def _load_fbnet_state_dict(file_name):
     ret = {}
     for name, val in state_dict.items():
         if name.startswith("module."):
-            name = name[len("module."):]
+            name = name[len("module.") :]
         ret[name] = val
     return ret
 

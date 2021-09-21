@@ -15,7 +15,7 @@ flu.set_run_locally()
 
 
 def get_model_info_caffe2(name, dir_name, res):
-    MODEL_PATH = f"/mnt/vol/gfsai-oregon/aml/mobile-vision/model_zoo/models/c2/FBNet/models/{dir_name}/int8" # noqa
+    MODEL_PATH = f"/mnt/vol/gfsai-oregon/aml/mobile-vision/model_zoo/models/c2/FBNet/models/{dir_name}/int8"  # noqa
     model_info = {
         "name": f"c2_{name}_{res}",
         "framework": "caffe2",

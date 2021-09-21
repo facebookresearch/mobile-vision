@@ -10,7 +10,7 @@ from mobile_cv.model_zoo.datasets import dataset_factory
 
 
 def get_test_task_config():
-    hashtag_file = "configs/cvpr_17k_equal_weight.json" # noqa
+    hashtag_file = "configs/cvpr_17k_equal_weight.json"  # noqa
     return {
         "name": "classy_uru",
         "num_epochs": 1.5,
