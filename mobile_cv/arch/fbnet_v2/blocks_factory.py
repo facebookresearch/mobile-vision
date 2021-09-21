@@ -13,10 +13,7 @@ from . import (
     basic_blocks as bb,
     frac_downsample,
     irf_block,
-    visual_transformer,
     sg_block,
-    levit,
-    vit,
 )
 from . import res_block
 
