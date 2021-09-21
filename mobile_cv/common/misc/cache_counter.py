@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 
 from collections import Counter
-from datetime import datetime
-from datetime import timedelta
+from datetime import datetime, timedelta
 from enum import Enum
 
 

@@ -5,7 +5,6 @@ import errno
 import hashlib
 import logging
 import os
-import tempfile
 from types import TracebackType
 from typing import Optional, Type
 
@@ -90,43 +89,11 @@ class DictModifier(object):
             del self.dict_to_modify[x]
 
 
-class PretrainedDownloader:
-    """
-    Context manager for downloading pretrained model weights.
-    Sets proxies and a reasonable TORCH_HOME. Removes afterwards.
-    """
-
-    def __init__(self, torch_home: Optional[str] = None) -> None:
-        torch_home = torch_home or tempfile.mkdtemp()
-        self.env_modifier = DictModifier(
-            os.environ,
-            {
-                "HTTP_PROXY": "http://fwdproxy:8080",
-                "HTTPS_PROXY": "https://fwdproxy:8080",
-                "http_proxy": "fwdproxy:8080",
-                "https_proxy": "fwdproxy:8080",
-                "REQUESTS_CA_BUNDLE": "/etc/pki/tls/certs/fb_certs.pem",
-                "TORCH_HOME": torch_home,
-            },
-        )
-
-    def __enter__(self) -> None:
-        self.env_modifier.__enter__()
-
-    def __exit__(
-        self,
-        atype: Optional[Type[BaseException]],
-        avalue: Optional[BaseException],
-        traceback: Optional[TracebackType],
-    ) -> None:
-        self.env_modifier.__exit__(atype, avalue, traceback)
-
-
 def pretrained_download(builder):
     """Convenience function to download pretrained weights from https"""
 
     def func(*args, **kwargs):
-        with PretrainedDownloader():
-            return builder(*args, **kwargs)
+        # no need to handle for oss version
+        return builder(*args, **kwargs)
 
     return func

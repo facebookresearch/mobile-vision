@@ -17,13 +17,14 @@ import torch
 import torch.fx
 import torch.nn as nn
 from mobile_cv.arch.layers import (
+    FrozenBatchNorm2d,
     GroupNorm,
     NaiveSyncBatchNorm,
     NaiveSyncBatchNorm1d,
     NaiveSyncBatchNorm3d,
-    FrozenBatchNorm2d,
 )
 from torch.nn.quantized.modules import FloatFunctional
+
 
 # needed for SE module with fx tracing
 torch.fx.wrap("len")

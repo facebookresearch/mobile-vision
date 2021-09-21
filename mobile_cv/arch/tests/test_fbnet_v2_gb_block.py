@@ -7,6 +7,7 @@ import mobile_cv.arch.fbnet_v2.gb_block as gb_block
 import mobile_cv.arch.utils.helper as hp
 import torch
 
+
 TEST_CUDA = torch.cuda.is_available()
 
 
@@ -53,7 +54,7 @@ class TestGBBlocks(unittest.TestCase):
                     gt_output_dim=input_dim,
                 )
 
-        with self.subTest(f"skip_bnrelu=True"):
+        with self.subTest(f"skip_bnrelu=True"):  # noqa
             create_test_gb(
                 self,
                 C_out,

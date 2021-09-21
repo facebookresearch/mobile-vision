@@ -19,6 +19,7 @@ from mobile_cv.arch.layers.batch_norm import (
 
 from . import helper
 
+
 # needed for the unit test test_fuse_model_fx_with_assert
 torch.fx.wrap("len")
 

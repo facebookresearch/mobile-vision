@@ -10,10 +10,11 @@ import torch.nn as nn
 from mobile_cv.common import utils_io
 from mobile_cv.common.misc.py import dynamic_import
 from mobile_cv.predictor.builtin_functions import (
-    IdentityPreprocess,
     IdentityPostprocess,
+    IdentityPreprocess,
     NaiveRunFunc,
 )
+
 
 path_manager = utils_io.get_path_manager()
 logger = logging.getLogger(__name__)
@@ -126,6 +127,25 @@ class PredictorWrapper(nn.Module):
         outputs = self.run_func(self.model_or_models, inputs)
         y = self.postprocess(x, inputs, outputs)
         return y
+
+    def get_wrapped_models(self):
+        """Return the torchscript model directly
+        Note:
+          - This method only support single model without customizing RunFunc
+          - If using model wrapper, get_wrapped_models need to be defined
+        """
+        model = self.model_or_models
+        assert not isinstance(model, dict), (
+            "This method only support single model. "
+            + "Please define multiple exporter types for multi-model"
+        )
+        assert isinstance(
+            self.run_func, NaiveRunFunc
+        ), "Customized RunFunc is not supported, please using Proprocessing & Postprocessing"
+        while hasattr(model, "get_wrapped_models"):
+            # allow customized wrapper, e.g. TracingAdapterModelWrapper, TorchscriptWrapper
+            model = model.get_wrapped_models()
+        return model
 
 
 def create_predictor(predictor_dir):

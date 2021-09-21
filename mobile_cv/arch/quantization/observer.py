@@ -1,18 +1,5 @@
 #!/usr/bin/env python3
 
-# custom observers
-# these are based on pytorch observers: caffe2/torch/quantization/observer.py
-# as well as code written in tiefenrausch: mobile-vision/experimental/megadepth/v2/fbnet_hr.py
-# the mapping between the tiefenrausch ops and these ops are:
-#
-#     tiefenrausch                           d2go
-#     --------------                         ------
-#     FixedMinMaxObserver                    FixedMinMaxObserver
-#     HardSymmetricMinMaxObserver            MinMaxObserver(qscheme=torch.per_tensor_symmetric)
-#     UpdatableMovingAverageMinMaxObserver   UpdatableMovingAverageMaxStatObserver
-#     SymmetricMovingAverageMinMaxObserver   UpdatableSymmetricMovingAverageMinMaxObserver
-#     ReLUMovingAverageMinMaxObserver        UpdateableReLUMovingAverageMinMaxObserver
-
 from abc import abstractmethod
 
 import torch
@@ -37,8 +24,7 @@ class FixedMinMaxObserver(MinMaxObserver):
         self.min_val = torch.tensor(float(fixed_min_val))
         self.max_val = torch.tensor(float(fixed_max_val))
 
-    # pyre-fixme Undefined or invalid type [11]: Annotation `torch.tensor` is not defined as a type
-    def forward(self, x_orig: torch.tensor) -> torch.tensor:
+    def forward(self, x_orig: torch.Tensor) -> torch.Tensor:
         return x_orig
 
 

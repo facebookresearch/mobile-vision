@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
-from . import modeldef_utils as mdu
+from . import modeldef_utils as mdu  # noqa
 from .fbnet_modeldef_cls import MODEL_ARCH
 from .modeldef_utils import _ex, e1, e6
 

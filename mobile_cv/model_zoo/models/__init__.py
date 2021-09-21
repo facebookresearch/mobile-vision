@@ -1,4 +1,4 @@
 #!/usr/bin/env python3
 
 # to register for model_zoo
-from . import fbnet, fbnet_v2, model_classy, model_jit, model_torchvision, vits  # noqa
+from mobile_cv.model_zoo.models import fbnet_v2, model_jit, model_torchvision  # noqa

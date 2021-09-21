@@ -4,10 +4,12 @@ General model exporter, support torchscript and torchscript int8
 """
 
 import argparse
+import copy
 import importlib
 import itertools
 import json
 import logging
+import multiprocessing as mp
 import os
 import typing
 
@@ -21,6 +23,7 @@ import torch
 from mobile_cv.common import utils_io
 from mobile_cv.model_zoo.models import model_utils
 from torch.utils.mobile_optimizer import optimize_for_mobile
+
 
 path_manager = utils_io.get_path_manager()
 logger = logging.getLogger("model_zoo_tools.export")
@@ -95,6 +98,12 @@ def parse_args(args_list=None):
         "--save_for_lite_interpreter",
         action="store_true",
         help="Also export lite interpreter model",
+    )
+    parser.add_argument(
+        "--batch_mode",
+        type=str,
+        default=None,
+        help="Specify the registed name to run export in batch",
     )
 
     assert len(ExportFactory.keys()) > 0
@@ -199,28 +208,21 @@ def export_to_torchscript(
 def export_to_torchscript_int8(
     args, task, model, inputs, output_base_dir, *, data_iter, model_attrs=None, **kwargs
 ):
-    if args.use_graph_mode_quant:
-        print(f"Post quantization using {args.post_quant_backend} backend...")
-        print("Converting to int8 jit...")
-        quant = quantize_utils.PostQuantizationGraph(model)
-        cur_loader = itertools.chain([inputs], data_iter)
+    cur_loader = itertools.chain([inputs], data_iter)
 
-        traced_model = (
+    if hasattr(task, "get_quantized_model"):
+        ptq_model = task.get_quantized_model(model, cur_loader)
+    elif args.use_graph_mode_quant:
+        print(
+            f"Post quantization using {args.post_quant_backend} backend graph mode..."
+        )
+        quant = quantize_utils.PostQuantizationGraph(model)
+        ptq_model = (
             quant.set_quant_backend(args.post_quant_backend)
             .set_calibrate(cur_loader, 1)
             .trace(inputs, strict=False)
             .convert_model()
         )
-        traced_model(*inputs)
-
-        print(traced_model)
-        output_dir = os.path.join(output_base_dir, "torchscript_int8")
-        model_utils.save_model(output_dir, traced_model, inputs)
-        return output_dir
-
-    cur_loader = itertools.chain([inputs], data_iter)
-    if hasattr(task, "get_quantized_model"):
-        ptq_model = task.get_quantized_model(model, cur_loader)
     else:
         print(f"Post quantization using {args.post_quant_backend} backend...")
         qa_model = task.get_quantizable_model(model)
@@ -344,12 +346,58 @@ def main(
     return ret
 
 
+def _run_main_single(args_tuple):
+    args, (name, task_args) = args_tuple
+    cur_args = copy.deepcopy(args)
+    cur_args.task_args.update(task_args)
+    cur_output_dir = os.path.join(args.output_dir, name)
+    ret = main(
+        cur_args,
+        cur_output_dir,
+        export_formats=cur_args.export_types,
+        raise_if_failed=cur_args.raise_if_failed,
+    )
+    return name, ret
+
+
+def main_batch_mode(args):
+    """Run model exporter in a batch mode.
+    To use batch mode, the user needs to create a function, register it as a
+    task and pass the name to `args.batch_mode`. The function returns a dict of
+    task arguments with their names that could be used to create the task
+    specified in `args.task`
+      func() -> Dict[str, TaskArgs]
+    All the exported models will be stored in the sub folders of `args.output_dir`
+    indicated by their names.
+    """
+    assert args.batch_mode is not None
+    _import_tasks(args.batch_mode)
+    all_tasks_args = task_factory.get(args.batch_mode)
+    ret = {}
+    total_count = len(all_tasks_args)
+
+    with mp.Pool(16) as pool:
+        all_items = ((args, sub_item) for sub_item in all_tasks_args.items())
+        for idx, (name, cur) in enumerate(
+            pool.imap_unordered(_run_main_single, all_items)
+        ):
+            print(f"Exported {idx}/{total_count}: {name}")
+            ret[name] = cur
+
+    print(f"{total_count} models exported to {args.output_dir}")
+
+    return ret
+
+
 def _get_task_info(args):
     ret = {"task": args.task, "task_args": args.task_args}
     return ret
 
 
 def run_with_cmdline_args(args):
+    if args.batch_mode is not None:
+        return main_batch_mode(args)
+
     return main(
         args,
         args.output_dir,

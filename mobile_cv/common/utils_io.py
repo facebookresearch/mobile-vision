@@ -2,7 +2,7 @@
 
 from functools import lru_cache
 
-from iopath.common.file_io import PathManager, HTTPURLHandler
+from iopath.common.file_io import HTTPURLHandler, PathManager
 
 
 @lru_cache()

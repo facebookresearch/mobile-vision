@@ -12,6 +12,7 @@ from mobile_cv.arch.utils import fuse_utils, quantize_utils as qu
 from mobile_cv.common import utils_io
 from torch.utils.mobile_optimizer import generate_mobile_module_lints
 
+
 path_manager = utils_io.get_path_manager()
 
 

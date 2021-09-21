@@ -5,6 +5,7 @@ from . import modeldef_utils as mdu
 from .fbnet_modeldef_cls import MODEL_ARCH
 from .modeldef_utils import e1, e3, e6
 
+
 use_bias = {"bias": True}
 
 MODEL_ARCH_FBNET = {

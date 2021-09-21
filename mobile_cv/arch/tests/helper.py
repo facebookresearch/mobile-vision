@@ -2,7 +2,7 @@
 
 import os
 from functools import wraps
-from typing import Any, Union, Tuple, Type
+from typing import Any, Tuple, Type, Union
 
 import mobile_cv.common.misc.iter_utils as iu
 import numpy as np

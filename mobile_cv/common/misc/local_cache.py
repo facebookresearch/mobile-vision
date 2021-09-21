@@ -2,13 +2,11 @@
 
 import contextlib
 import os
-import shutil
 import tempfile
 import time
 from contextlib import contextmanager
 
 import diskcache
-from libfb.py.decorators import retryable
 
 
 class Timer(object):

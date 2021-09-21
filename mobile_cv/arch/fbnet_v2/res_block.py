@@ -139,6 +139,7 @@ class Bottleneck(nn.Module):
         upsample_args="default",
         res_conn_args="default",
         drop_connect_rate=None,
+        bn_in_skip=False,
         # additional arguments for conv
         **kwargs,
     ) -> None:
@@ -165,7 +166,12 @@ class Bottleneck(nn.Module):
             skip_args["kernel_size"] = 1
             skip_args["padding"] = 0
             self.downsample = ConvBNRelu(
-                in_channels, out_channels, skip_args, None, None
+                in_channels,
+                out_channels,
+                conv_args=skip_args,
+                bn_args=bn_args if bn_in_skip else None,
+                relu_args=None,
+                **kwargs,
             )
         self.relu = build_relu(num_channels=out_channels, **hp.unify_args(relu_args))
         self.add = build_residual_connect(

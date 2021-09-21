@@ -135,7 +135,7 @@ Here
 import copy
 import logging
 from collections import OrderedDict
-from typing import Optional, Dict, Any, List
+from typing import Any, Dict, List, Optional
 
 import mobile_cv.arch.utils.helper as hp
 import mobile_cv.common.misc.iter_utils as iu

@@ -9,7 +9,7 @@ import mobile_cv.arch.utils.quantize_utils as qu
 import mock
 import torch
 from mobile_cv.arch.layers import NaiveSyncBatchNorm
-from torch.quantization.quantize_fx import prepare_fx, convert_fx
+from torch.quantization.quantize_fx import convert_fx, prepare_fx
 
 
 def _build_model(arch_def, dim_in):

@@ -4,11 +4,9 @@ import json
 import os
 import tempfile
 import unittest
-import uuid
 
 import mobile_cv.arch.fbnet_v2.blocks_factory as blocks_factory
 import torch
-from mobile_cv.common import utils_io
 from mobile_cv.model_zoo.tasks import task_factory
 from mobile_cv.model_zoo.tasks.task_base import TaskBase
 from mobile_cv.model_zoo.tools import model_exporter
@@ -19,17 +17,28 @@ def ext_task(**kwargs):
     return UnitTestTask()
 
 
+class TestModel(torch.nn.Module):
+    def __init__(self, num=0):
+        super().__init__()
+        self.num = num
+
+    def forward(self, x):
+        return x + self.num
+
+
 class UnitTestTask(TaskBase):
+    def __init__(self, num=0):
+        super().__init__()
+        self.num = num
+
     def get_model(self):
-        return torch.nn.Identity()
+        return TestModel(self.num)
 
     def get_quantized_model(self, model, data_loader):
-        ret = torch.nn.Identity()
-        return ret
+        return TestModel(self.num)
 
     def get_backend1_model(self, quantized_model):
-        ret = torch.nn.Identity()
-        return ret
+        return TestModel(self.num)
 
     def get_dataloader(self):
         return [[torch.Tensor(1)]]
@@ -67,40 +76,6 @@ class TestToolsModelExporter(unittest.TestCase):
             )
             for _, path in out_paths.items():
                 self.assertTrue(os.path.exists(path))
-
-    def test_tools_model_exporter_manifold(self):
-        fbnet_args = {"builder": "fbnet_v2", "arch_name": "fbnet_cse"}
-        dataset_args = {"builder": "tensor_shape", "input_shapes": [[1, 3, 64, 64]]}
-
-        path_manager = utils_io.get_path_manager()
-
-        manifold_test_path = (
-            "manifold://mobile_vision_tests_scratch/tree/test_model_exporter/test_"
-            + str(uuid.uuid4().hex)
-        )
-        export_args = [
-            "--task",
-            "general",
-            "--task_args",
-            json.dumps({"model_args": fbnet_args, "dataset_args": dataset_args}),
-            "--output_dir",
-            manifold_test_path,
-            "--export_types",
-            "torchscript",
-            "torchscript_int8",
-            "--post_quant_backend",
-            "default",
-            # currently int8 will fail due to copy issue in quantized op
-            # "--use_get_traceable",
-            # "1",
-        ]
-        out_paths = model_exporter.run_with_cmdline_args_list(export_args)
-        self.assertEqual(len(out_paths), 2)
-        self.assertSetEqual(set(out_paths.keys()), {"torchscript", "torchscript_int8"})
-        for _, path in out_paths.items():
-            self.assertTrue(path_manager.isfile(path))
-
-        path_manager.rm(manifold_test_path)
 
     def test_tools_model_exporter_use_get_traceable(self):
         class Model(torch.nn.Module):
@@ -175,6 +150,8 @@ class TestToolsModelExporter(unittest.TestCase):
                 "test_task_unittest",
                 "--output_dir",
                 output_dir,
+                "--raise_if_failed",
+                "1",
                 "--export_types",
                 "torchscript",
                 "torchscript_int8",
@@ -190,17 +167,14 @@ class TestToolsModelExporter(unittest.TestCase):
                 self.assertTrue(os.path.exists(path))
 
     def test_tools_model_exporter_with_annotations(self):
-        from mobile_cv.model_zoo.tasks import task_base, task_factory
-
-        class Model(torch.nn.Module):
-            def forward(self, x):
-                return x
-
         @task_factory.TASK_FACTORY.register("task_ann")
-        class TaskWithAnn(task_base.TaskBase):
+        class TaskWithAnn(TaskBase):
             def get_model(self):
                 annos = {"attr1": "attr1", "attr2": 2}
-                return Model(), annos
+                return TestModel(), annos
+
+            def get_quantized_model(self, model, data_loader):
+                return model
 
             def get_dataloader(self):
                 return [[torch.Tensor(1)], [torch.Tensor(1)]]
@@ -213,6 +187,8 @@ class TestToolsModelExporter(unittest.TestCase):
                 json.dumps({}),
                 "--output_dir",
                 output_dir,
+                "--raise_if_failed",
+                "1",
                 "--export_types",
                 "torchscript",
                 "torchscript_int8",
@@ -236,3 +212,34 @@ class TestToolsModelExporter(unittest.TestCase):
                 self.assertTrue(os.path.exists(ann_file))
                 loaded_ann = torch.load(ann_file)
                 self.assertEqual(loaded_ann, {"attr1": "attr1", "attr2": 2})
+
+    def test_tools_model_exporter_batch_mode(self):
+        @task_factory.TASK_FACTORY.register("batch_task_test")
+        def batch_task_test():
+            return {
+                "task1": {"num": 1},
+                "task2": {"num": 2},
+            }
+
+        with tempfile.TemporaryDirectory() as output_dir:
+            export_args = [
+                "--task",
+                "test_task_unittest",
+                "--output_dir",
+                output_dir,
+                "--export_types",
+                "torchscript",
+                "--batch_mode",
+                "batch_task_test",
+            ]
+            out_paths = model_exporter.run_with_cmdline_args_list(export_args)
+            self.assertIsInstance(out_paths, dict)
+            self.assertEqual(len(out_paths), 2)
+            self.assertSetEqual(
+                set(out_paths.keys()),
+                {"task1", "task2"},
+            )
+
+            for _task_name, paths in out_paths.items():
+                for _export_name, path in paths.items():
+                    self.assertTrue(os.path.exists(path))

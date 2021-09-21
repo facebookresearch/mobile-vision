@@ -5,7 +5,7 @@ Base task
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, Union, Tuple, Dict
+from typing import Any, Dict, Iterable, Tuple, Union
 
 import torch
 
@@ -27,6 +27,8 @@ class TaskBase(ABC):
         """This code will try to run `self.get_{name}_model(*args, **kwargs)`, or
         use the function name registered by `self.register_model_type()`.
         """
+        if not hasattr(self, "model_type_registry"):
+            raise Exception("Call `super().__init__()` in the task first.")
         if name in self.model_type_registry:
             func_name = self.model_type_registry[name]
         else:
@@ -35,7 +37,7 @@ class TaskBase(ABC):
         func = getattr(self, func_name, None)
         if func is None:
             raise Exception(
-                f"Invalid model type name {name}, please implement Task.{func_name}(), or register the model type with task.register_model_type()"
+                f"Invalid model type name {name}, please implement Task.{func_name}(), or register the model type with task.register_model_type()"  # noqa
             )
         return func(*args, **kwargs)
 

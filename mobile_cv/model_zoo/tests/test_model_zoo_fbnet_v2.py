@@ -6,7 +6,8 @@ import unittest
 import mobile_cv.lut.lib.pt.flops_utils as flops_utils
 import torch
 from mobile_cv.model_zoo.models.fbnet_v2 import fbnet, fbnet_backbone
-from utils import is_devserver
+
+from .utils import is_devserver
 
 
 class TestModelZooFBNetV2(unittest.TestCase):
@@ -91,30 +92,18 @@ class TestModelZooFBNetV2(unittest.TestCase):
 
     def test_fbnet_flops(self):
         """
-        buck run @mode/dev-nosan //mobile-vision/projects/model_zoo/tests:test_model_zoo_fbnet_v2 -- test_model_zoo_fbnet_v2.TestModelZooFBNetV2.test_fbnet_flops
+        buck run @mode/dev-nosan //mobile-vision/projects/model_zoo/tests:test_model_zoo_fbnet_v2 \
+        -- test_model_zoo_fbnet_v2.TestModelZooFBNetV2.test_fbnet_flops
         """
         for x in [
-            # "default",
-            # "mnv3",
             "fbnet_a",
-            # "fbnet_b",
-            # "fbnet_c",
-            # "fbnet_ase",
-            # "fbnet_bse",
-            "fbnet_cse",
-            # "fbnet_dse",
-            # "eff_0",
-            # "eff_1",
-            # "eff_2",
-            # "eff_3",
-            # "eff_4",
+            "fbnet_b",
+            "fbnet_c",
             "FBNetV2_F1",
             "FBNetV2_F2",
             "FBNetV2_F3",
             "FBNetV2_F4",
             "FBNetV2_F5",
-            "FBNetV2_13732M",
-            # "cham_a",
         ]:
             print(f"model name: {x}")
             model = fbnet(x, pretrained=False)

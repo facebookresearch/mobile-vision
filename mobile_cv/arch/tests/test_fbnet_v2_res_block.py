@@ -2,10 +2,11 @@
 
 import unittest
 
-import mobile_cv.arch.fbnet_v2.basic_blocks as bb
+import mobile_cv.arch.fbnet_v2.basic_blocks as bb  # noqa
 import mobile_cv.arch.fbnet_v2.res_block as rb
 import torch
 import torch.nn as nn
+
 
 # import mobile_cv.lut.lib.pt.flops_utils as flops_utils
 

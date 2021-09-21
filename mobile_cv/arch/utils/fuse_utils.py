@@ -3,7 +3,7 @@
 
 import copy
 import typing
-from typing import Dict, Callable, Type
+from typing import Callable, Dict, Type
 
 import mobile_cv.arch.fbnet_v2.basic_blocks as bb
 import mobile_cv.arch.layers
@@ -23,6 +23,7 @@ from torch.quantization.fuse_modules import (
     fuse_conv_bn_relu,
     fuse_known_modules,
 )
+
 
 # Registry to get the names for fusing the supported module
 # returns the list of list for the sub module to fuse
@@ -282,7 +283,7 @@ def _fuse_model_fx_recursive(model: torch.nn.Module):
     traceable = True
     try:
         model = _fuse_model_fx_single(model)
-    except Exception as e:
+    except Exception as e:  # noqa
         # print(f"Error in tracing {model}: {e}")
         traceable = False
 
