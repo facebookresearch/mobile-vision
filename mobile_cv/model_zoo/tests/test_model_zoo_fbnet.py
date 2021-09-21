@@ -55,7 +55,8 @@ class TestModelZooFBNet(unittest.TestCase):
 
     def test_fbnet_flops(self):
         """
-        buck run @mode/dev-nosan //mobile-vision/projects/model_zoo/tests:test_model_zoo_fbnet -- test_model_zoo_fbnet.TestModelZooFBNet.test_fbnet_flops
+        buck run @mode/dev-nosan //mobile-vision/projects/model_zoo/tests:test_model_zoo_fbnet \
+        -- test_model_zoo_fbnet.TestModelZooFBNet.test_fbnet_flops
         """
 
         MODELS = [

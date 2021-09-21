@@ -41,7 +41,8 @@ def _create_and_trace(self, arch_name, model_arch):
 class TestFBNetV2VideoArchs(unittest.TestCase):
     def test_selected_arches(self):
         """
-        buck run @mode/dev-nosan mobile-vision/mobile_cv/mobile_cv/arch/tests:test_fbnet_v2_archs_video -- mobile_cv.arch.test_fbnet_v2_archs_video.TestFBNetV2VideoArchs.test_selected_arches
+        buck run @mode/dev-nosan mobile-vision/mobile_cv/mobile_cv/arch/tests:test_fbnet_v2_archs_video \
+        -- mobile_cv.arch.test_fbnet_v2_archs_video.TestFBNetV2VideoArchs.test_selected_arches
         """
         arch_factory = fbnet_modeldef_cls.MODEL_ARCH
         selected_archs = [

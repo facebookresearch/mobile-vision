@@ -54,7 +54,7 @@ class TestGBBlocks(unittest.TestCase):
                     gt_output_dim=input_dim,
                 )
 
-        with self.subTest(f"skip_bnrelu=True"):
+        with self.subTest(f"skip_bnrelu=True"): # noqa
             create_test_gb(
                 self,
                 C_out,

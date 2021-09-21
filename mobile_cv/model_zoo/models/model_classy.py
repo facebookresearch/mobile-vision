@@ -21,7 +21,7 @@ logger = logging.getLogger("model_zoo.model_classy")
 @model_zoo_factory.MODEL_ZOO_FACTORY.register("classy")
 def classy_model(model_cfg, weight_file=None, reset_heads=False, **kwargs):
     from classy_vision.fb.models import build_model
-    from classy_vision.generic.util import load_checkpoint, update_classy_model
+    from classy_vision.generic.util import load_checkpoint, update_classy_model # noqa
 
     logger.info(f"Building classy vision model with config {model_cfg}")
     ret = build_model(model_cfg)
@@ -185,7 +185,7 @@ def classy_prod_resnext3d_video_audio(**kwargs):
 
 
 @model_zoo_factory.MODEL_ZOO_FACTORY.register("classy_fbnet3d_video_audio")
-def classy_prod_resnext3d_video_audio(
+def classy_fbnet3d_video_audio(
     arch_name, num_classes=11, head_in_dims=None, **kwargs
 ):
     if head_in_dims is None:

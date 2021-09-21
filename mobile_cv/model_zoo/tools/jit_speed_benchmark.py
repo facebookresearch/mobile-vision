@@ -11,7 +11,9 @@ from numpy import percentile as np_pctile
 
 """
 Example run:
-buck run @mode/opt mobile-vision/projects/model_zoo/tools:jit_speed_benchmark -- --model /mnt/vol/gfsai-oregon/aml/mobile-vision/model_zoo/models/20200103/fACAVX/fbnet_c_i8f_int8_jit_f152918373/model.jpt --input_dims 1,3,224,224 --torch_threads 1 --int8_backend fbgemm
+buck run @mode/opt mobile-vision/projects/model_zoo/tools:jit_speed_benchmark -- --model \
+/mnt/vol/gfsai-oregon/aml/mobile-vision/model_zoo/models/20200103/fACAVX/fbnet_c_i8f_int8_jit_f152918373/model.jpt \
+--input_dims 1,3,224,224 --torch_threads 1 --int8_backend fbgemm
 """
 
 

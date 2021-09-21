@@ -14,16 +14,76 @@ import numpy as np
 
 # fmt: off
 TEST_LUT = [
-    {"type": "conv-1-96-96-544-1-3-1-544-1-1-1-0", "op": "OP_Caffe2_QuantizedConv2d_8x8to8", "value": 12771400.0, "unit": "cycle", "metric": "node-cycles"},
-    {"type": "dwise_conv-1-96-96-928-928-5-5-1-4-4-2-2", "op": "OP_Caffe2_QuantizedDepthwiseConv_8x8to8", "value": 5697160.0, "unit": "cycle", "metric": "node-cycles"},
-    {"type": "conv-1-96-96-864-1-3-3-864-4-4-1-1", "op": "OP_Caffe2_QuantizedConv2d_8x8to8", "value": 4047430.0, "unit": "cycle", "metric": "node-cycles"},
-    {"type": "conv-1-3-3-768-960-3-3-768-1-1-1-1", "op": "OP_Caffe2_QuantizedConv2d_8x8to8", "value": 2743590.0, "unit": "cycle", "metric": "node-cycles"},
-    {"type": "dwise_conv-1-50-50-416-416-5-5-1-2-2-2-2", "op": "OP_Caffe2_QuantizedDepthwiseConv_8x8to8", "value": 2642200.0, "unit": "cycle", "metric": "node-cycles"},
-    {"type": "conv-1-12-12-768-928-3-3-768-4-4-1-1", "op": "OP_Caffe2_QuantizedConv2d_8x8to8", "value": 2611180.0, "unit": "cycle", "metric": "node-cycles"},
-    {"type": "conv-1-6-6-608-800-5-5-608-4-4-2-2", "op": "OP_Caffe2_QuantizedConv2d_8x8to8", "value": 2517690.0, "unit": "cycle", "metric": "node-cycles"},
-    {"type": "conv-1-3-3-928-1024-5-5-928-4-4-2-2", "op": "OP_Caffe2_QuantizedConv2d_8x8to8", "value": 2478750.0, "unit": "cycle", "metric": "node-cycles"},
-    {"type": "conv-1-6-6-480-544-5-5-480-4-4-2-2", "op": "OP_Caffe2_QuantizedConv2d_8x8to8", "value": 1353190.0, "unit": "cycle", "metric": "node-cycles"},
-    {"type": "conv-1-3-3-448-864-3-3-448-1-1-1-1", "op": "OP_Caffe2_QuantizedConv2d_8x8to8", "value": 1164330.0, "unit": "cycle", "metric": "node-cycles"},
+    {
+        "type": "conv-1-96-96-544-1-3-1-544-1-1-1-0",
+        "op": "OP_Caffe2_QuantizedConv2d_8x8to8",
+        "value": 12771400.0,
+        "unit": "cycle",
+        "metric": "node-cycles"
+    },
+    {
+        "type": "dwise_conv-1-96-96-928-928-5-5-1-4-4-2-2",
+        "op": "OP_Caffe2_QuantizedDepthwiseConv_8x8to8",
+        "value": 5697160.0,
+        "unit": "cycle",
+        "metric": "node-cycles"
+    },
+    {
+        "type": "conv-1-96-96-864-1-3-3-864-4-4-1-1",
+        "op": "OP_Caffe2_QuantizedConv2d_8x8to8",
+        "value": 4047430.0,
+        "unit": "cycle",
+        "metric": "node-cycles"
+    },
+    {
+        "type": "conv-1-3-3-768-960-3-3-768-1-1-1-1",
+        "op": "OP_Caffe2_QuantizedConv2d_8x8to8",
+        "value": 2743590.0,
+        "unit": "cycle",
+        "metric": "node-cycles"
+    },
+    {
+        "type": "dwise_conv-1-50-50-416-416-5-5-1-2-2-2-2",
+        "op": "OP_Caffe2_QuantizedDepthwiseConv_8x8to8",
+        "value": 2642200.0,
+        "unit": "cycle",
+        "metric": "node-cycles"
+    },
+    {
+        "type": "conv-1-12-12-768-928-3-3-768-4-4-1-1",
+        "op": "OP_Caffe2_QuantizedConv2d_8x8to8",
+        "value": 2611180.0,
+        "unit": "cycle",
+        "metric": "node-cycles"
+    },
+    {
+        "type": "conv-1-6-6-608-800-5-5-608-4-4-2-2",
+        "op": "OP_Caffe2_QuantizedConv2d_8x8to8",
+        "value": 2517690.0,
+        "unit": "cycle",
+        "metric": "node-cycles"
+    },
+    {
+        "type": "conv-1-3-3-928-1024-5-5-928-4-4-2-2",
+        "op": "OP_Caffe2_QuantizedConv2d_8x8to8",
+        "value": 2478750.0,
+        "unit": "cycle",
+        "metric": "node-cycles"
+    },
+    {
+        "type": "conv-1-6-6-480-544-5-5-480-4-4-2-2",
+        "op": "OP_Caffe2_QuantizedConv2d_8x8to8",
+        "value": 1353190.0,
+        "unit": "cycle",
+        "metric": "node-cycles"
+    },
+    {
+        "type": "conv-1-3-3-448-864-3-3-448-1-1-1-1",
+        "op": "OP_Caffe2_QuantizedConv2d_8x8to8",
+        "value": 1164330.0,
+        "unit": "cycle",
+        "metric": "node-cycles"
+    },
 ]
 # fmt: on
 

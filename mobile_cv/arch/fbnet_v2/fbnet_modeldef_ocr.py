@@ -3,7 +3,7 @@
 import mobile_cv.common.misc.registry as registry
 
 from . import modeldef_utils as mdu
-from .modeldef_utils import _ex, e1, e3, e4, e6
+from .modeldef_utils import _ex, e1, e3, e4, e6 # noqa
 
 
 MODEL_ARCH = registry.Registry("ocr_arch_factory")

@@ -1020,7 +1020,7 @@ FBNET2_EXPERIMENTAL_CHANNEL = {
             # [t, c, n, s]
             "last": [6, 1280, 1, 1],
         },
-        "source": "/mnt/vol/gfsai-east/aml/mobile-vision/gpu/alvinwan/20190805/search-fbnet-v41-224-1.0-e0.6.al_mmo13/epoch_89_0/arch_config.json",
+        "source": "/mnt/vol/gfsai-east/aml/mobile-vision/gpu/alvinwan/20190805/search-fbnet-v41-224-1.0-e0.6.al_mmo13/epoch_89_0/arch_config.json", # noqa
     },
     "fbnet2_layer4_channel1_e89": {  # 59 Mflops
         "block_op_type": {
@@ -1044,7 +1044,7 @@ FBNET2_EXPERIMENTAL_CHANNEL = {
             "last": "ir_pool_hs",
         },
         "block_cfg": fbnet2_block_cfg,
-        "source": "/mnt/vol/gfsai-east/aml/mobile-vision/gpu/alvinwan/20190805/search-fbnet-v41-224-1.0-e0.6.02r1zf2_/epoch_89_0/arch_config.json",
+        "source": "/mnt/vol/gfsai-east/aml/mobile-vision/gpu/alvinwan/20190805/search-fbnet-v41-224-1.0-e0.6.02r1zf2_/epoch_89_0/arch_config.json", # noqa
     },
     "fbnet2_layer4_channel1_e89_manual": {  # 59 Mflops
         "block_op_type": {
@@ -1068,7 +1068,7 @@ FBNET2_EXPERIMENTAL_CHANNEL = {
             "last": "ir_pool_hs",
         },
         "block_cfg": fbnet2_block_cfg,
-        "source": "/mnt/vol/gfsai-east/aml/mobile-vision/gpu/alvinwan/20190805/search-fbnet-v41-224-1.0-e0.6.02r1zf2_/epoch_89_0/arch_config.json",
+        "source": "/mnt/vol/gfsai-east/aml/mobile-vision/gpu/alvinwan/20190805/search-fbnet-v41-224-1.0-e0.6.02r1zf2_/epoch_89_0/arch_config.json", # noqa
     },
     "mnv3_layer4_channel1_e14": {  # 441 Mflops
         "block_op_type": {
@@ -1092,7 +1092,7 @@ FBNET2_EXPERIMENTAL_CHANNEL = {
             "last": "ir_pool_hs",
         },
         "block_cfg": fbnet2_block_cfg,
-        "source": "/mnt/vol/gfsai-east/aml/mobile-vision/gpu/alvinwan/20190806/dnas_mnv3_channel1.g62u9haw/epoch_29_0/arch_config.json",
+        "source": "/mnt/vol/gfsai-east/aml/mobile-vision/gpu/alvinwan/20190806/dnas_mnv3_channel1.g62u9haw/epoch_29_0/arch_config.json", # noqa
     },
     "mnv3_channel16_e89": {
         "block_op_type": {

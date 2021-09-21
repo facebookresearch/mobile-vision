@@ -21,7 +21,8 @@ class TestModelZooFBNetHR(unittest.TestCase):
 
     def test_fbnet_hr_flops(self):
         """
-        buck run @mode/dev-nosan //mobile-vision/projects/model_zoo/tests:test_model_zoo_fbnet_hr -- test_model_zoo_fbnet_hr.TestModelZooFBNetHR.test_fbnet_hr_flops
+        buck run @mode/dev-nosan //mobile-vision/projects/model_zoo/tests:test_model_zoo_fbnet_hr \
+        -- test_model_zoo_fbnet_hr.TestModelZooFBNetHR.test_fbnet_hr_flops
         """
         for x in [
             "TestModel",

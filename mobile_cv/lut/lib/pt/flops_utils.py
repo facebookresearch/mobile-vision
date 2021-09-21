@@ -158,7 +158,7 @@ def get_unique_parent_types(type_list):
     """Given a list of types, remove types that are subclasses of others"""
     ret = []
     for idx, x in enumerate(type_list):
-        if issubclass(x, tuple(type_list[idx + 1 :])):
+        if issubclass(x, tuple(type_list[idx + 1:])):
             continue
         if len(ret) > 0 and issubclass(x, tuple(ret)):
             continue

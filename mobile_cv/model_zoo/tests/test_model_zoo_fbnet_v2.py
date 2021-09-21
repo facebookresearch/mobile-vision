@@ -91,7 +91,8 @@ class TestModelZooFBNetV2(unittest.TestCase):
 
     def test_fbnet_flops(self):
         """
-        buck run @mode/dev-nosan //mobile-vision/projects/model_zoo/tests:test_model_zoo_fbnet_v2 -- test_model_zoo_fbnet_v2.TestModelZooFBNetV2.test_fbnet_flops
+        buck run @mode/dev-nosan //mobile-vision/projects/model_zoo/tests:test_model_zoo_fbnet_v2 \
+        -- test_model_zoo_fbnet_v2.TestModelZooFBNetV2.test_fbnet_flops
         """
         for x in [
             # "default",

@@ -172,7 +172,7 @@ class TestFlopsEstimation(unittest.TestCase):
         Passing arguments through key values are not supported due to the
         limitation of torch.nn.Module.register_forward_hook() (only the positional
         arguments are given to the module).
-        https://pytorch.org/docs/stable/generated/torch.nn.Module.html?highlight=register_forward_hook#torch.nn.Module.register_forward_hook
+        https://pytorch.org/docs/stable/generated/torch.nn.Module.html?highlight=register_forward_hook#torch.nn.Module.register_forward_hook # noqa
         """
         src_l = 3
         bsz = 5
