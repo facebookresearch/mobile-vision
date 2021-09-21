@@ -2,10 +2,12 @@
 
 import sys
 
-sys.path.append("mobile-vision/common/tools/")
-
 import aibench_utils as au
 import fblearner_launch_utils as flu
+
+
+sys.path.append("mobile-vision/common/tools/")
+
 
 
 flu.set_run_locally()

@@ -10,10 +10,11 @@ import torch.nn as nn
 from mobile_cv.common import utils_io
 from mobile_cv.common.misc.py import dynamic_import
 from mobile_cv.predictor.builtin_functions import (
-    IdentityPreprocess,
     IdentityPostprocess,
+    IdentityPreprocess,
     NaiveRunFunc,
 )
+
 
 path_manager = utils_io.get_path_manager()
 logger = logging.getLogger(__name__)

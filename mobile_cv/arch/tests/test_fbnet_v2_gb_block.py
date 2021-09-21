@@ -7,6 +7,7 @@ import mobile_cv.arch.fbnet_v2.gb_block as gb_block
 import mobile_cv.arch.utils.helper as hp
 import torch
 
+
 TEST_CUDA = torch.cuda.is_available()
 
 

@@ -2,9 +2,7 @@
 
 # pyre-fixme[21]: Could not find name `fbnet_blocks_factory` in
 #  `mobile_cv.arch.fbnet_v2`.
-from . import fbnet_blocks_factory
-from . import fbnet_modeldef_cls
-from . import shift_conv
+from . import fbnet_blocks_factory, fbnet_modeldef_cls, shift_conv
 
 
 PRIMITIVES = {

@@ -18,6 +18,6 @@ from . import (  # noqa
     gb_block,
     irf_3d_block,
     irf_spade,
-    spade,
     norms,
+    spade,
 )

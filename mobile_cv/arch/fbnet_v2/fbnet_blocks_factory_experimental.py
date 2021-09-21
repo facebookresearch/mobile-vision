@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 
-# pyre-fixme[21]: Could not find name `fbnet_blocks_factory` in
-#  `mobile_cv.arch.fbnet_v2`.
-from . import fbnet_blocks_factory as bf
-
 # pyre-fixme[21]: Could not find name `fbnet_building_blocks` in
 #  `mobile_cv.arch.fbnet_v2`.
-from . import fbnet_building_blocks as bb
-from . import fbnet_building_blocks_experimental as bbe
-from . import oct_conv
+# pyre-fixme[21]: Could not find name `fbnet_blocks_factory` in
+#  `mobile_cv.arch.fbnet_v2`.
+from . import (
+    fbnet_blocks_factory as bf,
+    fbnet_building_blocks as bb,
+    fbnet_building_blocks_experimental as bbe,
+    oct_conv,
+)
 
 
 RESIZE_METHOD_TO_OP = {

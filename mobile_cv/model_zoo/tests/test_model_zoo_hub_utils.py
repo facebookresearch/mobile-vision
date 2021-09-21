@@ -9,6 +9,7 @@ import torch
 from mobile_cv.model_zoo.models.hub_utils import pretrained_download
 from utils import is_devserver
 
+
 ON_DEVSERVER = is_devserver()
 
 

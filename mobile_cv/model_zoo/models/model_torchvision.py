@@ -11,6 +11,7 @@ from mobile_cv.model_zoo.models.hub_utils import pretrained_download
 # to register for model_zoo
 from . import model_zoo_factory  # noqa
 
+
 model_zoo_factory.MODEL_ZOO_FACTORY.register(
     # pyre-fixme[16]: Module `models` has no attribute `resnet18`.
     "resnet18",

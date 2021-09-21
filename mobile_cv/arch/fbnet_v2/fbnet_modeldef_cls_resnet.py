@@ -3,6 +3,7 @@
 
 from .fbnet_modeldef_cls import MODEL_ARCH
 
+
 BASIC_ARGS = {
     "bias": False,
 }

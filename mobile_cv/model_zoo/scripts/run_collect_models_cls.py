@@ -2,9 +2,11 @@
 
 import sys
 
-sys.path.append("mobile-vision/common/tools/")
 import fblearner_launch_utils as flu
 import launch_helper as lh
+
+
+sys.path.append("mobile-vision/common/tools/")
 
 
 flu.set_debug_local()

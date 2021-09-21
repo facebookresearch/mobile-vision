@@ -2,6 +2,7 @@
 from .fbnet_modeldef_cls import MODEL_ARCH
 from .modeldef_utils import _ex
 
+
 _BASIC_ARGS = {
     "dw_skip_bnrelu": True,
     "width_divisor": 8,

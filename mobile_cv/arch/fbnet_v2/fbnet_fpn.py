@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import copy
-from typing import List, Optional, Tuple, Dict
+from typing import Dict, List, Optional, Tuple
 
 import mobile_cv.arch.fbnet_v2.basic_blocks as bb
 import mobile_cv.arch.fbnet_v2.fbnet_builder as fbnet_builder

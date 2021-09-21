@@ -19,6 +19,7 @@ from typing import List, NamedTuple, Tuple
 import torch
 from torch.nn.modules.utils import _pair
 
+
 # for backward compatibility
 BatchNorm2d = torch.nn.BatchNorm2d
 interpolate = torch.nn.functional.interpolate

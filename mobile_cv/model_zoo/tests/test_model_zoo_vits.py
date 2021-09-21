@@ -8,6 +8,7 @@ import torch
 from mobile_cv.model_zoo.models.vits import vit
 from utils import is_devserver
 
+
 ON_DEVSERVER = is_devserver()
 
 

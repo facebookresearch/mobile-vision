@@ -22,6 +22,7 @@ from mobile_cv.common import utils_io
 from mobile_cv.model_zoo.models import model_utils
 from torch.utils.mobile_optimizer import optimize_for_mobile
 
+
 path_manager = utils_io.get_path_manager()
 logger = logging.getLogger("model_zoo_tools.export")
 

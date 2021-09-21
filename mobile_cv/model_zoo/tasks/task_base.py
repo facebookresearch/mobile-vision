@@ -5,7 +5,7 @@ Base task
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, Union, Tuple, Dict
+from typing import Any, Dict, Iterable, Tuple, Union
 
 import torch
 

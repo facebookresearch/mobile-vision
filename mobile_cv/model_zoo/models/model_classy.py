@@ -12,6 +12,7 @@ from mobile_cv.common.utils_io import get_path_manager
 # to register for model_zoo
 from . import model_zoo_factory  # noqa
 
+
 path_manager = get_path_manager()
 
 logger = logging.getLogger("model_zoo.model_classy")

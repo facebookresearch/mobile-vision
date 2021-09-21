@@ -2,9 +2,11 @@
 
 import sys
 
+import mobile_cv.common.fb.flu.fblearner_launch_utils as flu
+
+
 # sys.path.append('mobile-vision/common/tools/')
 sys.path.append("mobile-vision")
-import mobile_cv.common.fb.flu.fblearner_launch_utils as flu
 
 
 flu.set_use_canary_flow()

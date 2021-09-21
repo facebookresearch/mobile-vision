@@ -10,6 +10,7 @@ import torchvision.models as models
 from fblearner.flow.core.types_lib.visualizationmetrics import VISUALIZATION_METRICS
 from fblearner.flow.util.visualization_utils import summary_writer
 
+
 logger = logging.getLogger(__name__)
 
 

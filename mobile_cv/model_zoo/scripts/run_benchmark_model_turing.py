@@ -3,8 +3,10 @@
 import json
 import sys
 
-sys.path.append("mobile-vision/common/tools/")
 import fblearner_launch_utils as flu
+
+
+sys.path.append("mobile-vision/common/tools/")
 
 
 flu.set_debug_local()
