@@ -9,7 +9,10 @@ import mobile_cv.common.misc.iter_utils as iu
 import numpy as np
 import torch
 from mobile_cv.arch.utils import fuse_utils, quantize_utils as qu
+from mobile_cv.common import utils_io
 from torch.utils.mobile_optimizer import generate_mobile_module_lints
+
+path_manager = utils_io.get_path_manager()
 
 
 def convert_torch_script(
@@ -62,18 +65,21 @@ def convert_torch_script(
 
 
 def save_model(output_dir, traced_model, data=None):
-    output_dir = os.path.abspath(output_dir)
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+    if not path_manager.isdir(output_dir):
+        path_manager.mkdirs(output_dir)
 
     out_file = os.path.join(output_dir, "model.jit")
     print(f"Saving traced model {out_file}")
-    torch.jit.save(traced_model, out_file)
+
+    with path_manager.open(out_file, "wb") as fp:
+        torch.jit.save(traced_model, fp)
     print(f"Model saved to {out_file}")
 
     if data is not None:
         input_file = os.path.join(output_dir, "data.pth")
-        torch.save(data, input_file)
+
+        with path_manager.open(input_file, "wb") as fp:
+            torch.save(data, fp)
         print(f"Data saved to {input_file}")
 
     return out_file

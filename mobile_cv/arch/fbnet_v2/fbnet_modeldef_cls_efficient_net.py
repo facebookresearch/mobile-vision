@@ -10,6 +10,11 @@ BASIC_ARGS = {
     "width_divisor": 8,
 }
 
+BASIC_ARGS_LITE = {
+    "relu_args": "relu6",
+    "width_divisor": 8,
+}
+
 IRF_CFG = {
     "less_se_channels": True,
     "zero_last_bn_gamma": True,
@@ -293,4 +298,144 @@ MODEL_ARCH_EFFICIENT_NET = {
         ],
     },
 }
+
+MODEL_ARCH_EFFICIENT_NET_LITE = {
+    "eff_lite_0": {
+        "input_size": 224,
+        "basic_args": BASIC_ARGS_LITE,
+        "blocks": [
+            # [c, s, n, ...]
+            # stage 0
+            [["conv_k3", 32, 2, 1]],
+            # stage 1
+            [["ir_k3", 16, 1, 1, e1, IRF_CFG]],
+            # stage 2
+            [["ir_k3", 24, 2, 2, e6, IRF_CFG]],
+            # stage 3
+            [["ir_k5", 40, 2, 2, e6, IRF_CFG]],
+            # stage 4
+            [
+                ["ir_k3", 80, 2, 3, e6, IRF_CFG],
+                ["ir_k5", 112, 1, 3, e6, IRF_CFG],
+            ],
+            # stage 5
+            [
+                ["ir_k5", 192, 2, 4, e6, IRF_CFG],
+                ["ir_k3", 320, 1, 1, e6, IRF_CFG],
+            ],
+            # stage 6
+            [["conv_k1", 1280, 1, 1]],
+        ],
+    },
+    "eff_lite_1": {
+        "input_size": 240,
+        "basic_args": BASIC_ARGS_LITE,
+        "blocks": [
+            # [c, s, n, ...]
+            # stage 0
+            [["conv_k3", 32, 2, 1]],
+            # stage 1
+            [["ir_k3", 16, 1, 2, e1, IRF_CFG]],
+            # stage 2
+            [["ir_k3", 24, 2, 3, e6, IRF_CFG]],
+            # stage 3
+            [["ir_k5", 40, 2, 3, e6, IRF_CFG]],
+            # stage 4
+            [
+                ["ir_k3", 80, 2, 4, e6, IRF_CFG],
+                ["ir_k5", 112, 1, 4, e6, IRF_CFG],
+            ],
+            # stage 5
+            [
+                ["ir_k5", 192, 2, 5, e6, IRF_CFG],
+                ["ir_k3", 320, 1, 2, e6, IRF_CFG],
+            ],
+            # stage 6
+            [["conv_k1", 1280, 1, 1]],
+        ],
+    },
+    "eff_lite_2": {
+        "input_size": 260,
+        "basic_args": BASIC_ARGS_LITE,
+        "blocks": [
+            # [c, s, n, ...]
+            # stage 0
+            [["conv_k3", 32, 2, 1]],
+            # stage 1
+            [["ir_k3", 16, 1, 2, e1, IRF_CFG]],
+            # stage 2
+            [["ir_k3", 24, 2, 3, e6, IRF_CFG]],
+            # stage 3
+            [["ir_k5", 48, 2, 3, e6, IRF_CFG]],
+            # stage 4
+            [
+                ["ir_k3", 88, 2, 4, e6, IRF_CFG],
+                ["ir_k5", 120, 1, 4, e6, IRF_CFG],
+            ],
+            # stage 5
+            [
+                ["ir_k5", 208, 2, 5, e6, IRF_CFG],
+                ["ir_k3", 352, 1, 2, e6, IRF_CFG],
+            ],
+            # stage 6
+            [["conv_k1", 1280, 1, 1]],
+        ],
+    },
+    "eff_lite_3": {
+        "input_size": 300,
+        "basic_args": BASIC_ARGS_LITE,
+        "blocks": [
+            # [c, s, n, ...]
+            # stage 0
+            [["conv_k3", 40, 2, 1]],
+            # stage 1
+            [["ir_k3", 24, 1, 2, e1, IRF_CFG]],
+            # stage 2
+            [["ir_k3", 32, 2, 3, e6, IRF_CFG]],
+            # stage 3
+            [["ir_k5", 48, 2, 3, e6, IRF_CFG]],
+            # stage 4
+            [
+                ["ir_k3", 96, 2, 5, e6, IRF_CFG],
+                ["ir_k5", 136, 1, 5, e6, IRF_CFG],
+            ],
+            # stage 5
+            [
+                ["ir_k5", 232, 2, 6, e6, IRF_CFG],
+                ["ir_k3", 384, 1, 2, e6, IRF_CFG],
+            ],
+            # stage 6
+            [["conv_k1", 1280, 1, 1]],
+        ],
+    },
+    "eff_lite_4": {
+        "input_size": 380,
+        "basic_args": BASIC_ARGS_LITE,
+        "blocks": [
+            # [c, s, n, ...]
+            # stage 0
+            [["conv_k3", 48, 2, 1]],
+            # stage 1
+            [["ir_k3", 24, 1, 2, e1, IRF_CFG]],
+            # stage 2
+            [["ir_k3", 32, 2, 4, e6, IRF_CFG]],
+            # stage 3
+            [["ir_k5", 56, 2, 4, e6, IRF_CFG]],
+            # stage 4
+            [
+                ["ir_k3", 112, 2, 6, e6, IRF_CFG],
+                ["ir_k5", 160, 1, 6, e6, IRF_CFG],
+            ],
+            # stage 5
+            [
+                ["ir_k5", 272, 2, 8, e6, IRF_CFG],
+                ["ir_k3", 448, 1, 2, e6, IRF_CFG],
+            ],
+            # stage 6
+            [["conv_k1", 1280, 1, 1]],
+        ],
+    },
+}
+
 MODEL_ARCH.register_dict(MODEL_ARCH_EFFICIENT_NET)
+MODEL_ARCH.register_dict(MODEL_ARCH_EFFICIENT_NET_LITE)

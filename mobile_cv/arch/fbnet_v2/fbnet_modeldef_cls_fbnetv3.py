@@ -277,6 +277,117 @@ MODEL_ARCH_FBNETV3 = {
             [["ir_pool_hs", 1984, 1, 1, {"expansion": 6.0}]],
         ],
     },
+    "FBNetV3_20G": {
+        # A giant FBNetV3 model used for distillation.
+        # 20.4G FLOPs, 101M Params
+        # Top-1 accuracy 84.4% w/o extra data.
+        "input_size": 256,
+        "basic_args": BASIC_ARGS,
+        "blocks": [
+            [["conv_k3_hs", 32, 2, 1]],
+            [
+                ["ir_k3_hs", 32, 1, 1, {"expansion": 1, "dw_group_ratio": 32}, IRF_CFG],
+                ["ir_k3_hs", 32, 1, 1, {"expansion": 1, "dw_group_ratio": 32}, IRF_CFG],
+            ],
+            [
+                [
+                    "ir_k5_hs",
+                    108,
+                    2,
+                    1,
+                    {"expansion": 4, "dw_group_ratio": 64},
+                    IRF_CFG,
+                ],
+                [
+                    "ir_k5_hs",
+                    108,
+                    1,
+                    5,
+                    {"expansion": 1, "dw_group_ratio": 54},
+                    IRF_CFG,
+                ],
+            ],
+            [
+                [
+                    "ir_k5_sehsig_hs",
+                    160,
+                    2,
+                    1,
+                    {"expansion": 2, "dw_group_ratio": 108},
+                    IRF_CFG,
+                ],
+                [
+                    "ir_k5_sehsig_hs",
+                    160,
+                    1,
+                    5,
+                    {"expansion": 2, "dw_group_ratio": 80},
+                    IRF_CFG,
+                ],
+            ],
+            [
+                [
+                    "ir_k5_hs",
+                    256,
+                    2,
+                    1,
+                    {"expansion": 2, "dw_group_ratio": 80},
+                    IRF_CFG,
+                ],
+                [
+                    "ir_k3_hs",
+                    256,
+                    1,
+                    6,
+                    {"expansion": 2, "dw_group_ratio": 128},
+                    IRF_CFG,
+                ],
+                [
+                    "ir_k3_sehsig_hs",
+                    348,
+                    1,
+                    1,
+                    {"expansion": 2, "dw_group_ratio": 116},
+                    IRF_CFG,
+                ],
+                [
+                    "ir_k5_sehsig_hs",
+                    348,
+                    1,
+                    9,
+                    {"expansion": 2, "dw_group_ratio": 116},
+                    IRF_CFG,
+                ],
+            ],
+            [
+                [
+                    "ir_k3_sehsig_hs",
+                    580,
+                    2,
+                    1,
+                    {"expansion": 2, "dw_group_ratio": 116},
+                    IRF_CFG,
+                ],
+                [
+                    "ir_k5_sehsig_hs",
+                    580,
+                    1,
+                    7,
+                    {"expansion": 2, "dw_group_ratio": 116},
+                    IRF_CFG,
+                ],
+                [
+                    "ir_k5_sehsig_hs",
+                    580,
+                    1,
+                    3,
+                    {"expansion": 2, "dw_group_ratio": 116},
+                    IRF_CFG,
+                ],
+            ],
+            [["ir_pool_hs", 3200, 1, 1, {"expansion": 6.0}]],
+        ],
+    },
 }
 
 MODEL_ARCH.register_dict(MODEL_ARCH_FBNETV3)

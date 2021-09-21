@@ -14,14 +14,19 @@ import mobile_cv.arch.utils.misc as utils_misc
 import mobile_cv.common.misc.iter_utils as iu
 import mobile_cv.common.misc.registry as registry
 import torch
+import torch.fx
 import torch.nn as nn
 from mobile_cv.arch.layers import (
     GroupNorm,
     NaiveSyncBatchNorm,
     NaiveSyncBatchNorm1d,
     NaiveSyncBatchNorm3d,
+    FrozenBatchNorm2d,
 )
 from torch.nn.quantized.modules import FloatFunctional
+
+# needed for SE module with fx tracing
+torch.fx.wrap("len")
 
 
 BN_REGISTRY = registry.Registry("bn")
@@ -280,7 +285,7 @@ def build_conv(
         "conv": lambda: _create_conv(nn.Conv2d, conv_args),
         "conv2d": lambda: _create_conv(nn.Conv2d, conv_args),
         "conv3d": lambda: _create_conv(nn.Conv3d, conv_args),
-        "linear": lambda: nn.Linear(in_channels, out_channels, bias=True),
+        "linear": lambda: nn.Linear(in_channels, out_channels),
     }
 
     if name in CONV_DEFAULT_MAPS:
@@ -289,11 +294,15 @@ def build_conv(
     return CONV_REGISTRY.get(name)(in_channels, out_channels, **conv_args)
 
 
-def build_bn(name, num_channels, zero_gamma=None, **kwargs):
+def build_bn(name, num_channels, zero_gamma=None, gamma_beta=None, **kwargs):
     def _create_bn(bn_class):
         bn_op = bn_class(num_channels, **kwargs)
         if zero_gamma is True:
             nn.init.constant_(bn_op.weight, 0.0)
+        if gamma_beta is not None:
+            assert isinstance(gamma_beta, tuple)
+            nn.init.constant_(bn_op.weight, gamma_beta[0])
+            nn.init.constant_(bn_op.bias, gamma_beta[1])
         return bn_op
 
     BN_DEFAULT_MAPS = {
@@ -312,6 +321,7 @@ def build_bn(name, num_channels, zero_gamma=None, **kwargs):
         # others
         "gn": lambda: GroupNorm(num_channels=num_channels, **kwargs),
         "instance": lambda: nn.InstanceNorm2d(num_channels, **kwargs),
+        "frozen_bn": lambda: FrozenBatchNorm2d(num_channels, **kwargs),
     }
 
     if name is None or name == "none":
@@ -484,7 +494,6 @@ class SEModule(nn.Module):
         relu_args="relu",
     ):
         super(SEModule, self).__init__()
-
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
         if not fc:
             self.se = _se_op_conv(
@@ -505,14 +514,14 @@ class SEModule(nn.Module):
         self.mul = TorchMultiply()
 
     def forward(self, x):
+        torch._assert(len(x.shape) == 4, "input must have dimension 4")
         n, c = x.shape[:2]
-        other_dims = len(x.shape) - 2
         y = self.avg_pool(x)
         if self.use_fc:
             y = y.view(n, c)
         y = self.se(y)
         if self.use_fc:
-            y = y.view(n, c, *([1] * other_dims)).expand_as(x)
+            y = y.view(n, c, 1, 1).expand_as(x)
         return self.mul(x, y)
 
 
@@ -547,14 +556,14 @@ class SE3DModule(nn.Module):
         self.mul = TorchMultiply()
 
     def forward(self, x):
+        torch._assert(len(x.shape) == 5, "input must have dimension 5")
         n, c = x.shape[:2]
-        other_dims = len(x.shape) - 2
         y = self.avg_pool(x)
         if self.use_fc:
             y = y.view(n, c)
         y = self.se(y)
         if self.use_fc:
-            y = y.view(n, c, *([1] * other_dims)).expand_as(x)
+            y = y.view(n, c, 1, 1, 1).expand_as(x)
         return self.mul(x, y)
 
 
@@ -584,6 +593,12 @@ class Upsample(nn.Module):
         self.scale = scale_factor
         self.mode = mode
         self.align_corners = align_corners
+
+        # scripting requires float instead of int
+        if isinstance(self.scale, int):
+            self.scale = float(self.scale)
+        elif isinstance(self.scale, list):
+            self.scale = [float(x) for x in self.scale]
 
     def forward(self, x):
         return torch.nn.functional.interpolate(
@@ -649,7 +664,7 @@ def build_upsample_neg_stride(name=None, stride=None, **kwargs):
 
 
 class AddWithDropConnect(nn.Module):
-    """ Apply drop connect on x before adding with y """
+    """Apply drop connect on x before adding with y"""
 
     def __init__(self, drop_connect_rate):
         super().__init__()

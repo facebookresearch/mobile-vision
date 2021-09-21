@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import copy
 import unittest
 
 import mobile_cv.arch.utils.helper as helper
@@ -36,3 +37,20 @@ class TestUtilsHelper(unittest.TestCase):
             _func4, {"arg1": 2, "arg2": 3, "non_args": 4, "arg3": 5}
         )
         self.assertEqual(res_args, {"arg1": 2, "arg2": 3, "non_args": 4, "arg3": 5})
+
+    def test_update_dict_merge_list(self):
+        dest = {"aa": [4, 5]}
+        src = {
+            "aa": [1, 2, 3],
+            "bb": [2],
+            "cc": [],
+        }
+        gt = {
+            "aa": [4, 5, 1, 2, 3],
+            "bb": [2],
+            "cc": [],
+        }
+
+        out = copy.deepcopy(dest)
+        out = helper.update_dict_merge_list(out, src)
+        self.assertEqual(out, gt)

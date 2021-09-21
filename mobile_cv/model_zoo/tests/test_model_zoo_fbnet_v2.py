@@ -6,11 +6,12 @@ import unittest
 import mobile_cv.lut.lib.pt.flops_utils as flops_utils
 import torch
 from mobile_cv.model_zoo.models.fbnet_v2 import fbnet, fbnet_backbone
+from utils import is_devserver
 
 
 class TestModelZooFBNetV2(unittest.TestCase):
     def test_fbnet_v2(self):
-        load_pretrained = True
+        load_pretrained = is_devserver()
         for name in [
             "fbnet_a",
             "fbnet_b",
@@ -39,7 +40,7 @@ class TestModelZooFBNetV2(unittest.TestCase):
                 self.assertEqual(out.size(), torch.Size([1, 1000]))
 
     def test_fbnet_v2_backbone(self):
-        load_pretrained = True
+        load_pretrained = is_devserver()
         for name in [
             "fbnet_c",
             # "FBNetV2_F2",
@@ -54,7 +55,7 @@ class TestModelZooFBNetV2(unittest.TestCase):
             self.assertEqual(out.size()[:2], torch.Size([1, out_chan]))
 
     def test_fbnet_v2_backbone_stage_indices(self):
-        load_pretrained = True
+        load_pretrained = is_devserver()
         name = "fbnet_c"
         print(f"Testing {name} backbone selected stage indices...")
         stage_indices = [0, 1, 2]
@@ -89,10 +90,31 @@ class TestModelZooFBNetV2(unittest.TestCase):
         self.assertEqual(out.size(), torch.Size([1, 8]))
 
     def test_fbnet_flops(self):
+        """
+        buck run @mode/dev-nosan //mobile-vision/projects/model_zoo/tests:test_model_zoo_fbnet_v2 -- test_model_zoo_fbnet_v2.TestModelZooFBNetV2.test_fbnet_flops
+        """
         for x in [
-            "fbnet_c",
-            # "FBNetV2_F1",
-            # "FBNetV2_F5",
+            # "default",
+            # "mnv3",
+            "fbnet_a",
+            # "fbnet_b",
+            # "fbnet_c",
+            # "fbnet_ase",
+            # "fbnet_bse",
+            "fbnet_cse",
+            # "fbnet_dse",
+            # "eff_0",
+            # "eff_1",
+            # "eff_2",
+            # "eff_3",
+            # "eff_4",
+            "FBNetV2_F1",
+            "FBNetV2_F2",
+            "FBNetV2_F3",
+            "FBNetV2_F4",
+            "FBNetV2_F5",
+            "FBNetV2_13732M",
+            # "cham_a",
         ]:
             print(f"model name: {x}")
             model = fbnet(x, pretrained=False)

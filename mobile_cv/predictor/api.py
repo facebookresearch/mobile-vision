@@ -10,11 +10,10 @@ import torch.nn as nn
 from mobile_cv.common import utils_io
 from mobile_cv.common.misc.py import dynamic_import
 from mobile_cv.predictor.builtin_functions import (
-    IdentityPostprocess,
     IdentityPreprocess,
+    IdentityPostprocess,
     NaiveRunFunc,
 )
-
 
 path_manager = utils_io.get_path_manager()
 logger = logging.getLogger(__name__)
@@ -144,10 +143,13 @@ def _create_predictor(info_json, model_root):
         predictor_info = PredictorInfo.from_dict(info_dict)
 
     def _load_from_model_info(model_info, root):
+        logger.info("Loading from ModelInfo: {}".format(model_info))
         model_export_method = dynamic_import(model_info.export_method)
-        save_path = os.path.join(root, model_info.path)
-        # remove "." from path, eg: "uri_prefix://root_dir/./model_dir"
-        save_path = os.path.normpath(save_path)
+        # join root and model_info.path and collapse duplicated "." from path, eg:
+        # "uri_prefix://root_dir/./model_dir" -> "uri_prefix://root_dir/model_dir"
+        fake_full_path = os.path.join("FAKE_ROOT", model_info.path)
+        rel_paths = os.path.normpath(fake_full_path).split(os.sep)[1:]
+        save_path = os.path.join(root, *rel_paths)
         return model_export_method.load(save_path, **model_info.load_kwargs)
 
     assert (predictor_info.model is None) ^ (predictor_info.models is None)

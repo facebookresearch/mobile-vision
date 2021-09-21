@@ -27,6 +27,7 @@ from mobile_cv.arch.fbnet_v2 import (
     fbnet_builder as mbuilder,
     fbnet_modeldef_cls as modeldef,
 )
+from mobile_cv.common import utils_io
 from mobile_cv.model_zoo.models import hub_utils, model_zoo_factory, utils
 
 
@@ -52,7 +53,10 @@ def _load_fbnet_state_dict(file_name, progress=True, ignore_prefix="module."):
     if file_name.startswith("https://"):
         file_name = hub_utils.download_file(file_name, progress=progress)
 
-    state_dict = torch.load(file_name, map_location="cpu")
+    path_manager = utils_io.get_path_manager()
+    with path_manager.open(file_name, "rb") as h_in:
+        state_dict = torch.load(h_in, map_location="cpu")
+
     if "model_ema" in state_dict and state_dict["model_ema"] is not None:
         state_dict = state_dict["model_ema"]
     else:
@@ -65,7 +69,7 @@ def _load_fbnet_state_dict(file_name, progress=True, ignore_prefix="module."):
     return ret
 
 
-def _create_builder(arch_name_or_def: typing.Union[str, dict]):
+def _create_builder(arch_name_or_def: typing.Union[str, dict], unify_block_names=None):
     if isinstance(arch_name_or_def, str) and arch_name_or_def in modeldef.MODEL_ARCH:
         arch_def = modeldef.MODEL_ARCH[arch_name_or_def]
     elif isinstance(arch_name_or_def, str):
@@ -81,7 +85,10 @@ def _create_builder(arch_name_or_def: typing.Union[str, dict]):
         assert isinstance(arch_name_or_def, dict)
         arch_def = arch_name_or_def
 
-    arch_def = mbuilder.unify_arch_def(arch_def, ["blocks"])
+    if unify_block_names is None:
+        unify_block_names = ["blocks"]
+    assert isinstance(unify_block_names, (list, tuple))
+    arch_def = mbuilder.unify_arch_def(arch_def, unify_block_names)
 
     builder = mbuilder.FBNetBuilder()
     builder.add_basic_args(**arch_def.get("basic_args", {}))

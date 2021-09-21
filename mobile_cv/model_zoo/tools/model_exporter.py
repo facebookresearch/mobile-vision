@@ -18,10 +18,11 @@ import mobile_cv.common.misc.registry as registry
 import mobile_cv.lut.lib.pt.flops_utils as flops_utils
 import mobile_cv.model_zoo.tasks.task_factory as task_factory
 import torch
+from mobile_cv.common import utils_io
 from mobile_cv.model_zoo.models import model_utils
 from torch.utils.mobile_optimizer import optimize_for_mobile
 
-
+path_manager = utils_io.get_path_manager()
 logger = logging.getLogger("model_zoo_tools.export")
 
 
@@ -90,11 +91,30 @@ def parse_args(args_list=None):
         default=0,
         help="Run optimize for mobile if 1",
     )
+    parser.add_argument(
+        "--save_for_lite_interpreter",
+        action="store_true",
+        help="Also export lite interpreter model",
+    )
 
     assert len(ExportFactory.keys()) > 0
 
     ret = parser.parse_args(args_list)
     return ret
+
+
+def _set_attrs_to_model(model, attrs):
+    assert isinstance(attrs, dict)
+    for k, w in attrs.items():
+        assert not hasattr(model, k), f"{k} has already existed inside the model"
+        setattr(model, k, w)
+
+
+def _get_model_with_attrs(model, attrs):
+    if not attrs:
+        return model
+    _set_attrs_to_model(model, attrs)
+    return model
 
 
 def trace_and_save_torchscript(
@@ -104,6 +124,8 @@ def trace_and_save_torchscript(
     use_get_traceable=False,
     trace_type="trace",
     opt_for_mobile=False,
+    model_attrs=None,
+    save_for_lite_interpreter=False,
 ):
     logger.info("Tracing and saving TorchScript to {} ...".format(output_path))
 
@@ -112,27 +134,51 @@ def trace_and_save_torchscript(
             model = ju.get_traceable_model(model)
         if trace_type == "trace":
             script_model = torch.jit.trace(model, inputs, strict=False)
+            if model_attrs is not None:
+                script_model = _get_model_with_attrs(script_model, model_attrs)
+                script_model = torch.jit.script(script_model)
         else:
+            logger.info(f"Saving model with attributes: {model_attrs}")
+            model = _get_model_with_attrs(model, model_attrs)
             script_model = torch.jit.script(model)
 
     if opt_for_mobile:
         logger.info("Running optimize_for_mobile...")
         script_model = optimize_for_mobile(script_model)
 
-    os.makedirs(output_path, exist_ok=True)
+    if not path_manager.isdir(output_path):
+        path_manager.mkdirs(output_path)
 
     model_file = os.path.join(output_path, "model.jit")
-    script_model.save(model_file)
+    with path_manager.open(model_file, "wb") as fp:
+        torch.jit.save(script_model, fp)
+
+    link_model_file = os.path.join(output_path, "model.pt")
+    path_manager.symlink(model_file, link_model_file)
 
     data_file = os.path.join(output_path, "data.pth")
-    torch.save(inputs, data_file)
+    with path_manager.open(data_file, "wb") as fp:
+        torch.save(inputs, fp)
+
+    if model_attrs is not None:
+        attrs_file = os.path.join(output_path, "annotations.pth")
+        with path_manager.open(attrs_file, "wb") as fp:
+            torch.save(model_attrs, fp)
+
+    if save_for_lite_interpreter:
+        lite_model_file = os.path.join(output_path, "model.ptl")
+        with path_manager.open(lite_model_file, "wb") as fp:
+            fp.write(script_model._save_to_buffer_for_lite_interpreter())
 
     return model_file
 
 
 @ExportFactory.register("torchscript")
-def export_to_torchscript(args, task, model, inputs, output_base_dir, **kwargs):
+def export_to_torchscript(
+    args, task, model, inputs, output_base_dir, *, model_attrs=None, **kwargs
+):
     output_dir = os.path.join(output_base_dir, "torchscript")
+
     with torch.no_grad():
         fused_model = fuse_utils.fuse_model(model, inplace=False)
     print("fused model {}".format(fused_model))
@@ -143,12 +189,16 @@ def export_to_torchscript(args, task, model, inputs, output_base_dir, **kwargs):
         use_get_traceable=bool(args.use_get_traceable),
         trace_type=args.trace_type,
         opt_for_mobile=args.opt_for_mobile,
+        model_attrs=model_attrs,
+        save_for_lite_interpreter=args.save_for_lite_interpreter,
     )
     return torch_script_path
 
 
 @ExportFactory.register("torchscript_int8")
-def export_to_torchscript_int8(args, task, model, inputs, output_base_dir, data_iter):
+def export_to_torchscript_int8(
+    args, task, model, inputs, output_base_dir, *, data_iter, model_attrs=None, **kwargs
+):
     if args.use_graph_mode_quant:
         print(f"Post quantization using {args.post_quant_backend} backend...")
         print("Converting to int8 jit...")
@@ -164,7 +214,7 @@ def export_to_torchscript_int8(args, task, model, inputs, output_base_dir, data_
         traced_model(*inputs)
 
         print(traced_model)
-        output_dir = os.path.join(args.output_dir, "torchscript_int8")
+        output_dir = os.path.join(output_base_dir, "torchscript_int8")
         model_utils.save_model(output_dir, traced_model, inputs)
         return output_dir
 
@@ -189,8 +239,49 @@ def export_to_torchscript_int8(args, task, model, inputs, output_base_dir, data_
         use_get_traceable=bool(args.use_get_traceable),
         trace_type=args.trace_type,
         opt_for_mobile=args.opt_for_mobile,
+        model_attrs=model_attrs,
+        save_for_lite_interpreter=args.save_for_lite_interpreter,
     )
+
     return ptq_torchscript_path
+
+
+@ExportFactory.register("_dynamic_")
+def export_to_torchscript_dynamic(
+    args,
+    task,
+    model,
+    inputs,
+    output_base_dir,
+    *,
+    model_attrs=None,
+    export_format=None,
+    **kwargs,
+):
+    """Task returns the model based on the given export_format
+    The code will try to access `task.get_{model_name}_model()` to get the model
+    for export, `model_name` is extracted from `export_format` without `torchscript_`
+    prefix.
+    """
+
+    assert hasattr(task, "get_model_by_name")
+    assert export_format.startswith("torchscript_")
+    model_name = export_format[len("torchscript_") :]
+    model = task.get_model_by_name(model_name, model)
+
+    print(f"Converting to {model_name}...")
+    output_dir = os.path.join(output_base_dir, export_format)
+    torch_script_path = trace_and_save_torchscript(
+        model,
+        inputs,
+        output_dir,
+        use_get_traceable=bool(args.use_get_traceable),
+        trace_type=args.trace_type,
+        opt_for_mobile=args.opt_for_mobile,
+        model_attrs=model_attrs,
+        save_for_lite_interpreter=args.save_for_lite_interpreter,
+    )
+    return torch_script_path
 
 
 def _import_tasks(task_name):
@@ -212,11 +303,15 @@ def main(
     _import_tasks(args.task)
     task = task_factory.get(args.task, **args.task_args)
     model = task.get_model()
+    if isinstance(model, tuple):
+        model, model_attrs = model
+    else:
+        model_attrs = None
     model.eval()
     data_loader = task.get_dataloader()
     data_iter = iter(data_loader)
 
-    first_batch = next(data_iter)
+    first_batch = next(data_iter) if len(data_loader) > 0 else []
     with torch.no_grad():
         flops_utils.print_model_flops(model, first_batch)
 
@@ -224,7 +319,12 @@ def main(
     for ef in export_formats:
         assert ef not in ret, f"Export format {ef} has already existed."
         try:
-            out_path = ExportFactory.get(ef)(
+            export_func = (
+                ExportFactory.get(ef)
+                if ef in ExportFactory
+                else ExportFactory.get("_dynamic_")
+            )
+            out_path = export_func(
                 args,
                 task,
                 model,
@@ -232,6 +332,8 @@ def main(
                 output_dir,
                 # NOTE: output model maybe difference if data_loader is used multiple times
                 data_iter=data_iter,
+                model_attrs=model_attrs,
+                export_format=ef,
             )
             ret[ef] = out_path
         except Exception as e:

@@ -2,6 +2,7 @@
 
 import os
 from functools import wraps
+from typing import Any, Union, Tuple, Type
 
 import mobile_cv.common.misc.iter_utils as iu
 import numpy as np
@@ -58,8 +59,18 @@ def run_and_compare(model_before, model_after, inputs, device="cpu"):
         )
 
 
-def find_modules(model, module_to_check):
+def find_modules(
+    model: torch.nn.Module,
+    module_type: Union[Type[Any], Tuple[Type[Any], ...]],
+    exact_match=False,
+):
+    if not isinstance(module_type, tuple):
+        module_type = (module_type,)
     for x in model.modules():
-        if isinstance(x, module_to_check):
-            return True
+        if not exact_match:
+            if isinstance(x, module_type):
+                return True
+        else:
+            if type(x) in module_type:
+                return True
     return False

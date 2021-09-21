@@ -34,6 +34,7 @@ class OpBase(abc.ABC):
 
 
 Device = namedtuple("Device", ["device", "backend", "binary"])
+# pyre-fixme[16]: Callable `__new__` has no attribute `__defaults__`.
 Device.__new__.__defaults__ = ("", "", "")
 
 
@@ -50,20 +51,40 @@ class TensorShape(object):
         assert len(self.shape) == 4
         return self.shape[0]
 
+    @N.setter
+    def N(self, value):
+        assert len(self.shape) == 4
+        self.update_at(0, value)
+
     @property
     def C(self):
         assert len(self.shape) == 4
         return self.shape[1]
+
+    @C.setter
+    def C(self, value):
+        assert len(self.shape) == 4
+        self.update_at(1, value)
 
     @property
     def H(self):
         assert len(self.shape) == 4
         return self.shape[-2]
 
+    @H.setter
+    def H(self, value):
+        assert len(self.shape) == 4
+        self.update_at(-2, value)
+
     @property
     def W(self):
         assert len(self.shape) == 4
         return self.shape[-1]
+
+    @W.setter
+    def W(self, value):
+        assert len(self.shape) == 4
+        self.update_at(-1, value)
 
     @property
     def NHWC(self):
@@ -73,6 +94,11 @@ class TensorShape(object):
     @property
     def NCHW(self):
         return self.shape
+
+    def update_at(self, index, value):
+        shapes = list(self.shape)
+        shapes[index] = value
+        self.shape = tuple(shapes)
 
     def __getitem__(self, index):
         return self.shape[index]
@@ -126,7 +152,7 @@ class LUTBase(abc.ABC):
 
 
 class LutItem(object):
-    """ Represents a row in db """
+    """Represents a row in db"""
 
     def __init__(
         self,
@@ -141,6 +167,8 @@ class LutItem(object):
         if has_op:
             assert isinstance(op, OpBase)
             assert isinstance(input_shapes, (list, tuple))
+            # pyre-fixme[6]: Expected `List[TensorShape]` for 2nd param but got
+            #  `Union[typing.List[typing.Any], typing.Tuple[typing.Any, ...]]`.
             op_info = OpInfo(op, input_shapes)
         assert isinstance(op_info, OpInfo)
 

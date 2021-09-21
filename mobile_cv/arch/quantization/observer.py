@@ -1,5 +1,18 @@
 #!/usr/bin/env python3
 
+# custom observers
+# these are based on pytorch observers: caffe2/torch/quantization/observer.py
+# as well as code written in tiefenrausch: mobile-vision/experimental/megadepth/v2/fbnet_hr.py
+# the mapping between the tiefenrausch ops and these ops are:
+#
+#     tiefenrausch                           d2go
+#     --------------                         ------
+#     FixedMinMaxObserver                    FixedMinMaxObserver
+#     HardSymmetricMinMaxObserver            MinMaxObserver(qscheme=torch.per_tensor_symmetric)
+#     UpdatableMovingAverageMinMaxObserver   UpdatableMovingAverageMaxStatObserver
+#     SymmetricMovingAverageMinMaxObserver   UpdatableSymmetricMovingAverageMinMaxObserver
+#     ReLUMovingAverageMinMaxObserver        UpdateableReLUMovingAverageMinMaxObserver
+
 from abc import abstractmethod
 
 import torch
@@ -24,7 +37,7 @@ class FixedMinMaxObserver(MinMaxObserver):
         self.min_val = torch.tensor(float(fixed_min_val))
         self.max_val = torch.tensor(float(fixed_max_val))
 
-    # pyre-fixme Undefined or invalid type [11]: Annotation `torch.tensor` is not defined as a type # noqa: B950
+    # pyre-fixme Undefined or invalid type [11]: Annotation `torch.tensor` is not defined as a type
     def forward(self, x_orig: torch.tensor) -> torch.tensor:
         return x_orig
 
@@ -79,11 +92,13 @@ class UpdatableSymmetricMovingAverageMinMaxObserver(
     """Assumes activations are symmetric about the zero point"""
 
     def update_stat(self) -> None:
-        # pyre-fixme Undefined attribute [16]: `UpdatableSymmetricMovingAverageMinMaxObserver` has no attribute `max_stat` # noqa: B950
         if self.max_stat == torch.tensor(float("inf")):
             return
 
+        # pyre-fixme[29]: `Union[BoundMethod[typing.Callable(torch.Tensor.__neg__)[[N...
         self.min_val = -self.max_stat
+        # pyre-fixme[8]: Attribute has type `Tensor`; used as `Union[torch.Tensor,
+        #  torch.nn.Module]`.
         self.max_val = self.max_stat
 
 
@@ -91,9 +106,10 @@ class UpdateableReLUMovingAverageMinMaxObserver(UpdatableMovingAverageMaxStatObs
     """Assumes activations are non-negative and include the zero point"""
 
     def update_stat(self) -> None:
-        # pyre-fixme Undefined attribute [16]: `UpdateableReLUMovingAverageMinMaxObserver` has no attribute `max_stat` # noqa: B950
         if self.max_stat == torch.tensor(float("inf")):
             return
 
         self.min_val = torch.tensor(float(0), device=self.max_stat.device)
+        # pyre-fixme[8]: Attribute has type `Tensor`; used as `Union[torch.Tensor,
+        #  torch.nn.Module]`.
         self.max_val = self.max_stat

@@ -82,7 +82,7 @@ def filtered_func(func, **additional_args):
 
 
 def unify_args(aargs):
-    """ Return a dict of args """
+    """Return a dict of args"""
     if aargs is None:
         return {}
     if isinstance(aargs, str):
@@ -101,17 +101,28 @@ def merge_unify_args(*args):
     return ret
 
 
-def update_dict(dest, src):
+def update_dict(dest, src, seq_func=None):
     """Update the dict 'dest' recursively.
     Elements in src could be a callable function with signature
         f(key, curr_dest_val)
+    seq_func: function to handle how to process corresponding lists
+        seq_func(key, src_val, dest_val) -> new_dest_val
+        by default, list will be overrided
     """
     for key, val in src.items():
-        if isinstance(val, collections.Mapping):
+        if isinstance(val, collections.abc.Mapping):
             # dest[key] could be None in the case of a dict
             cur_dest = dest.get(key, {}) or {}
             assert isinstance(cur_dest, dict), cur_dest
             dest[key] = update_dict(cur_dest, val)
+        elif (
+            seq_func is not None
+            and isinstance(val, collections.abc.Sequence)
+            and not isinstance(val, str)
+        ):
+            cur_dest = dest.get(key, []) or []
+            assert isinstance(cur_dest, list), cur_dest
+            dest[key] = seq_func(key, val, cur_dest)
         else:
             if callable(val) and key in dest:
                 dest[key] = val(key, dest[key])
@@ -120,8 +131,21 @@ def update_dict(dest, src):
     return dest
 
 
+def update_dict_merge_list(dest, src):
+    """Update dict as `update_dict` but merge the two lists together when the values
+    are list
+    """
+
+    def seq_func(key, val, dest_val):
+        assert isinstance(val, list), val
+        assert isinstance(dest_val, list), dest_val
+        return dest_val + val
+
+    return update_dict(dest, src, seq_func)
+
+
 def merge(kwargs, **all_args):
-    """ kwargs will override other arguments """
+    """kwargs will override other arguments"""
     return update_dict(all_args, kwargs)
 
 

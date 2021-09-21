@@ -9,7 +9,16 @@ import mobile_cv.arch.utils.helper as hp
 import mobile_cv.common.misc.registry as registry
 from torch import nn
 
-from . import basic_blocks as bb, irf_block
+from . import (
+    basic_blocks as bb,
+    frac_downsample,
+    irf_block,
+    visual_transformer,
+    sg_block,
+    levit,
+    vit,
+)
+from . import res_block
 
 
 PRIMITIVES = registry.Registry("blocks_factory")
@@ -26,6 +35,9 @@ _PRIMITIVES = {
     "downsample": lambda in_channels, out_channels, stride, mode="bicubic", **kwargs: bb.Upsample(  # noqa
         scale_factor=(1.0 / stride), mode=mode
     ),
+    "dc_k3": lambda in_channels, out_channels, stride, **kwargs: irf_block.DepthConvBNRelu(
+        in_channels, out_channels, kernel_size=3, stride=stride, **kwargs
+    ),
     "skip": lambda in_channels, out_channels, stride, **kwargs: bb.Identity(
         in_channels, out_channels, stride
     ),
@@ -34,6 +46,22 @@ _PRIMITIVES = {
         stride=stride,
         padding=padding,
         **hp.filter_kwargs(func=nn.MaxPool2d, kwargs=kwargs)
+    ),
+    "res_k3": lambda in_channels, out_channels, stride, **kwargs: res_block.BasicBlock(
+        in_channels,
+        out_channels,
+        **hp.merge(
+            conv_args={"stride": stride, "kernel_size": 3, "padding": 1},
+            kwargs=kwargs,
+        )
+    ),
+    "res_block_k3": lambda in_channels, out_channels, stride, **kwargs: res_block.Bottleneck(
+        in_channels,
+        out_channels,
+        **hp.merge(
+            conv_args={"stride": stride, "kernel_size": 3, "padding": 1},
+            kwargs=kwargs,
+        )
     ),
     "conv": lambda in_channels, out_channels, stride, **kwargs: bb.ConvBNRelu(
         in_channels,
@@ -63,6 +91,24 @@ _PRIMITIVES = {
             conv_args={"stride": stride, "kernel_size": 5, "padding": 2},
             kwargs=kwargs,
         )
+    ),
+    "conv_k7": lambda in_channels, out_channels, stride, **kwargs: bb.ConvBNRelu(
+        in_channels,
+        out_channels,
+        **hp.merge(
+            conv_args={"stride": stride, "kernel_size": 7, "padding": 3},
+            kwargs=kwargs,
+        )
+    ),
+    "avgpool": lambda in_channels, out_channels, stride, kernel_size=2, padding=0, **kwargs: nn.AvgPool2d(  # noqa
+        kernel_size=kernel_size,
+        stride=stride,
+        padding=padding,
+        **hp.filter_kwargs(func=nn.AvgPool2d, kwargs=kwargs)
+    ),
+    "adaptive_avg_pool": lambda in_channels, out_channels, stride, output_size, **kwargs: nn.AdaptiveAvgPool2d(  # noqa
+        output_size=output_size,
+        **hp.filter_kwargs(func=nn.AdaptiveAvgPool2d, kwargs=kwargs)
     ),
     "conv_hs": lambda in_channels, out_channels, stride, **kwargs: bb.ConvBNRelu(
         in_channels,
@@ -179,6 +225,27 @@ _PRIMITIVES = {
         stride=stride,
         relu_args="hswish",
         **hp.filter_kwargs(irf_block.IRPoolBlock, kwargs)
+    ),
+    "frac_ds": lambda in_channels, out_channels, stride, **kwargs: frac_downsample.FracDownSample(
+        in_channels, **hp.filter_kwargs(frac_downsample.FracDownSample, kwargs)
+    ),
+    "frac_ds2": lambda in_channels, out_channels, stride, **kwargs: frac_downsample.FracDownSample2(  # noqa
+        in_channels, **hp.filter_kwargs(frac_downsample.FracDownSample, kwargs)
+    ),
+    "ir_k3_fs_se": lambda in_channels, out_channels, stride, **kwargs: frac_downsample.IRF_FS_Block(  # noqa
+        in_channels, out_channels, stride=stride, kernel_size=3, se_args="se", **kwargs
+    ),
+    "ir_k5_fs_se": lambda in_channels, out_channels, stride, **kwargs: frac_downsample.IRF_FS_Block(  # noqa
+        in_channels, out_channels, stride=stride, kernel_size=5, se_args="se", **kwargs
+    ),
+    "ir_k3_ad_se": lambda in_channels, out_channels, stride, **kwargs: frac_downsample.IRF_AD_Block(  # noqa
+        in_channels, out_channels, stride=stride, kernel_size=3, se_args="se", **kwargs
+    ),
+    "ir_k5_ad_se": lambda in_channels, out_channels, stride, **kwargs: frac_downsample.IRF_AD_Block(  # noqa
+        in_channels, out_channels, stride=stride, kernel_size=5, se_args="se", **kwargs
+    ),
+    "attds": lambda in_channels, out_channels, stride, **kwargs: frac_downsample.AttDownsample(  # noqa
+        in_channels, stride, **hp.filter_kwargs(frac_downsample.AttDownsample, kwargs)
     ),
 }
 PRIMITIVES.register_dict(_PRIMITIVES)

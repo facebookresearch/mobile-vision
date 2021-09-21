@@ -16,6 +16,46 @@ def get_module_name(m):
     return m.__class__.__name__
 
 
+@PT_CONVERTER.register("EqualLinear")
+def convert_EqualLinear(m, input_shapes):
+    op = lut_ops.Linear(m.in_features, m.out_features, m.bias is not None)
+    ret = lut_schema.OpInfo(op, input_shapes)
+    return ret
+
+
+@PT_CONVERTER.register("ModulatedConv2d")
+def convert_ModulatedConv2d(m, input_shapes):
+    dilation = 1
+    groups = 1
+    bias = None
+    output_padding = 0
+    if m.upsample:
+        op = lut_ops.ConvTranspose2d(
+            m.in_channels,
+            m.out_channels,
+            m.kernel_size,
+            m.stride,
+            m.padding,
+            output_padding,
+            groups,
+            bias,
+            dilation,
+        )
+    else:
+        op = lut_ops.Conv2d(
+            m.in_channels,
+            m.out_channels,
+            m.kernel_size,
+            m.stride,
+            m.padding,
+            dilation,
+            groups,
+            bias,
+        )
+    ret = lut_schema.OpInfo(op, input_shapes)
+    return ret
+
+
 @PT_CONVERTER.register("Conv2d")
 def convert_Conv2d(m, input_shapes):
     op = lut_ops.Conv2d(

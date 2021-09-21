@@ -22,7 +22,7 @@ def _create_and_run(self, arch_name, model_arch):
 
 class TestFBNetV2Archs(unittest.TestCase):
     def test_unify_all_predefinied_archs(self):
-        """ Initial check for arch definitions """
+        """Initial check for arch definitions"""
         arch_factory = fbnet_modeldef_cls.MODEL_ARCH
 
         self.assertGreater(len(arch_factory), 0)
@@ -34,12 +34,17 @@ class TestFBNetV2Archs(unittest.TestCase):
     def test_selected_arches(self):
         arch_factory = fbnet_modeldef_cls.MODEL_ARCH
         selected_archs = [
-            "fbnet_a",
-            "FBNetV2_F1",
-            "FBNetV2_L2",
-            "eff_0",
             "default",
             "mnv3",
+            "mnv3_small",
+            "fbnet_a",
+            "fbnet_b",
+            "fbnet_c",
+            "ResNet50",
+            "ResNet18",
+            "ResNet34",
+            "ResNet101",
+            "ResNet152",
         ]
 
         for name in selected_archs:

@@ -10,12 +10,12 @@ import mobile_cv.arch.fbnet_v2.irf_block as irf_block
 import torch
 
 
-def _build_model(arch_def, dim_in):
+def _build_model(arch_def, dim_in, **kwargs):
     arch_def = fbnet_builder.unify_arch_def(arch_def, ["blocks"])
     torch.manual_seed(0)
     builder = fbnet_builder.FBNetBuilder(1.0)
     builder.add_basic_args(**arch_def.get("basic_args", {}))
-    model = builder.build_blocks(arch_def["blocks"], dim_in=dim_in)
+    model = builder.build_blocks(arch_def["blocks"], dim_in=dim_in, **kwargs)
     model.eval()
     return model, builder
 
@@ -162,6 +162,58 @@ class TestFBNetBuilder(unittest.TestCase):
         input = _get_input(2, 5, 8, 8)
         output = model(input)
         self.assertEqual(output.shape, torch.Size([2, 8, 2, 2]))
+
+    def test_fbnet_builder_missing_values(self):
+        arch_def = {
+            "blocks": [
+                # [op, c, s, n, ...]
+                # None will be replaced by the values passed to the builder in 'override_missing'
+                [("conv_k3", 4, 2, 1)],
+                [
+                    ("conv_k1", 8, None, 1),
+                    ("conv_k5", None, 2, 1),
+                    ("conv_k1", None, 2, 1),
+                ],
+            ]
+        }
+
+        # dim_in will be overridden by the arch def
+        model, builder = _build_model(
+            arch_def, dim_in=3, override_missing={"out_channels": 2, "stride": 2}
+        )
+
+        print(model)
+
+        input = _get_input(2, 3, 8, 8)
+        output = model(input)
+        self.assertEqual(output.shape, torch.Size([2, 2, 1, 1]))
+
+    def test_fbnet_builder_replace_strs(self):
+        arch_def = {
+            "blocks": [
+                # [op, c, s, n, ...]
+                [("conv_k3", 4, 2, 1)],
+                [
+                    ("conv_k1", 8, "{stride_c1}", 1),
+                    ("conv_k5", "{out_channels_c2}", 2, 1),
+                    ("conv_k1", None, 2, 1),
+                ],
+            ]
+        }
+
+        # dim_in will be overridden by the arch def
+        model, builder = _build_model(
+            arch_def,
+            dim_in=3,
+            override_missing={"out_channels": 2},
+            replace_strs={"stride_c1": 2, "out_channels_c2": 4},
+        )
+
+        print(model)
+
+        input = _get_input(2, 3, 8, 8)
+        output = model(input)
+        self.assertEqual(output.shape, torch.Size([2, 2, 1, 1]))
 
 
 if __name__ == "__main__":

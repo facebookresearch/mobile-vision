@@ -12,16 +12,17 @@ This can be removed once https://github.com/pytorch/pytorch/issues/12013
 is implemented
 """
 
+import copy
 import math
 from typing import List, NamedTuple, Tuple
 
 import torch
 from torch.nn.modules.utils import _pair
 
-
 # for backward compatibility
 BatchNorm2d = torch.nn.BatchNorm2d
 interpolate = torch.nn.functional.interpolate
+GroupNorm = torch.nn.GroupNorm
 
 
 def cat(tensors, dim=0):
@@ -59,13 +60,10 @@ class Conv2dArgs(NamedTuple):
     def FromConv2d(cls: "Conv2dArgs", conv: torch.nn.Conv2d) -> "Conv2dArgs":
         # pyre-fixme[29]: `Conv2dArgs` is not a function.
         return cls(
-            # pyre-fixme[16]: `Conv2d` has no attribute `kernel_size`.
             conv.kernel_size,
             conv.padding,
             conv.stride,
-            # pyre-fixme[16]: `Conv2d` has no attribute `dilation`.
             conv.dilation,
-            # pyre-fixme[16]: `Conv2d` has no attribute `out_channels`.
             conv.out_channels,
         )
 
@@ -131,6 +129,16 @@ class Conv2d(torch.nn.Conv2d):
             x = self.activation(x)
         return x
 
+    @classmethod
+    def cast(cls, module: "Conv2d"):
+        """Cast mobile_cv.arch.layers.Conv2d to a normal conv2d"""
+        assert type(module) == cls
+        module = copy.deepcopy(module)
+        assert module.norm is None
+        assert module.activation is None
+        module.__class__ = torch.nn.Conv2d
+        return module
+
 
 class ConvTranspose2d(torch.nn.ConvTranspose2d):
     def forward(self, x):
@@ -170,15 +178,4 @@ class AvgPool2d(torch.nn.AvgPool2d):
             )
         ]
         output_shape = [x.shape[0], x.shape[1]] + output_shape
-        return _NewEmptyTensorOp.apply(x, output_shape)
-
-
-# pyre-fixme[11]: Annotation `GroupNorm` is not defined as a type.
-class GroupNorm(torch.nn.GroupNorm):
-    def forward(self, x):
-        if x.numel() > 0:
-            return super(GroupNorm, self).forward(x)
-
-        # get output shape
-        output_shape = x.shape
         return _NewEmptyTensorOp.apply(x, output_shape)

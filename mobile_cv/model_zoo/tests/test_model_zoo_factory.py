@@ -21,6 +21,14 @@ class TestModelZooFactory(unittest.TestCase):
             out = model(data)
             self.assertEqual(out.size(), torch.Size([1, 8]))
 
+    def test_model_zoo_factory_resnet(self):
+        model = model_zoo_factory.get_model("resnet50", num_classes=8)
+        model.eval()
+        with torch.no_grad():
+            data = torch.zeros([1, 3, 32, 32])
+            out = model(data)
+            self.assertEqual(out.size(), torch.Size([1, 8]))
+
 
 if __name__ == "__main__":
     unittest.main()

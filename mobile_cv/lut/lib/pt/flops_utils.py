@@ -19,6 +19,8 @@ class FlopsEstimation(object):
 
     def __init__(self, model):
         assert isinstance(model, torch.nn.Module)
+        # model could not be scripted (does not have forward hook)
+        assert not isinstance(model, torch.jit.ScriptModule)
         self.model = model
         self._hook = utils.NestedModuleHook(utils.collect_op_shape, leaf_only=False)
         self._patchers = []
@@ -58,7 +60,7 @@ class FlopsEstimation(object):
     @contextmanager
     def enable(self):
         self.set_enable(True)
-        yield
+        yield self
         self.set_enable(False)
 
     def add_flops_info(self, unit=1e6):
@@ -218,3 +220,23 @@ def get_model_flops(model: torch.nn.Module, inputs: typing.Tuple[typing.Any, ...
         fest.add_flops_info()
         nparams, nflops = fest.get_flops()
     return nparams, nflops
+
+
+@contextmanager
+def print_model_flops_context(
+    model: torch.nn.Module,
+    enable: bool = True,
+    print_per_layer_flops: bool = True,
+):
+    if not enable:
+        yield
+        return
+
+    fest = FlopsEstimation(model)
+    with fest.enable():
+        yield
+        fest.add_flops_info()
+        nparams, nflops = fest.get_flops()
+        if print_per_layer_flops:
+            print(model)
+        print(f"nparams: {nparams}, nflops {nflops}")

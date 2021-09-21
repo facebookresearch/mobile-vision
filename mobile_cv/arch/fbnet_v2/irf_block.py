@@ -67,9 +67,11 @@ class IRFBlock(nn.Module):
                 in_channels=in_channels,
                 out_channels=mid_channels,
                 conv_args={
-                    "kernel_size": 1,
+                    "kernel_size": pw_args.pop("kernel_size", 1)
+                    if pw_args is not None
+                    else 1,
                     "stride": 1,
-                    "padding": 0,
+                    "padding": pw_args.pop("padding", 0) if pw_args is not None else 0,
                     "bias": bias,
                     "groups": pw_groups,
                     **hp.merge_unify_args(conv_args, pw_args),
@@ -122,9 +124,11 @@ class IRFBlock(nn.Module):
             in_channels=mid_channels,
             out_channels=out_channels,
             conv_args={
-                "kernel_size": 1,
+                "kernel_size": pwl_args.pop("kernel_size", 1)
+                if pwl_args is not None
+                else 1,
                 "stride": 1,
-                "padding": 0,
+                "padding": pwl_args.pop("padding", 0) if pwl_args is not None else 0,
                 "bias": bias,
                 "groups": pwl_groups,
                 **hp.merge_unify_args(conv_args, pwl_args),
@@ -256,16 +260,80 @@ class IRPoolBlock(nn.Module):
 
     def forward(self, x):
         y = x
-        if self.pw:
+        if self.pw is not None:
             y = self.pw(y)
-        if self.pw_se:
+        if self.pw_se is not None:
             y = self.pw_se(y)
-        if self.dw:
+        if self.dw is not None:
             y = self.dw(y)
-        if self.se:
+        if self.se is not None:
             y = self.se(y)
-        if self.pwl:
+        if self.pwl is not None:
             y = self.pwl(y)
-        if self.res_conn:
+        if self.res_conn is not None:
             y = self.res_conn(y, x)
+        return y
+
+
+class DepthConvBNRelu(nn.Module):
+    def __init__(
+        self,
+        in_channels,
+        out_channels,
+        kernel_size=3,
+        stride=1,
+        bias=False,
+        conv_args="conv",
+        bn_args="bn",
+        relu_args="relu",
+        width_divisor=8,
+        act_first=False,
+        dw_skip_bnrelu=True,
+    ):
+        super().__init__()
+
+        conv_args = hp.unify_args(conv_args)
+        bn_args = hp.unify_args(bn_args)
+        relu_args = hp.unify_args(relu_args)
+
+        self.act = (
+            bb.build_relu(num_channels=in_channels, **relu_args) if act_first else None
+        )
+
+        self.dw = bb.ConvBNRelu(
+            in_channels=in_channels,
+            out_channels=in_channels,
+            conv_args={
+                "kernel_size": kernel_size,
+                "stride": stride,
+                "padding": kernel_size // 2,
+                "groups": in_channels,
+                "bias": bias,
+                **conv_args,
+            },
+            bn_args=bn_args if not dw_skip_bnrelu else None,
+            relu_args=relu_args if not dw_skip_bnrelu else None,
+        )
+        self.pw = bb.ConvBNRelu(
+            in_channels=in_channels,
+            out_channels=out_channels,
+            conv_args={
+                "kernel_size": 1,
+                "stride": 1,
+                "padding": 0,
+                "groups": 1,
+                "bias": bias,
+                **conv_args,
+            },
+            bn_args=bn_args,
+            relu_args=relu_args if not act_first else None,
+        )
+        self.out_channels = out_channels
+
+    def forward(self, x):
+        y = x
+        if self.act is not None:
+            y = self.act(y)
+        y = self.dw(y)
+        y = self.pw(y)
         return y

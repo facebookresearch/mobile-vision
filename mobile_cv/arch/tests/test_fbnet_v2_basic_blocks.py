@@ -16,6 +16,24 @@ def _create_input(input_dims):
     return ret
 
 
+def _test_op(self, op, inputs, gt_out_shape, trace=True, script=True):
+    print(op)
+    out = op(inputs)
+    self.assertEqual(out.shape, gt_out_shape)
+
+    # trace the op
+    if trace:
+        traced_op = torch.jit.trace(op, [inputs])
+        traced_out = traced_op(inputs)
+        self.assertEqual(traced_out.shape, gt_out_shape)
+
+    # script the op
+    if script:
+        script_op = torch.jit.script(op)
+        script_out = script_op(inputs)
+        self.assertEqual(script_out.shape, gt_out_shape)
+
+
 class TestFBNetV2BasicBlocks(unittest.TestCase):
     def test_hsigmoid(self):
         input = _create_input([1, 2, 2, 2])
@@ -109,39 +127,36 @@ class TestFBNetV2BasicBlocks(unittest.TestCase):
 
     def test_se(self):
         """Test 2d se module"""
-        op = bb.build_se("se", 8, 2).eval()
-        print(op)
-        input0 = torch.randn(2, 8, 4, 4)
-        out = op(input0)
-        self.assertEqual(out.shape, torch.Size([2, 8, 4, 4]))
 
-        op = bb.build_se("se", 8, 2, fc=True).eval()
-        print(op)
-        out = op(input0)
-        self.assertEqual(out.shape, torch.Size([2, 8, 4, 4]))
+        with self.subTest("se"):
+            op = bb.build_se("se", 8, 2).eval()
+            input0 = torch.randn(2, 8, 4, 4)
+            gt_shape = torch.Size([2, 8, 4, 4])
+            _test_op(self, op, input0, gt_shape)
 
-        op = bb.build_se("se_hsig", 8, 2).eval()
-        print(op)
-        out = op(input0)
-        self.assertEqual(out.shape, torch.Size([2, 8, 4, 4]))
+        with self.subTest("se_fc"):
+            op = bb.build_se("se", 8, 2, fc=True).eval()
+            _test_op(self, op, input0, gt_shape)
+
+        with self.subTest("se_hsig"):
+            op = bb.build_se("se_hsig", 8, 2).eval()
+            _test_op(self, op, input0, gt_shape)
 
     def test_se3d(self):
         """Test 3d se module"""
-        op = bb.build_se("se3d", 8, 2).eval()
-        print(op)
-        input0 = torch.randn(2, 8, 4, 4, 4)
-        out = op(input0)
-        self.assertEqual(out.shape, torch.Size([2, 8, 4, 4, 4]))
+        with self.subTest("se3d"):
+            op = bb.build_se("se3d", 8, 2).eval()
+            input0 = torch.randn(2, 8, 4, 4, 4)
+            gt_shape = torch.Size([2, 8, 4, 4, 4])
+            _test_op(self, op, input0, gt_shape)
 
-        op = bb.build_se("se3d", 8, 2, fc=True).eval()
-        print(op)
-        out = op(input0)
-        self.assertEqual(out.shape, torch.Size([2, 8, 4, 4, 4]))
+        with self.subTest("se3d_fc"):
+            op = bb.build_se("se3d", 8, 2, fc=True).eval()
+            _test_op(self, op, input0, gt_shape)
 
-        op = bb.build_se("se3d_hsig", 8, 2).eval()
-        print(op)
-        out = op(input0)
-        self.assertEqual(out.shape, torch.Size([2, 8, 4, 4, 4]))
+        with self.subTest("se3d_hsig"):
+            op = bb.build_se("se3d_hsig", 8, 2).eval()
+            _test_op(self, op, input0, gt_shape)
 
 
 class TestFBNetV2BasicBlocksEmptyInput(unittest.TestCase):

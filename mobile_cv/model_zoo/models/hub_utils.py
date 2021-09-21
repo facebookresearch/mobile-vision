@@ -5,6 +5,9 @@ import errno
 import hashlib
 import logging
 import os
+import tempfile
+from types import TracebackType
+from typing import Optional, Type
 
 import torch
 
@@ -45,3 +48,85 @@ def download_file(url, model_dir=None, progress=True):
         torch.hub.download_url_to_file(url, cached_file, None, progress=progress)
 
     return cached_file
+
+
+class DictModifier(object):
+    """Convenience class to modify a dict when entered, restore to original
+    after it is exited
+    """
+
+    def __init__(self, dict_to_modify, new_dict):
+        """dict_to_modify: the dict that it's content will be modify by new_dict
+                        and recover later
+        new_dict: the dict that it will override dict_to_modify
+        """
+        self.dict_to_modify = dict_to_modify
+        self.new_dict = new_dict
+
+    def __enter__(self):
+        # backup current envs
+        self.old_vars = {
+            x: self.dict_to_modify[x]
+            for x in self.new_dict.keys()
+            if x in self.dict_to_modify
+        }
+        # additional variables that are written to self.dict_to_modify
+        self.extra_vars = [x for x in self.new_dict if x not in self.old_vars.keys()]
+        # apply new environments
+        for x, val in self.new_dict.items():
+            self.dict_to_modify[x] = val
+
+    def __exit__(
+        self,
+        atype: Optional[Type[BaseException]],
+        avalue: Optional[BaseException],
+        traceback: Optional[TracebackType],
+    ) -> None:
+        # pyre-fixme[16]: `DictModifier` has no attribute `old_vars`.
+        for x, y in self.old_vars.items():
+            self.dict_to_modify[x] = y
+        # pyre-fixme[16]: `DictModifier` has no attribute `extra_vars`.
+        for x in self.extra_vars:
+            del self.dict_to_modify[x]
+
+
+class PretrainedDownloader:
+    """
+    Context manager for downloading pretrained model weights.
+    Sets proxies and a reasonable TORCH_HOME. Removes afterwards.
+    """
+
+    def __init__(self, torch_home: Optional[str] = None) -> None:
+        torch_home = torch_home or tempfile.mkdtemp()
+        self.env_modifier = DictModifier(
+            os.environ,
+            {
+                "HTTP_PROXY": "http://fwdproxy:8080",
+                "HTTPS_PROXY": "https://fwdproxy:8080",
+                "http_proxy": "fwdproxy:8080",
+                "https_proxy": "fwdproxy:8080",
+                "REQUESTS_CA_BUNDLE": "/etc/pki/tls/certs/fb_certs.pem",
+                "TORCH_HOME": torch_home,
+            },
+        )
+
+    def __enter__(self) -> None:
+        self.env_modifier.__enter__()
+
+    def __exit__(
+        self,
+        atype: Optional[Type[BaseException]],
+        avalue: Optional[BaseException],
+        traceback: Optional[TracebackType],
+    ) -> None:
+        self.env_modifier.__exit__(atype, avalue, traceback)
+
+
+def pretrained_download(builder):
+    """Convenience function to download pretrained weights from https"""
+
+    def func(*args, **kwargs):
+        with PretrainedDownloader():
+            return builder(*args, **kwargs)
+
+    return func

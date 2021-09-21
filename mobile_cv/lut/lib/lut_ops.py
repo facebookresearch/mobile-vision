@@ -43,7 +43,7 @@ def compute_sum_of_prod(list_of_list):
 
 
 class OpProperty(OpBase):
-    """ Convenience class to store arguments in a dict """
+    """Convenience class to store arguments in a dict"""
 
     def __init__(self, info):
         super().__init__()
@@ -145,7 +145,7 @@ class Conv2d(OpProperty):
         return nparams
 
     def _unify(self):
-        """ Unify the representation """
+        """Unify the representation"""
         for name in ["kernel_size", "stride", "padding", "dilation"]:
             self.info[name] = to_tuple2(self.info[name])
 
@@ -211,7 +211,7 @@ class Conv1d(OpProperty):
         return nparams
 
     def _unify(self):
-        """ Unify the representation """
+        """Unify the representation"""
         for name in ["kernel_size", "stride", "padding", "dilation"]:
             self.info[name] = to_tuple1(self.info[name])
 
@@ -295,7 +295,7 @@ class Conv3d(OpProperty):
         return nparams
 
     def _unify(self):
-        """ Unify the representation """
+        """Unify the representation"""
         for name in ["kernel_size", "stride", "padding", "dilation"]:
             self.info[name] = to_tuple3(self.info[name])
 
@@ -373,7 +373,7 @@ class ConvTranspose2d(OpProperty):
         return nparams
 
     def _unify(self):
-        """ Unify the representation """
+        """Unify the representation"""
         for name in [
             "kernel_size",
             "stride",

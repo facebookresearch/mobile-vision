@@ -63,12 +63,7 @@ OP_CFGS_DEFAULT = {
 
 OP_CFGS = {
     "default": OP_CFGS_DEFAULT,
-    "conv_cfg": {
-        **OP_CFGS_DEFAULT,
-        "kernel_size": 3,
-        "padding": 1,
-        "bias": False,
-    },
+    "conv_cfg": {**OP_CFGS_DEFAULT, "kernel_size": 3, "padding": 1, "bias": False},
     "irf_cfg": {**OP_CFGS_DEFAULT, "expansion": 4, "bias": False},
     "irf_cfg_sefc": {
         **OP_CFGS_DEFAULT,
@@ -82,6 +77,80 @@ OP_CFGS = {
         "expansion": 4,
         "bias": False,
         "width_divisor": 1,
+    },
+    ("frac_ds", "default"): {
+        "in_channels": 4,
+        "out_channels": 4,
+        "stride": 1,
+        "si": 1,
+        "so": 1,
+        "_inputs_": [1, 4, 4, 4],
+        "_gt_shape_": [1, 4, 4, 4],
+    },
+    ("frac_ds2", "default"): {
+        "in_channels": 4,
+        "out_channels": 4,
+        "stride": 1,
+        "si": 1,
+        "so": 1,
+        "_inputs_": [1, 4, 4, 4],
+        "_gt_shape_": [1, 4, 4, 4],
+    },
+    ("ir2dp1_k3", "default"): {
+        "in_channels": 3,
+        "out_channels": 2,
+        "stride": 1,
+        "_inputs_": [1, 3, 2, 2, 2],
+        "_gt_shape_": [1, 2, 2, 2, 2],
+    },
+    ("ir2dp1_k5", "default"): {
+        "in_channels": 3,
+        "out_channels": 2,
+        "stride": 1,
+        "_inputs_": [1, 3, 2, 2, 2],
+        "_gt_shape_": [1, 2, 2, 2, 2],
+    },
+    ("ir3d", "default"): {
+        "in_channels": 3,
+        "out_channels": 2,
+        "stride": 1,
+        "_inputs_": [1, 3, 2, 2, 2],
+        "_gt_shape_": [1, 2, 2, 2, 2],
+    },
+    ("ir3d_k3", "default"): {
+        "in_channels": 3,
+        "out_channels": 2,
+        "stride": 1,
+        "_inputs_": [1, 3, 2, 2, 2],
+        "_gt_shape_": [1, 2, 2, 2, 2],
+    },
+    ("ir3d_k133", "default"): {
+        "in_channels": 3,
+        "out_channels": 2,
+        "stride": 1,
+        "_inputs_": [1, 3, 2, 2, 2],
+        "_gt_shape_": [1, 2, 2, 2, 2],
+    },
+    ("ir3d_k5", "default"): {
+        "in_channels": 3,
+        "out_channels": 2,
+        "stride": 1,
+        "_inputs_": [1, 3, 2, 2, 2],
+        "_gt_shape_": [1, 2, 2, 2, 2],
+    },
+    ("ir3d_k155", "default"): {
+        "in_channels": 3,
+        "out_channels": 2,
+        "stride": 1,
+        "_inputs_": [1, 3, 2, 2, 2],
+        "_gt_shape_": [1, 2, 2, 2, 2],
+    },
+    ("ir3d_pool", "default"): {
+        "in_channels": 3,
+        "out_channels": 2,
+        "stride": 1,
+        "_inputs_": [1, 3, 2, 2, 2],
+        "_gt_shape_": [1, 2, 1, 1, 1],
     },
     ("conv3d", "default"): {
         "in_channels": 4,
@@ -114,6 +183,49 @@ OP_CFGS = {
         "_inputs_": [1, 2, 3, 4],
         "_gt_shape_": [1, 2, 1, 3, 4],
     },
+    ("conv_k3_tuple_left", "default"): {
+        "in_channels": 4,
+        "out_channels": 4,
+        "stride": 2,
+        "_inputs_": ([1, 4, 4, 4], [1, 2, 3, 3]),
+        "_gt_shape_": ([1, 4, 2, 2], [1, 2, 3, 3]),
+    },
+    ("conv_k5_tuple_left", "default"): {
+        "in_channels": 4,
+        "out_channels": 4,
+        "stride": 2,
+        "_inputs_": ([1, 4, 4, 4], [1, 2, 3, 3]),
+        "_gt_shape_": ([1, 4, 2, 2], [1, 2, 3, 3]),
+    },
+    ("conv_tuple_left", "default"): {
+        "in_channels": 4,
+        "out_channels": 4,
+        "stride": 2,
+        "_inputs_": ([1, 4, 4, 4], [1, 2, 3, 3]),
+        "_gt_shape_": ([1, 4, 2, 2], [1, 2, 3, 3]),
+    },
+    ("reshape_to_batch", "default"): {
+        "in_channels": 32,
+        "out_channels": 8,
+        "stride": 1,
+        "_inputs_": [3, 32, 4, 4],
+        "_gt_shape_": [12, 8, 4, 4],
+    },
+    ("reshape_to_channel", "default"): {
+        "in_channels": 8,
+        "out_channels": 32,
+        "stride": 1,
+        "_inputs_": [8, 8, 4, 4],
+        "_gt_shape_": [2, 32, 4, 4],
+    },
+    ("adaptive_avg_pool", "default"): {
+        "in_channels": 4,
+        "out_channels": 4,
+        "stride": 1,
+        "output_size": (1, 1),
+        "_inputs_": [2, 4, 4, 4],
+        "_gt_shape_": [2, 4, 1, 1],
+    },
 }
 
 # fmt: off
@@ -131,6 +243,12 @@ TEST_OP_EXPECTED_OUTPUT = {
     ("ir_k5_sehsig", "default"): ([1, 4, 2, 2], [-0.01736, -0.0139, -0.01012, -0.05196, 0.02194, 0.03361, 0.03642, 0.0707, -0.02973, -0.03315, -0.0269, -0.01883, -0.00826, -0.00196, -0.0171, 0.02342]),  # noqa
     ("ir_pool", "default"): ([1, 4, 1, 1], [0.0, 0.1414, 0.49571, 0.43462]),  # noqa
     ("ir_pool_hs", "default"): ([1, 4, 1, 1], [-0.12981, 0.09867, -0.08033, 0.0543]),  # noqa
+
+    ("ir3d_k3", "default"): ([1, 2, 2, 2, 2], [0.02443, 0.00738, 0.06039, 0.06596, 0.05445, 0.00319, 0.04746, 0.01919, 0.05831, -0.00115, 0.05368, -0.02315, 0.08671, 0.06718, 0.01821, 0.05173]),  # noqa
+
+    ("conv_k3_tuple_left", "default"): (([1, 4, 2, 2], [0.0, 0.0, 0.27391, 0.0, 0.0, 0.0, 0.0221, 0.49272, 0.0, 0.0, 0.0, 0.0, 0.20517, 0.12133, 0.29797, 0.42078]), ([1, 2, 3, 3], [-0.5, -0.44444, -0.38889, -0.33333, -0.27778, -0.22222, -0.16667, -0.11111, -0.05556, 0.0, 0.05556, 0.11111, 0.16667, 0.22222, 0.27778, 0.33333, 0.38889, 0.44444])),  # noqa
+
+    ("gb_k3_r2", "default"): ([1, 4, 2, 2], [0.0, 0.0, 0.0, 0.08396, 0.0108, 0.0, 0.0, 0.0, 0.01115, 0.01652, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),  # noqa
 }
 # fmt: on
 
@@ -221,7 +339,7 @@ class TestFBNetV2BlocksFactory(unittest.TestCase):
             )
 
     def test_primitives_check_output(self):
-        """ Make sures the primitives produce expected results """
+        """Make sures the primitives produce expected results"""
         op_names = list(TEST_OP_EXPECTED_OUTPUT.keys())
         op_names = {
             (x, "default") if isinstance(x, str) else x for x in sorted(op_names)
@@ -234,8 +352,8 @@ class TestFBNetV2BlocksFactory(unittest.TestCase):
                 self._test_primitive_check_output("cpu", op_name, op_cfg_name)
 
     def test_primitives_check_shape(self):
-        """ Make sures the primitives runs """
-        op_names = list(fbnet_builder.PRIMITIVES.get_names())
+        """Make sures the primitives runs"""
+        op_names = [x for (x, y) in list(TEST_OP_EXPECTED_OUTPUT.keys())]
         op_names = {(x, "default") for x in sorted(op_names)}
 
         for op_name_info in op_names:

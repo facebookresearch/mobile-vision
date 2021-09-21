@@ -14,13 +14,13 @@ class IdentityPostprocess:
 
 class BatchPreprocess:
     def __call__(self, x):
-        """ Batch all tensors recursively """
+        """Batch all tensors recursively"""
         raise NotImplementedError()
 
 
 class DebatchPostprocess:
     def __call__(self, x, inputs, outputs):
-        """ Debatch all tensors recursively """
+        """Debatch all tensors recursively"""
         raise NotImplementedError()
 
 

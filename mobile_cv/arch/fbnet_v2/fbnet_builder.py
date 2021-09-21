@@ -135,8 +135,10 @@ Here
 import copy
 import logging
 from collections import OrderedDict
+from typing import Optional, Dict, Any, List
 
 import mobile_cv.arch.utils.helper as hp
+import mobile_cv.common.misc.iter_utils as iu
 import torch.nn as nn
 
 from .blocks_factory import PRIMITIVES
@@ -466,19 +468,21 @@ class FBNetBuilder(object):
 
     def build_blocks(
         self,
-        blocks,
+        blocks: List[Dict[Any, Any]],
         stage_indices=None,
-        dim_in=None,
-        prefix_name="xif",
+        dim_in: Optional[int] = None,
+        prefix_name: str = "xif",
+        override_missing: Optional[Dict[Any, Any]] = None,
         **kwargs,
     ):
-        """blocks: [{}, {}, ...]
-
-        Inputs: (list(int)) stages to add
-                (list(int)) if block[0] is not connected to the most
-                            recently added block, list specifies the input
-                            dimensions of the blocks (as self.last_depth
-                            will be inaccurate)
+        """
+        blocks: blocks to add
+        dim_in: input channels for block[0], if block[0] is not connected
+                to the most recently added block (as self.last_depth
+                will be inaccurate)
+        override_missing: arguments that override the config in the blocks
+                if the argument in the block is None, otherwise it will be
+                ignored
         """
         assert isinstance(blocks, list) and all(
             isinstance(x, dict) for x in blocks
@@ -501,7 +505,7 @@ class FBNetBuilder(object):
             block_cfg = block["block_cfg"]
             cur_kwargs = update_with_block_kwargs(copy.deepcopy(kwargs), block)
             nnblock = self.build_block(
-                block_op, block_cfg, in_channels=None, **cur_kwargs
+                block_op, block_cfg, override_missing=override_missing, **cur_kwargs
             )
             nn_name = f"{prefix_name}{stage_idx}_{block_idx}"
             assert nn_name not in modules, f"{nn_name} existed in {modules}"
@@ -510,19 +514,27 @@ class FBNetBuilder(object):
         ret.out_channels = self.last_depth
         return ret
 
-    def build_block(self, block_op, block_cfg, in_channels=None, **kwargs):
+    def build_block(
+        self,
+        block_op: str,
+        block_cfg: Dict[str, Any],
+        override_missing: Optional[Dict[str, Any]] = None,
+        replace_strs: Optional[Dict[str, Any]] = None,
+        **kwargs,
+    ):
+        """
+        override_missing: replace None value in the block_cfg with for values
+            specified in `override_missing`.
+            Example: override_missing={"out_channels": 20} will replace all
+            out_channels in block_cfg with 20 if the value is None
+        replace_strs: replace the values in block_cfg with the values in `replace_strs`
+            if the values are in '{name}` format
+            Example: block_cfg={"out_channels": "{feature_dim}"} and replace_strs={"feature_dim": 20}
+            will produce block_cfg={"out_channels": 20}
+        """
+
         assert "out_channels" in block_cfg
         block_cfg = copy.deepcopy(block_cfg)
-        out_channels = block_cfg.pop("out_channels")
-
-        # width_divisor should only be applied to computed values
-        if "width_ratio" in block_cfg:
-            width_ratio = block_cfg["width_ratio"]
-            del block_cfg["width_ratio"]
-        else:
-            width_ratio = self.width_ratio
-        if width_ratio != 1.0:
-            out_channels = self._get_divisible_width(out_channels * width_ratio)
 
         # dicts appear later will override the configs in the earlier ones
         new_kwargs = hp.get_merged_dict(
@@ -530,9 +542,31 @@ class FBNetBuilder(object):
             self.basic_args,
             block_cfg,
             kwargs,
-            {"in_channels": in_channels} if in_channels is not None else {},
         )
+
+        # replace str names with the values specified in `replace_strs`
+        if replace_strs is not None:
+            riter = iu.recursive_iterate(new_kwargs, iter_types=str, wait_on_send=True)
+            for item in riter:
+                if item[0] == "{" and item[-1] == "}":
+                    item = item[1:-1]
+                    if item in replace_strs:
+                        item = replace_strs[item]
+                riter.send(item)
+            new_kwargs = riter.value
+
+        # replace the config values if they are None
+        if override_missing is not None:
+            for item, value in new_kwargs.items():
+                if item in override_missing and value is None:
+                    new_kwargs[item] = override_missing[item]
+
         in_channels = new_kwargs.pop("in_channels")
+        out_channels = new_kwargs.pop("out_channels")
+
+        width_ratio = new_kwargs.pop("width_ratio", self.width_ratio)
+        if width_ratio != 1.0:
+            out_channels = self._get_divisible_width(out_channels * width_ratio)
 
         ret = PRIMITIVES.get(block_op)(in_channels, out_channels, **new_kwargs)
         self.last_depth = getattr(ret, "out_channels", out_channels)

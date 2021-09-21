@@ -13,6 +13,7 @@ class EmptyJitScriptModule(torch.jit.ScriptModule):
         return x
 
 
+# pyre-fixme[11]: Annotation `Sequential` is not defined as a type.
 class M1(nn.Sequential):
     pass
 
@@ -164,6 +165,47 @@ class TestFlopsEstimation(unittest.TestCase):
 
         gt_flops = [{"nparams": 0.000252, "nflops": 0.002736}] * 3
         self.assertEqual(gt_flops, flops)
+
+    def test_print_model_shape_nokwargs(self):
+        """When print_model_flops are used, all the modules inside the model
+        needs to pass the arguments through positional arguments.
+        Passing arguments through key values are not supported due to the
+        limitation of torch.nn.Module.register_forward_hook() (only the positional
+        arguments are given to the module).
+        https://pytorch.org/docs/stable/generated/torch.nn.Module.html?highlight=register_forward_hook#torch.nn.Module.register_forward_hook
+        """
+        src_l = 3
+        bsz = 5
+        embed_size = 8
+        nhead = 2
+        query = torch.rand((src_l, bsz, embed_size))
+        key = torch.rand((src_l, bsz, embed_size))
+        value = torch.rand((src_l, bsz, embed_size))
+
+        class Test(torch.nn.Module):
+            def __init__(self):
+                super().__init__()
+                self.attn = torch.nn.MultiheadAttention(embed_size, nhead, dropout=0.1)
+
+            def forward(self, use_kwargs):
+                if use_kwargs:
+                    # the code will fail as `value` will not be passed to the
+                    # hook to compute the flops
+                    return self.attn(query, key, value=value)
+                return self.attn(query, key, value)
+
+        model = Test()
+
+        # use `use_kwargs == False` will work correctly
+        ops = flops_utils.print_model_flops(model, (False,))
+        self.assertEqual(len(ops), 2)
+
+        # use `use_kwargs == True` will fail
+        with self.assertRaises(Exception) as context:
+            flops_utils.print_model_flops(model, (True,))
+        self.assertTrue(
+            "not enough values to unpack (expected 3, got 2)" in str(context.exception)
+        )
 
 
 if __name__ == "__main__":
