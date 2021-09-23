@@ -5,7 +5,6 @@ import errno
 import hashlib
 import logging
 import os
-import tempfile
 from types import TracebackType
 from typing import Optional, Type
 
