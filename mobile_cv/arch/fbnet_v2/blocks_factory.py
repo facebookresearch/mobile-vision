@@ -9,12 +9,7 @@ import mobile_cv.arch.utils.helper as hp
 import mobile_cv.common.misc.registry as registry
 from torch import nn
 
-from . import (  # noqa
-    basic_blocks as bb,
-    irf_block,
-    res_block,
-    sg_block,
-)
+from . import basic_blocks as bb, irf_block, res_block, sg_block  # noqa
 
 
 PRIMITIVES = registry.Registry("blocks_factory")
