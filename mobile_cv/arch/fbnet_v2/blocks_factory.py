@@ -11,7 +11,6 @@ from torch import nn
 
 from . import (  # noqa
     basic_blocks as bb,
-    frac_downsample,
     irf_block,
     res_block,
     sg_block,
@@ -222,27 +221,6 @@ _PRIMITIVES = {
         stride=stride,
         relu_args="hswish",
         **hp.filter_kwargs(irf_block.IRPoolBlock, kwargs)
-    ),
-    "frac_ds": lambda in_channels, out_channels, stride, **kwargs: frac_downsample.FracDownSample(
-        in_channels, **hp.filter_kwargs(frac_downsample.FracDownSample, kwargs)
-    ),
-    "frac_ds2": lambda in_channels, out_channels, stride, **kwargs: frac_downsample.FracDownSample2(  # noqa
-        in_channels, **hp.filter_kwargs(frac_downsample.FracDownSample, kwargs)
-    ),
-    "ir_k3_fs_se": lambda in_channels, out_channels, stride, **kwargs: frac_downsample.IRF_FS_Block(  # noqa
-        in_channels, out_channels, stride=stride, kernel_size=3, se_args="se", **kwargs
-    ),
-    "ir_k5_fs_se": lambda in_channels, out_channels, stride, **kwargs: frac_downsample.IRF_FS_Block(  # noqa
-        in_channels, out_channels, stride=stride, kernel_size=5, se_args="se", **kwargs
-    ),
-    "ir_k3_ad_se": lambda in_channels, out_channels, stride, **kwargs: frac_downsample.IRF_AD_Block(  # noqa
-        in_channels, out_channels, stride=stride, kernel_size=3, se_args="se", **kwargs
-    ),
-    "ir_k5_ad_se": lambda in_channels, out_channels, stride, **kwargs: frac_downsample.IRF_AD_Block(  # noqa
-        in_channels, out_channels, stride=stride, kernel_size=5, se_args="se", **kwargs
-    ),
-    "attds": lambda in_channels, out_channels, stride, **kwargs: frac_downsample.AttDownsample(  # noqa
-        in_channels, stride, **hp.filter_kwargs(frac_downsample.AttDownsample, kwargs)
     ),
 }
 PRIMITIVES.register_dict(_PRIMITIVES)
