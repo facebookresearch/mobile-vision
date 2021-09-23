@@ -36,6 +36,7 @@ install_dep: &install_dep
       name: Install Dependencies
       command: |
         pip install --pre torch torchvision -f https://download.pytorch.org/whl/nightly/cpu/torch_nightly.html
+        pip install -U iopath
 
 install_mobile_cv: &install_mobile_cv
   - run:
