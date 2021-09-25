@@ -69,7 +69,7 @@ class TestToolsModelExporter(unittest.TestCase):
                 self.assertTrue(os.path.exists(path))
 
     def test_tools_model_exporter_manifold(self):
-        fbnet_args = {"builder": "fbnet_v2", "arch_name": "fbnet_cse"}
+        fbnet_args = {"builder": "fbnet_v2", "arch_name": "fbnet_a"}
         dataset_args = {"builder": "tensor_shape", "input_shapes": [[1, 3, 64, 64]]}
 
         path_manager = utils_io.get_path_manager()
