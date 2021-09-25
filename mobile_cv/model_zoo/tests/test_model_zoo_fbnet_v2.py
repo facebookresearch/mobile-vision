@@ -96,27 +96,15 @@ class TestModelZooFBNetV2(unittest.TestCase):
         -- test_model_zoo_fbnet_v2.TestModelZooFBNetV2.test_fbnet_flops
         """
         for x in [
-            # "default",
-            # "mnv3",
             "fbnet_a",
-            # "fbnet_b",
-            # "fbnet_c",
-            # "fbnet_ase",
-            # "fbnet_bse",
-            "fbnet_cse",
-            # "fbnet_dse",
-            # "eff_0",
-            # "eff_1",
-            # "eff_2",
-            # "eff_3",
-            # "eff_4",
+            "fbnet_b",
+            "fbnet_c",
             "FBNetV2_F1",
             "FBNetV2_F2",
             "FBNetV2_F3",
             "FBNetV2_F4",
             "FBNetV2_F5",
             "FBNetV2_13732M",
-            # "cham_a",
         ]:
             print(f"model name: {x}")
             model = fbnet(x, pretrained=False)
