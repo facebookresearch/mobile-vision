@@ -4,11 +4,9 @@ import json
 import os
 import tempfile
 import unittest
-import uuid
 
 import mobile_cv.arch.fbnet_v2.blocks_factory as blocks_factory
 import torch
-from mobile_cv.common import utils_io
 from mobile_cv.model_zoo.tasks import task_factory
 from mobile_cv.model_zoo.tasks.task_base import TaskBase
 from mobile_cv.model_zoo.tools import model_exporter
