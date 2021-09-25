@@ -68,40 +68,6 @@ class TestToolsModelExporter(unittest.TestCase):
             for _, path in out_paths.items():
                 self.assertTrue(os.path.exists(path))
 
-    def test_tools_model_exporter_manifold(self):
-        fbnet_args = {"builder": "fbnet_v2", "arch_name": "fbnet_a"}
-        dataset_args = {"builder": "tensor_shape", "input_shapes": [[1, 3, 64, 64]]}
-
-        path_manager = utils_io.get_path_manager()
-
-        manifold_test_path = (
-            "manifold://mobile_vision_tests_scratch/tree/test_model_exporter/test_"
-            + str(uuid.uuid4().hex)
-        )
-        export_args = [
-            "--task",
-            "general",
-            "--task_args",
-            json.dumps({"model_args": fbnet_args, "dataset_args": dataset_args}),
-            "--output_dir",
-            manifold_test_path,
-            "--export_types",
-            "torchscript",
-            "torchscript_int8",
-            "--post_quant_backend",
-            "default",
-            # currently int8 will fail due to copy issue in quantized op
-            # "--use_get_traceable",
-            # "1",
-        ]
-        out_paths = model_exporter.run_with_cmdline_args_list(export_args)
-        self.assertEqual(len(out_paths), 2)
-        self.assertSetEqual(set(out_paths.keys()), {"torchscript", "torchscript_int8"})
-        for _, path in out_paths.items():
-            self.assertTrue(path_manager.isfile(path))
-
-        path_manager.rm(manifold_test_path)
-
     def test_tools_model_exporter_use_get_traceable(self):
         class Model(torch.nn.Module):
             def __init__(self):

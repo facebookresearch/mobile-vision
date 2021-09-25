@@ -104,7 +104,6 @@ class TestModelZooFBNetV2(unittest.TestCase):
             "FBNetV2_F3",
             "FBNetV2_F4",
             "FBNetV2_F5",
-            "FBNetV2_13732M",
         ]:
             print(f"model name: {x}")
             model = fbnet(x, pretrained=False)
