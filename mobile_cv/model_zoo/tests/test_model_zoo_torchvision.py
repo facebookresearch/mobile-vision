@@ -6,7 +6,7 @@ import unittest
 import mobile_cv.lut.lib.pt.flops_utils as flops_utils
 import torch
 from mobile_cv.model_zoo.models import model_zoo_factory
-from utils import is_devserver
+from .utils import is_devserver
 
 
 class TestModelZooTorchVision(unittest.TestCase):
