@@ -21,7 +21,7 @@ import mobile_cv.lut.lib.pt.flops_utils as flops_utils
 import mobile_cv.model_zoo.tasks.task_factory as task_factory
 import torch
 from mobile_cv.common import utils_io
-from mobile_cv.model_zoo.models import model_utils # noqa
+from mobile_cv.model_zoo.models import model_utils  # noqa
 from torch.utils.mobile_optimizer import optimize_for_mobile
 
 
