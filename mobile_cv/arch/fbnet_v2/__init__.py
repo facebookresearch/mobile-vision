@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
-from . import (  # noqa
+from mobile_cv.arch.fbnet_v2 import (  # noqa
     blocks_factory_3d,
     blocks_factory_reshape,
     fbnet_modeldef_cls,
