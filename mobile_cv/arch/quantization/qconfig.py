@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 import torch
-from torch.quantization.fake_quantize import FakeQuantize
-from torch.quantization.observer import MinMaxObserver
-from torch.quantization.qconfig import QConfig
+from torch.ao.quantization.fake_quantize import FakeQuantize
+from torch.ao.quantization.observer import MinMaxObserver
+from torch.ao.quantization.qconfig import QConfig
 
 from .observer import (
     FixedMinMaxObserver,

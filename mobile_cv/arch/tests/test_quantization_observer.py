@@ -12,10 +12,10 @@ from mobile_cv.arch.quantization.observer import (
     UpdateableReLUMovingAverageMinMaxObserver,
     update_stat,
 )
-from torch.quantization import QuantStub
-from torch.quantization.fake_quantize import FakeQuantize
-from torch.quantization.observer import MinMaxObserver
-from torch.quantization.qconfig import QConfig
+from torch.ao.quantization import QuantStub
+from torch.ao.quantization.fake_quantize import FakeQuantize
+from torch.ao.quantization.observer import MinMaxObserver
+from torch.ao.quantization.qconfig import QConfig
 
 
 def _reload_state_dict(state_dict):
@@ -62,7 +62,7 @@ class TestObserver(unittest.TestCase):
             ),
         )
         model.train()
-        qat_model = torch.quantization.prepare_qat(model, inplace=False)
+        qat_model = torch.ao.quantization.prepare_qat(model, inplace=False)
         qat_model(x)
         qat_model(y)
         qat_model.apply(update_stat)

@@ -37,14 +37,14 @@ class TestFBNetV2Quantize(unittest.TestCase):
         }
 
         model = _build_model(arch_def, dim_in=3)
-        model = torch.quantization.QuantWrapper(model)
+        model = torch.ao.quantization.QuantWrapper(model)
         model = fuse_utils.fuse_model(model, inplace=False)
 
         print(f"Fused model {model}")
 
-        model.qconfig = torch.quantization.default_qconfig
+        model.qconfig = torch.ao.quantization.default_qconfig
         print(model.qconfig)
-        torch.quantization.prepare(model, inplace=True)
+        torch.ao.quantization.prepare(model, inplace=True)
 
         # calibration
         for _ in range(5):
@@ -52,7 +52,7 @@ class TestFBNetV2Quantize(unittest.TestCase):
             model(data)
 
         # Convert to quantized model
-        quant_model = torch.quantization.convert(model, inplace=False)
+        quant_model = torch.ao.quantization.convert(model, inplace=False)
         print(f"Quant model {quant_model}")
 
         # Run quantized model

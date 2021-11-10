@@ -3,7 +3,7 @@
 from abc import abstractmethod
 
 import torch
-from torch.quantization.observer import (
+from torch.ao.quantization.observer import (
     MinMaxObserver,
     MovingAverageMinMaxObserver,
     ObserverBase,

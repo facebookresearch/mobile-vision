@@ -5,7 +5,7 @@ Base task
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Iterable, Tuple, Union
+from typing import Any, Iterable
 
 import torch
 
@@ -44,10 +44,10 @@ class TaskBase(ABC):
     @abstractmethod
     def get_model(
         self,
-    ) -> Union[torch.nn.Module, Tuple[torch.nn.Module, Dict[Any, Any]]]:
+    ) -> torch.nn.Module:
         """Return a pytorch model for the task,
-        could be a tuple (model, model_attributes), where model_attibutes is a dict
-        and its key/values will become the model's attibutes after scripting.
+        If the model has an attribute `model.attrs` as a dict, the model exporter
+        will treat its key/values as the model's attributes after tracing/scripting.
         """
         pass
 
@@ -55,7 +55,9 @@ class TaskBase(ABC):
         """Return a quantizabile pytorch model for the task
         full_model: model from `get_model()`
         """
-        model = torch.quantization.QuantWrapper(full_model)
+        model = torch.ao.quantization.QuantWrapper(full_model)
+        if hasattr(full_model, "attrs"):
+            model.attrs = full_model.attrs
         return model
 
     @abstractmethod

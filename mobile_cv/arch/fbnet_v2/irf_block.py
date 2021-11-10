@@ -30,8 +30,10 @@ class IRFBlock(nn.Module):
         width_divisor=8,
         pw_args=None,
         pw_bn_args=None,
+        skip_dw=False,
         dw_args=None,
         dw_bn_args=None,
+        skip_pwl=False,
         pwl_args=None,
         pwl_bn_args=None,
         dw_skip_bnrelu=False,
@@ -43,6 +45,8 @@ class IRFBlock(nn.Module):
         less_se_channels=False,
         zero_last_bn_gamma=False,
         drop_connect_rate=None,
+        mid_expand_out=False,  # mid_channels = out_channels * expansion if mid_expand_out=True
+        last_relu=False,  # apply relu after res_conn
     ):
         super().__init__()
 
@@ -50,7 +54,8 @@ class IRFBlock(nn.Module):
         bn_args = hp.unify_args(bn_args)
         relu_args = hp.unify_args(relu_args)
 
-        mid_channels = hp.get_divisible_by(in_channels * expansion, width_divisor)
+        mid_channels_base = out_channels if mid_expand_out else in_channels
+        mid_channels = hp.get_divisible_by(mid_channels_base * expansion, width_divisor)
 
         res_conn = bb.build_residual_connect(
             in_channels=in_channels,
@@ -70,7 +75,7 @@ class IRFBlock(nn.Module):
                     "kernel_size": pw_args.pop("kernel_size", 1)
                     if pw_args is not None
                     else 1,
-                    "stride": 1,
+                    "stride": pw_args.pop("stride", 1) if pw_args is not None else 1,
                     "padding": pw_args.pop("padding", 0) if pw_args is not None else 0,
                     "bias": bias,
                     "groups": pw_groups,
@@ -91,21 +96,25 @@ class IRFBlock(nn.Module):
             if not (dw_args and "padding" in dw_args)
             else dw_args.pop("padding")
         )
-        self.dw = bb.ConvBNRelu(
-            in_channels=mid_channels,
-            out_channels=mid_channels,
-            conv_args={
-                "kernel_size": kernel_size,
-                "stride": dw_stride,
-                "padding": dw_padding,
-                "groups": mid_channels // dw_group_ratio,
-                "bias": bias,
-                **hp.merge_unify_args(conv_args, dw_args),
-            },
-            bn_args=hp.merge_unify_args(bn_args, dw_bn_args)
-            if not dw_skip_bnrelu
-            else None,
-            relu_args=relu_args if not dw_skip_bnrelu else None,
+        self.dw = (
+            bb.ConvBNRelu(
+                in_channels=mid_channels,
+                out_channels=mid_channels,
+                conv_args={
+                    "kernel_size": kernel_size,
+                    "stride": dw_stride,
+                    "padding": dw_padding,
+                    "groups": mid_channels // dw_group_ratio,
+                    "bias": bias,
+                    **hp.merge_unify_args(conv_args, dw_args),
+                },
+                bn_args=hp.merge_unify_args(bn_args, dw_bn_args)
+                if not dw_skip_bnrelu
+                else None,
+                relu_args=relu_args if not dw_skip_bnrelu else None,
+            )
+            if not skip_dw
+            else None
         )
         se_ratio = 0.25
         if less_se_channels:
@@ -120,33 +129,42 @@ class IRFBlock(nn.Module):
             width_divisor=width_divisor,
             **hp.merge(relu_args=relu_args, kwargs=hp.unify_args(se_args))
         )
-        self.pwl = bb.ConvBNRelu(
-            in_channels=mid_channels,
-            out_channels=out_channels,
-            conv_args={
-                "kernel_size": pwl_args.pop("kernel_size", 1)
-                if pwl_args is not None
-                else 1,
-                "stride": 1,
-                "padding": pwl_args.pop("padding", 0) if pwl_args is not None else 0,
-                "bias": bias,
-                "groups": pwl_groups,
-                **hp.merge_unify_args(conv_args, pwl_args),
-            },
-            bn_args={
-                **hp.merge_unify_args(bn_args, pwl_bn_args),
-                **{
-                    "zero_gamma": (
-                        zero_last_bn_gamma if res_conn is not None else False
-                    )
+        self.pwl = (
+            bb.ConvBNRelu(
+                in_channels=mid_channels,
+                out_channels=out_channels,
+                conv_args={
+                    "kernel_size": pwl_args.pop("kernel_size", 1)
+                    if pwl_args is not None
+                    else 1,
+                    "stride": pwl_args.pop("stride", 1) if pwl_args is not None else 1,
+                    "padding": pwl_args.pop("padding", 0)
+                    if pwl_args is not None
+                    else 0,
+                    "bias": bias,
+                    "groups": pwl_groups,
+                    **hp.merge_unify_args(conv_args, pwl_args),
                 },
-            }
-            if not skip_pwl_bn
-            else None,
-            relu_args=None,
+                bn_args={
+                    **hp.merge_unify_args(bn_args, pwl_bn_args),
+                    **{
+                        "zero_gamma": (
+                            zero_last_bn_gamma if res_conn is not None else False
+                        )
+                    },
+                }
+                if not skip_pwl_bn
+                else None,
+                relu_args=None,
+            )
+            if not skip_pwl
+            else None
         )
 
         self.res_conn = res_conn
+        self.relu = (
+            bb.build_relu(num_channels=out_channels, **relu_args) if last_relu else None
+        )
         self.out_channels = out_channels
 
     def forward(self, x):
@@ -165,6 +183,8 @@ class IRFBlock(nn.Module):
             y = self.pwl(y)
         if self.res_conn is not None:
             y = self.res_conn(y, x)
+        if self.relu is not None:
+            y = self.relu(y)
         return y
 
 

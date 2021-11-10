@@ -34,5 +34,5 @@
         "resolution": 224,
         "top_1_accuracy": 75.268,
         "top_5_accuracy": 92.344
-    },
+    }
 ]

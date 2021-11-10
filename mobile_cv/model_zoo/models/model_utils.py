@@ -103,13 +103,13 @@ def convert_int8_jit(
         return copy.deepcopy(model)
 
     # qconfig = (
-    #     torch.quantization.get_default_qconfig(int8_backend)
+    #     torch.ao.quantization.get_default_qconfig(int8_backend)
     #     if int8_backend is not None
-    #     else torch.quantization.get_default_qconfig()
+    #     else torch.ao.quantization.get_default_qconfig()
     # )
-    qconfig = torch.quantization.QConfig(
-        activation=torch.quantization.MinMaxObserver.with_args(reduce_range=False),
-        weight=torch.quantization.default_weight_observer,
+    qconfig = torch.ao.quantization.QConfig(
+        activation=torch.ao.quantization.MinMaxObserver.with_args(reduce_range=False),
+        weight=torch.ao.quantization.default_weight_observer,
     )
     quant_model = qu.quantize_model(
         _build, inputs, add_quant_stub=add_quant_stub, quant_config=qconfig

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import copy
 import json
 import os
 import tempfile
@@ -90,3 +91,22 @@ class TestToolsModelExporter(unittest.TestCase):
             self.assertSetEqual(set(out_paths.keys()), {"torchscript"})
             for _, path in out_paths.items():
                 self.assertTrue(os.path.exists(path))
+
+    def test_tools_model_exporter_ext_task(self):
+        with tempfile.TemporaryDirectory() as output_dir:
+            export_args = [
+                "--task",
+                "test_task@ext.test.lib.external_task_for_test",
+                "--output_dir",
+                output_dir,
+                "--export_types",
+                "torchscript",
+                "--opt_for_mobile",
+                "1",
+            ]
+            out_paths = model_exporter.run_with_cmdline_args_list(export_args)
+            self.assertEqual(len(out_paths), 1)
+            self.assertSetEqual(set(out_paths.keys()), {"torchscript"})
+            for _, path in out_paths.items():
+                self.assertTrue(os.path.exists(path))
+

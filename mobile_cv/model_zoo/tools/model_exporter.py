@@ -73,7 +73,7 @@ def parse_args(args_list=None):
     parser.add_argument(
         "--use_graph_mode_quant",
         action="store_true",
-        help="Use graph mode quantization for int8 models",
+        help="Use fx quantization for int8 models",
     )
     parser.add_argument(
         "--use_get_traceable",
@@ -126,6 +126,85 @@ def _get_model_with_attrs(model, attrs):
     return model
 
 
+class TraceWrapperP0(torch.nn.Module):
+    def __init__(self, model):
+        super().__init__()
+        self.model = model
+        self.training = getattr(model, "training", False)
+
+    def forward(self):
+        return self.model()
+
+
+class TraceWrapperP1(torch.nn.Module):
+    def __init__(self, model):
+        super().__init__()
+        self.model = model
+        self.training = getattr(model, "training", False)
+
+    def forward(self, x):
+        return self.model(x)
+
+
+class TraceWrapperP2(torch.nn.Module):
+    def __init__(self, model):
+        super().__init__()
+        self.model = model
+        self.training = getattr(model, "training", False)
+
+    def forward(self, x, y):
+        return self.model(x, y)
+
+
+def _get_traced_model_with_attrs(traced_model, num_inputs, model_attrs):
+    """For a module that has already been traced, adding additional attributes on
+    top of it and script it again will not work. This workaround add a wrapper to
+    the traced model with attributes and script it.
+    Currently only with up to two
+    parameters could be supported, and the parameter names may not match the exact
+    names of the traced model.
+    """
+    assert isinstance(traced_model, torch.jit.ScriptModule)
+    if num_inputs == 0:
+        traced_model = TraceWrapperP0(traced_model)
+    elif num_inputs == 1:
+        traced_model = TraceWrapperP1(traced_model)
+    elif num_inputs == 2:
+        traced_model = TraceWrapperP2(traced_model)
+    else:
+        raise Exception("Traced models with at most two parameters are supported.")
+    _set_attrs_to_model(traced_model, model_attrs)
+    return traced_model
+
+
+def get_script_model_with_attrs(model, trace_type, model_inputs=None, model_attrs=None):
+    """Trace or script the model and store model_attrs as model attributes."""
+    assert trace_type in ("trace", "script"), f"Invalid trace_type {trace_type}"
+
+    info = f'{"Tracing" if trace_type == "trace" else "Scripting"} model'
+    if model_attrs is not None:
+        info += f" with attributes: {model_attrs}"
+    logger.info(info)
+
+    if trace_type == "trace":
+        script_model = torch.jit.trace(model, model_inputs, strict=False)
+        if model_attrs is not None:
+            script_model = _get_traced_model_with_attrs(
+                script_model, len(model_inputs), model_attrs
+            )
+            script_model = torch.jit.script(script_model)
+    else:
+        if isinstance(model, torch.jit.ScriptModule) and model_attrs is not None:
+            logger.warning(
+                f"Model has been scripted, could not add attributes {model_attrs}"
+            )
+        else:
+            model = _get_model_with_attrs(model, model_attrs)
+        script_model = torch.jit.script(model)
+
+    return script_model
+
+
 def trace_and_save_torchscript(
     model: torch.nn.Module,
     inputs: typing.Tuple[typing.Any, ...],
@@ -141,15 +220,10 @@ def trace_and_save_torchscript(
     with torch.no_grad():
         if use_get_traceable:
             model = ju.get_traceable_model(model)
-        if trace_type == "trace":
-            script_model = torch.jit.trace(model, inputs, strict=False)
-            if model_attrs is not None:
-                script_model = _get_model_with_attrs(script_model, model_attrs)
-                script_model = torch.jit.script(script_model)
-        else:
-            logger.info(f"Saving model with attributes: {model_attrs}")
-            model = _get_model_with_attrs(model, model_attrs)
-            script_model = torch.jit.script(model)
+
+    script_model = get_script_model_with_attrs(
+        model, trace_type, model_inputs=inputs, model_attrs=model_attrs
+    )
 
     if opt_for_mobile:
         logger.info("Running optimize_for_mobile...")
@@ -182,10 +256,21 @@ def trace_and_save_torchscript(
     return model_file
 
 
+def _get_model_attributes(model: torch.nn.Module):
+    model_attrs = None
+    if hasattr(model, "attrs"):
+        model_attrs = model.attrs
+        if model_attrs is not None:
+            assert isinstance(
+                model_attrs, dict
+            ), f"Invalid model attributes type: {model_attrs}"
+    return model_attrs
+
+
 @ExportFactory.register("torchscript")
-def export_to_torchscript(
-    args, task, model, inputs, output_base_dir, *, model_attrs=None, **kwargs
-):
+def export_to_torchscript(args, task, model, inputs, output_base_dir, **kwargs):
+    model_attrs = _get_model_attributes(model)
+
     output_dir = os.path.join(output_base_dir, "torchscript")
 
     with torch.no_grad():
@@ -206,26 +291,27 @@ def export_to_torchscript(
 
 @ExportFactory.register("torchscript_int8")
 def export_to_torchscript_int8(
-    args, task, model, inputs, output_base_dir, *, data_iter, model_attrs=None, **kwargs
+    args, task, model, inputs, output_base_dir, *, data_iter, **kwargs
 ):
     cur_loader = itertools.chain([inputs], data_iter)
 
     if hasattr(task, "get_quantized_model"):
         ptq_model = task.get_quantized_model(model, cur_loader)
+        model_attrs = _get_model_attributes(ptq_model)
     elif args.use_graph_mode_quant:
-        print(
-            f"Post quantization using {args.post_quant_backend} backend graph mode..."
-        )
-        quant = quantize_utils.PostQuantizationGraph(model)
+        print(f"Post quantization using {args.post_quant_backend} backend fx mode...")
+        model_attrs = _get_model_attributes(model)
+        quant = quantize_utils.PostQuantizationFX(model)
         ptq_model = (
             quant.set_quant_backend(args.post_quant_backend)
-            .set_calibrate(cur_loader, 1)
-            .trace(inputs, strict=False)
+            .prepare()
+            .calibrate_model(cur_loader, 1)
             .convert_model()
         )
     else:
         print(f"Post quantization using {args.post_quant_backend} backend...")
         qa_model = task.get_quantizable_model(model)
+        model_attrs = _get_model_attributes(qa_model)
         post_quant = quantize_utils.PostQuantization(qa_model)
         post_quant.fuse_bn().set_quant_backend(args.post_quant_backend)
         ptq_model = post_quant.prepare().calibrate_model(cur_loader, 1).convert_model()
@@ -256,7 +342,6 @@ def export_to_torchscript_dynamic(
     inputs,
     output_base_dir,
     *,
-    model_attrs=None,
     export_format=None,
     **kwargs,
 ):
@@ -270,6 +355,7 @@ def export_to_torchscript_dynamic(
     assert export_format.startswith("torchscript_")
     model_name = export_format[len("torchscript_") :]
     model = task.get_model_by_name(model_name, model)
+    model_attrs = _get_model_attributes(model)
 
     print(f"Converting to {model_name}...")
     output_dir = os.path.join(output_base_dir, export_format)
@@ -307,8 +393,7 @@ def main(
     model = task.get_model()
     if isinstance(model, tuple):
         model, model_attrs = model
-    else:
-        model_attrs = None
+        model.attrs = model_attrs
     model.eval()
     data_loader = task.get_dataloader()
     data_iter = iter(data_loader)
@@ -334,7 +419,6 @@ def main(
                 output_dir,
                 # NOTE: output model maybe difference if data_loader is used multiple times
                 data_iter=data_iter,
-                model_attrs=model_attrs,
                 export_format=ef,
             )
             ret[ef] = out_path

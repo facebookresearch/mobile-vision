@@ -14,7 +14,7 @@ from mobile_cv.arch.quantization.qconfig import (
     updateable_relu_moving_avg_minmax_config,
     updateable_symmetric_moving_avg_minmax_config,
 )
-from torch.quantization.observer import MinMaxObserver
+from torch.ao.quantization.observer import MinMaxObserver
 
 
 class TestQconfig(unittest.TestCase):
@@ -35,7 +35,7 @@ class TestQconfig(unittest.TestCase):
         ]:
             model = bb.ConvBNRelu(1, 1, "conv", None, None)
             model.qconfig = qconfig
-            qat_model = torch.quantization.prepare_qat(model, inplace=False)
+            qat_model = torch.ao.quantization.prepare_qat(model, inplace=False)
             self.assertTrue(
                 isinstance(
                     qat_model.conv.activation_post_process.activation_post_process,

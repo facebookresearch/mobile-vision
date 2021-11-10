@@ -3,26 +3,38 @@
 
 import copy
 import typing
-from typing import Callable, Dict, Type
+from typing import Callable, Dict, Type, Tuple
 
 import mobile_cv.arch.fbnet_v2.basic_blocks as bb
 import mobile_cv.arch.layers
 import mobile_cv.common.misc.registry as registry
 import torch
 import torch.nn as nn
-import torch.quantization.fx
-import torch.quantization.quantize_fx
 from mobile_cv.arch.fbnet_v2.spade import _get_fuser_name_convbnrelu_with_tuple_left
 from mobile_cv.arch.layers.batch_norm import (
     NaiveSyncBatchNorm,
     NaiveSyncBatchNorm1d,
     NaiveSyncBatchNorm3d,
 )
-from torch.quantization.fuse_modules import (
-    fuse_conv_bn,
-    fuse_conv_bn_relu,
-    fuse_known_modules,
-)
+
+
+TORCH_VERSION: Tuple[int, ...] = tuple(int(x) for x in torch.__version__.split(".")[:2])
+if TORCH_VERSION >= (1, 10):
+    from torch.ao.quantization import fuse_modules
+    from torch.ao.quantization.fuse_modules import (
+        fuse_conv_bn,
+        fuse_conv_bn_relu,
+        fuse_known_modules,
+    )
+    from torch.ao.quantization.quantize_fx import _fuse_fx
+else:
+    from torch.quantization import fuse_modules
+    from torch.quantization.fuse_modules import (
+        fuse_conv_bn,
+        fuse_conv_bn_relu,
+        fuse_known_modules,
+    )
+    from torch.quantization.quantize_fx import _fuse_fx
 
 
 # Registry to get the names for fusing the supported module
@@ -201,9 +213,7 @@ def fuse_convbnrelu(module, inplace=False):
     )
 
     if len(fuse_names) > 0:
-        ret = torch.quantization.fuse_modules(
-            ret, fuse_names, inplace=True, fuser_func=fuse_more_modules
-        )
+        ret = fuse_modules(ret, fuse_names, inplace=True, fuser_func=fuse_more_modules)
     return ret
 
 
@@ -275,7 +285,7 @@ def _remove_asserts(mod: torch.fx.GraphModule) -> torch.fx.GraphModule:
 def _fuse_model_fx_single(model: torch.nn.Module) -> torch.nn.Module:
     model = torch.fx.symbolic_trace(model)
     model = _remove_asserts(model)
-    model = torch.quantization.quantize_fx._fuse_fx(model)
+    model = _fuse_fx(model)
     return model
 
 

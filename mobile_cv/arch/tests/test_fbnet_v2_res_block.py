@@ -73,8 +73,8 @@ class TestResBlock(unittest.TestCase):
 
     def test_res_block_quantize_partial(self):
         import mobile_cv.arch.utils.quantize_utils as qu
-        from torch.quantization import get_default_qconfig
-        from torch.quantization.quantize_fx import prepare_fx, convert_fx
+        from torch.ao.quantization import get_default_qconfig
+        from torch.ao.quantization.quantize_fx import prepare_fx, convert_fx
 
         qconfig = get_default_qconfig("qnnpack")
 

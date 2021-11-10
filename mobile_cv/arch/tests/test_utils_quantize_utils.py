@@ -9,7 +9,7 @@ import mobile_cv.arch.utils.quantize_utils as qu
 import mock
 import torch
 from mobile_cv.arch.layers import NaiveSyncBatchNorm
-from torch.quantization.quantize_fx import convert_fx, prepare_fx
+from torch.ao.quantization.quantize_fx import convert_fx, prepare_fx
 
 
 def _build_model(arch_def, dim_in):
@@ -359,7 +359,7 @@ class TestUtilsQuantizeUtils(unittest.TestCase):
 
         # quantize and convert the model
         model = MM().eval()
-        qconfig = torch.quantization.get_default_qconfig("qnnpack")
+        qconfig = torch.ao.quantization.get_default_qconfig("qnnpack")
         qconfig_dict = qu.get_qconfig_dict(model, qconfig)
         model = prepare_fx(model, qconfig_dict)
         model = convert_fx(model)

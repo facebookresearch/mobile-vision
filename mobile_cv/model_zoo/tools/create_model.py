@@ -131,27 +131,30 @@ def convert_int8_jit(args, model, data, folder_name="int8_jit"):
         return None, None, None
     try:
         print("Converting to int8 jit...")
+        if args.int8_backend is not None:
+            torch.backends.quantized.engine = args.int8_backend
         if not USE_GRAPH_MODE_QUANT:
-            if args.int8_backend is not None:
-                torch.backends.quantized.engine = args.int8_backend
             # trace model
             traced_model, traced_output = model_utils.convert_int8_jit(
                 model, data, int8_backend=args.int8_backend, add_quant_stub=False
             )
         else:
-            quant = qu.PostQuantizationGraph(model)
-            traced_model = (
+            quant = qu.PostQuantizationFX(model)
+            quant_model = (
                 quant.set_quant_backend("default")
-                .set_calibrate([data], 1)
-                .trace(
-                    data, strict=False, use_get_traceable=bool(args.use_get_traceable)
-                )
+                .prepare()
+                .calibrate_model([data], 1)
                 .convert_model()
             )
-            traced_output = traced_model(*data)
-            print(traced_model.code)
+            traced_model, traced_output = model_utils.convert_torch_script(
+                quant_model,
+                data,
+                fuse_bn=args.fuse_bn,
+                use_get_traceable=bool(args.use_get_traceable),
+            )
 
         print(traced_model)
+
         output_dir = os.path.join(args.output_dir, folder_name)
         model_utils.save_model(output_dir, traced_model, data)
         return traced_model, traced_output, output_dir
@@ -177,7 +180,7 @@ def run(args):
 
     model = create_model(args)
     model_quant = (
-        torch.quantization.QuantWrapper(model) if not USE_GRAPH_MODE_QUANT else model
+        torch.ao.quantization.QuantWrapper(model) if not USE_GRAPH_MODE_QUANT else model
     )
     data = get_input_data(args)
 

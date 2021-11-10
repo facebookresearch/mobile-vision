@@ -28,7 +28,7 @@ from mobile_cv.arch.fbnet_v2 import (
     fbnet_modeldef_cls as modeldef,
 )
 from mobile_cv.common import utils_io
-from mobile_cv.model_zoo.models import hub_utils, model_zoo_factory, utils
+from mobile_cv.model_zoo.models import model_zoo_factory, utils
 
 
 def _load_pretrained_info():
@@ -50,9 +50,6 @@ NAME_MAPPING = {
 
 
 def _load_fbnet_state_dict(file_name, progress=True, ignore_prefix="module."):
-    if file_name.startswith("https://"):
-        file_name = hub_utils.download_file(file_name, progress=progress)
-
     path_manager = utils_io.get_path_manager()
     with path_manager.open(file_name, "rb") as h_in:
         state_dict = torch.load(h_in, map_location="cpu")

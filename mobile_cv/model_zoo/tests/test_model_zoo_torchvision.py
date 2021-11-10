@@ -6,13 +6,12 @@ import unittest
 import mobile_cv.lut.lib.pt.flops_utils as flops_utils
 import torch
 from mobile_cv.model_zoo.models import model_zoo_factory
-
-from .utils import is_devserver
+from parameterized import parameterized
 
 
 class TestModelZooTorchVision(unittest.TestCase):
-    def test_model_zoo_factory_resnet(self):
-        load_pretrained = is_devserver()
+    @parameterized.expand([[True], [False]])
+    def test_model_zoo_factory_resnet(self, load_pretrained):
         model = model_zoo_factory.get_model(
             "resnet50", num_classes=1000, pretrained=load_pretrained
         )

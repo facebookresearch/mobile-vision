@@ -6,13 +6,12 @@ import unittest
 import mobile_cv.lut.lib.pt.flops_utils as flops_utils
 import torch
 from mobile_cv.model_zoo.models.fbnet_v2 import fbnet, fbnet_backbone
-
-from .utils import is_devserver
+from parameterized import parameterized
 
 
 class TestModelZooFBNetV2(unittest.TestCase):
-    def test_fbnet_v2(self):
-        load_pretrained = is_devserver()
+    @parameterized.expand([[True], [False]])
+    def test_fbnet_v2(self, load_pretrained):
         for name in [
             "fbnet_a",
             "fbnet_b",
@@ -40,8 +39,8 @@ class TestModelZooFBNetV2(unittest.TestCase):
                 out = model(data)
                 self.assertEqual(out.size(), torch.Size([1, 1000]))
 
-    def test_fbnet_v2_backbone(self):
-        load_pretrained = is_devserver()
+    @parameterized.expand([[True], [False]])
+    def test_fbnet_v2_backbone(self, load_pretrained):
         for name in [
             "fbnet_c",
             # "FBNetV2_F2",
@@ -55,8 +54,8 @@ class TestModelZooFBNetV2(unittest.TestCase):
             out = model(data)
             self.assertEqual(out.size()[:2], torch.Size([1, out_chan]))
 
-    def test_fbnet_v2_backbone_stage_indices(self):
-        load_pretrained = is_devserver()
+    @parameterized.expand([[True], [False]])
+    def test_fbnet_v2_backbone_stage_indices(self, load_pretrained):
         name = "fbnet_c"
         print(f"Testing {name} backbone selected stage indices...")
         stage_indices = [0, 1, 2]

@@ -22,12 +22,14 @@ class ReshapeToBatch(torch.nn.Module):
         assert len(x.shape) == 4
         assert x.shape[1] % self.out_channels == 0
         num_views = x.shape[1] // self.out_channels
-        return x.view(x.shape[0] * num_views, self.out_channels, x.shape[2], x.shape[3])
+        return x.reshape(
+            x.shape[0] * num_views, self.out_channels, x.shape[2], x.shape[3]
+        )
 
 
 class ReshapeToChannel(torch.nn.Module):
     """Reshape the batch dimension of the tensor to channel dimension
-    [n, c, h, w] -> [n * (c // out_channels), out_channels, h, w]
+    [n, c, h, w] -> [n / (out_channels // c), out_channels, h, w]
     """
 
     def __init__(self, out_channels):
@@ -46,7 +48,7 @@ class ReshapeToChannel(torch.nn.Module):
         ), f"out_channels = {self.out_channels}, x = {x.shape}"
         num_views = self.out_channels // x.shape[1]
         assert x.shape[0] % num_views == 0, f"x = {x.shape}, num_views = {num_views}"
-        return x.view(
+        return x.reshape(
             x.shape[0] // num_views,
             self.out_channels,
             x.shape[2],

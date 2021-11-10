@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
+import os
 import glob
 import json
+
+
+def is_devserver() -> bool:
+    return os.getenv("HOSTNAME") is not None and os.getenv("HOSTNAME").startswith("dev")
 
 
 def _list_to_dict(model_list):
@@ -23,7 +28,7 @@ def load_model_info(file_name, to_dict=True):
 
 
 def load_model_info_all(folder_path):
-    paths = glob.glob(f"{folder_path}/*.json")
+    paths = glob.glob(f"{folder_path}/**/*.json", recursive=True)
     ret = []
     for path in paths:
         cur = load_model_info(path, to_dict=False)

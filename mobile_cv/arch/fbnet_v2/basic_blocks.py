@@ -362,19 +362,22 @@ def build_residual_connect(
 ):
     if name is None or name == "none":
         return None
-    if name == "default":
+    if name == "default" or name == "projection":
         assert isinstance(stride, (numbers.Number, tuple, list))
         if isinstance(stride, (tuple, list)):
             stride_one = all(x == 1 for x in stride)
         else:
             stride_one = stride == 1
+        add_f = (
+            TorchAdd()
+            if drop_connect_rate is None
+            else AddWithDropConnect(drop_connect_rate)
+        )
         if in_channels == out_channels and stride_one:
-            if drop_connect_rate is None:
-                return TorchAdd()
-            else:
-                return AddWithDropConnect(drop_connect_rate)
-        else:
-            return None
+            return add_f
+        if name == "projection":
+            return AddWithResProj(in_channels, out_channels, stride, add_f, **res_args)
+        return None
     return RESIDUAL_REGISTRY.get(name)(in_channels, out_channels, stride, **res_args)
 
 
@@ -409,6 +412,14 @@ class ConvBNRelu(nn.Module):
     ):
         super().__init__()
 
+        self.in_channels = in_channels
+        self.out_channels = out_channels
+        self.conv_args = conv_args
+        self.bn_args = bn_args
+        self.relu_args = relu_args
+        self.upsample_args = upsample_args
+        self.kwargs = kwargs
+
         conv_full_args = hp.merge_unify_args(conv_args, kwargs)
         conv_stride = conv_full_args.pop("stride", 1)
         # build upsample op if stride is negative
@@ -437,8 +448,8 @@ class ConvBNRelu(nn.Module):
             else None
         )
         self.upsample = upsample_op
-
-        self.out_channels = out_channels
+        self.stride = conv_stride
+        self.conv_full_args = conv_full_args
 
     def forward(self, x):
         if self.conv is not None:
@@ -678,3 +689,38 @@ class AddWithDropConnect(nn.Module):
 
     def extra_repr(self):
         return f"drop_connect_rate={self.drop_connect_rate}"
+
+
+class AddWithResProj(nn.Module):
+    """Apply pw conv on x before adding with y"""
+
+    def __init__(
+        self,
+        in_channels,
+        out_channels,
+        stride,
+        add_f,
+        bias=False,
+        conv_args="conv",
+        bn_args="bn",
+    ):
+        super().__init__()
+        self.add_f = add_f
+        self.proj = ConvBNRelu(
+            in_channels=in_channels,
+            out_channels=out_channels,
+            conv_args={
+                "kernel_size": 1,
+                "stride": stride,
+                "padding": 0,
+                "groups": 1,
+                "bias": bias,
+                **hp.unify_args(conv_args),
+            },
+            bn_args=hp.unify_args(bn_args),
+            relu_args=None,
+        )
+
+    def forward(self, y, x):
+        x = self.proj(x)
+        return self.add_f(y, x)

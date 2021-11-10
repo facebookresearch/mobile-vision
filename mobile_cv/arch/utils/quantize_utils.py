@@ -12,23 +12,23 @@ import mobile_cv.common.misc.iter_utils as iu
 import torch
 import torch.nn as nn
 from mobile_cv.arch.layers import NaiveSyncBatchNorm
-from torch.quantization.stubs import DeQuantStub, QuantStub
+from torch.ao.quantization.stubs import DeQuantStub, QuantStub
 
 from . import fuse_utils
 
 
 def get_backend_qconfig(backend):
     if backend == "default":
-        qconfig = torch.quantization.default_qconfig
+        qconfig = torch.ao.quantization.default_qconfig
     elif backend == "qnnpack_per_channel":
-        qconfig = torch.quantization.QConfig(
-            activation=torch.quantization.HistogramObserver.with_args(
+        qconfig = torch.ao.quantization.QConfig(
+            activation=torch.ao.quantization.HistogramObserver.with_args(
                 reduce_range=False
             ),
-            weight=torch.quantization.default_per_channel_weight_observer,
+            weight=torch.ao.quantization.default_per_channel_weight_observer,
         )
     else:
-        qconfig = torch.quantization.get_default_qconfig(backend)
+        qconfig = torch.ao.quantization.get_default_qconfig(backend)
 
     return qconfig
 
@@ -73,7 +73,7 @@ class PostQuantization(object):
     def __init__(self, model, copy_model=True):
         self.model = copy.deepcopy(model) if copy_model else model
         if not hasattr(self.model, "qconfig"):
-            self.model.qconfig = torch.quantization.default_qconfig
+            self.model.qconfig = torch.ao.quantization.default_qconfig
 
     def fuse_bn(self):
         print("Fusing bn...")
@@ -84,7 +84,7 @@ class PostQuantization(object):
         return self
 
     def add_quant_stub(self):
-        self.model = torch.quantization.QuantWrapper(self.model)
+        self.model = torch.ao.quantization.QuantWrapper(self.model)
         return self
 
     def set_quant_backend(self, backend="fbgemm"):
@@ -96,23 +96,15 @@ class PostQuantization(object):
         return self
 
     def prepare(self):
-        torch.quantization.prepare(self.model, inplace=True)
+        torch.ao.quantization.prepare(self.model, inplace=True)
         return self
 
     def calibrate_model(self, data_loader, num_batches=1):
-        for idx, data in enumerate(data_loader):
-            print(f"Collecting stats {idx}/{num_batches}...")
-            self.model(*data)
-            if idx + 1 == num_batches:
-                break
-        else:
-            print(
-                f"Only ran {idx} bathces data for calibration, expected {num_batches}"
-            )
+        calibrate_model(self.model, data_loader, num_batches)
         return self
 
     def convert_model(self):
-        quant_model = torch.quantization.convert(self.model, inplace=True)
+        quant_model = torch.ao.quantization.convert(self.model, inplace=True)
         return quant_model
 
 
@@ -123,7 +115,7 @@ class PostQuantizationGraph(object):
         self.model = copy.deepcopy(model) if copy_model else model
         self.processed_model = None
         self.calibrate_func = None
-        self.qconfig = torch.quantization.default_qconfig
+        self.qconfig = torch.ao.quantization.default_qconfig
         if hasattr(self.model, "qconfig"):
             self.qconfig = self.model.qconfig
 
@@ -169,13 +161,50 @@ class PostQuantizationGraph(object):
     def convert_model(self):
         assert self.processed_model is not None
         assert self.calibrate_func is not None
-        ret = torch.quantization.quantize_jit(
+        ret = torch.ao.quantization.quantize_jit(
             self.processed_model,
             {"": self.qconfig},
             self.calibrate_func,
             ["_not_needed"],
         )
         return ret
+
+
+class PostQuantizationFX(object):
+    """Post quantization using FX"""
+
+    def __init__(self, model, copy_model=True, qconfig=None):
+        self.model = copy.deepcopy(model) if copy_model else model
+        if qconfig is None:
+            self.qconfig = torch.ao.quantization.default_qconfig
+
+    def set_quant_backend(self, backend="fbgemm"):
+        self.qconfig = get_backend_qconfig(backend)
+        return self
+
+    def set_quant_config(self, quant_cfg):
+        self.qconfig = quant_cfg
+        return self
+
+    def prepare(self, qconfig_dict=None):
+        if qconfig_dict is None:
+            qconfig_dict = get_qconfig_dict(self.model, self.qconfig)
+        if qconfig_dict is None:
+            qconfig_dict = {"": self.qconfig}
+        self._prepared_model = torch.ao.quantization.quantize_fx.prepare_fx(
+            self.model, qconfig_dict
+        )
+        return self
+
+    def calibrate_model(self, data_loader, num_batches=1):
+        assert hasattr(self, "_prepared_model"), "Call prepare() first"
+        calibrate_model(self._prepared_model, data_loader, num_batches)
+        return self
+
+    def convert_model(self):
+        assert hasattr(self, "_prepared_model"), "Call prepare() first"
+        quant_model = torch.ao.quantization.quantize_fx.convert_fx(self._prepared_model)
+        return quant_model
 
 
 def quantize_model(
@@ -190,19 +219,19 @@ def quantize_model(
     model = model_builder()
     model.eval()
     if add_quant_stub:
-        model = torch.quantization.QuantWrapper(model)
+        model = torch.ao.quantization.QuantWrapper(model)
 
     print("Fusing bn...")
     model = fuse_utils.fuse_model(model)
     assert not fuse_utils.check_bn_exist(model), model
 
-    model.qconfig = quant_config or torch.quantization.default_qconfig
+    model.qconfig = quant_config or torch.ao.quantization.default_qconfig
     print(f"Quant config: {model.qconfig}")
 
-    torch.quantization.prepare(model, inplace=True)
+    torch.ao.quantization.prepare(model, inplace=True)
     print("Collecting stats...")
     model(*inputs)
-    quant_model = torch.quantization.convert(model, inplace=False)
+    quant_model = torch.ao.quantization.convert(model, inplace=False)
 
     return quant_model
 

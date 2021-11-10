@@ -135,7 +135,7 @@ Here
 import copy
 import logging
 from collections import OrderedDict
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Iterable, List, Optional
 
 import mobile_cv.arch.utils.helper as hp
 import mobile_cv.common.misc.iter_utils as iu
@@ -202,12 +202,12 @@ def parse_block_cfgs(block_cfgs):
     The optional cfgs in each block (dicts) will be merged together in the
       order they appear in the dict.
     """
-    assert isinstance(block_cfgs, list)
+    assert isinstance(block_cfgs, Iterable)
     ret = []
     for stage_cfg in block_cfgs:
         cur_stage = []
         for block_cfg in stage_cfg:
-            assert isinstance(block_cfg, (list, tuple))
+            assert isinstance(block_cfg, Iterable)
             cur_block = parse_block_cfg(*block_cfg)
             cur_stage.append(cur_block)
         ret.append(cur_stage)
@@ -290,7 +290,7 @@ def unify_arch_def_blocks(arch_def_blocks):
         {}, ...
     ]
     """
-    assert isinstance(arch_def_blocks, list)
+    assert isinstance(arch_def_blocks, Iterable)
 
     blocks_info = parse_block_cfgs(arch_def_blocks)
     blocks_info = expand_repeats(blocks_info)

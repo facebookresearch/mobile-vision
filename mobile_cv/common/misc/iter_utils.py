@@ -42,6 +42,8 @@ def recursive_iterate(
     map_check_func=None,
     seq_check_func=None,
     wait_on_send=None,
+    yield_name: bool = False,
+    _name_prefix: str = "",
 ):
     """Return an iterable `iter` to allow to access the nested obj (`obj`) linearly.
     The iterator also supports returns a object with the same hierarchy as
@@ -56,21 +58,38 @@ def recursive_iterate(
     do not match. The data sent will be ignored if `wait_on_send` is False.
     `wait_on_send` is None is for backward compatiblity. The iter could accept
     any data sent back except `None`, which will cause an error.
+    'yield_name` decides if to yield the name with the object together. If yes,
+    the yield values will be ('m1.m2.m3.name', obj), otherwise only `obj` is returned
     """
     ret = obj
+
+    def _get_name_with_prefix(name):
+        return ".".join(map(str, filter(lambda x: x != "", [_name_prefix, name])))
 
     if _is_map(obj) and (map_check_func is None or map_check_func(obj)):
         ret = {}
         for x in obj:
             cur = yield from recursive_iterate(
-                obj[x], iter_types, map_check_func, seq_check_func, wait_on_send
+                obj[x],
+                iter_types,
+                map_check_func,
+                seq_check_func,
+                wait_on_send,
+                yield_name=yield_name,
+                _name_prefix=_get_name_with_prefix(x),
             )
             ret[x] = cur
     elif _is_seq(obj) and (seq_check_func is None or seq_check_func(obj)):
         ret = []
-        for x in obj:
+        for idx, x in enumerate(obj):
             cur = yield from recursive_iterate(
-                x, iter_types, map_check_func, seq_check_func, wait_on_send
+                x,
+                iter_types,
+                map_check_func,
+                seq_check_func,
+                wait_on_send,
+                yield_name=yield_name,
+                _name_prefix=_get_name_with_prefix(idx),
             )
             ret.append(cur)
         if isinstance(obj, tuple):
@@ -80,7 +99,8 @@ def recursive_iterate(
         if iter_types is not None and not isinstance(obj, iter_types):
             is_yield = False
         if is_yield:
-            cret = yield obj
+            yield_obj = obj if not yield_name else (_name_prefix, obj)
+            cret = yield yield_obj
             # data sent back to `ret`, needs a yield for `send()` to pause here as
             #   both 'send()' and `for` advances the generator
             if wait_on_send is True:

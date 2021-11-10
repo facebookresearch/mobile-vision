@@ -30,6 +30,17 @@ class TestIterUtils(unittest.TestCase):
         val_list = list(iu.recursive_iterate(values, iter_types=str))
         self.assertEqual(val_list, ["v1", "v2", "v4"])
 
+    def test_recursive_iter_dict_with_name(self):
+        values = {"k1": "v1", "k2": ["v2", 3, "v4"], "k3": 5}
+        val_list = list(iu.recursive_iterate(values, yield_name=True))
+        self.assertEqual(
+            val_list,
+            [("k1", "v1"), ("k2.0", "v2"), ("k2.1", 3), ("k2.2", "v4"), ("k3", 5)],
+        )
+
+        val_list = list(iu.recursive_iterate(values, iter_types=str, yield_name=True))
+        self.assertEqual(val_list, [("k1", "v1"), ("k2.0", "v2"), ("k2.2", "v4")])
+
     def test_recursive_iter_send(self):
         values = {"k1": "v1", "k2": ["v2", 3, "v4"], "k3": 5}
         gt_values = {"k1": "v1_ret", "k2": ["v2_ret", 4, "v4_ret"], "k3": 6}
@@ -51,6 +62,22 @@ class TestIterUtils(unittest.TestCase):
         iters = iu.recursive_iterate(values, wait_on_send=True)
         for x in iters:
             iters.send(x + "_ret" if isinstance(x, str) else None)
+        result = iters.value
+        self.assertEqual(result, gt_values)
+
+    def test_recursive_iter_send_with_name(self):
+        values = {"k1": "v1", "k2": ["v2", 3, "v4"], "k3": 5}
+        gt_values = {
+            "k1": "v1_ret",
+            "k2": ["v2_ret", 4, "v4_ret"],
+            "k3": 7,
+        }
+
+        iters = iu.recursive_iterate(values, wait_on_send=True, yield_name=True)
+        for name, x in iters:
+            iters.send(
+                x + "_ret" if isinstance(x, str) else (x + 2 if name == "k3" else x + 1)
+            )
         result = iters.value
         self.assertEqual(result, gt_values)
 

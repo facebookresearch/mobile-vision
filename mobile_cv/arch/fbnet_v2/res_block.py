@@ -127,8 +127,6 @@ class BasicBlock(nn.Module):
 
 
 class Bottleneck(nn.Module):
-    expansion: int = 4
-
     def __init__(
         self,
         in_channels,
@@ -140,11 +138,14 @@ class Bottleneck(nn.Module):
         res_conn_args="default",
         drop_connect_rate=None,
         bn_in_skip=False,
+        expand_ratio=0.25,
+        width=None,
         # additional arguments for conv
         **kwargs,
     ) -> None:
         super(Bottleneck, self).__init__()
-        width = int(out_channels // self.expansion)
+        if width is None:
+            width = int(out_channels * expand_ratio)
         # Both self.conv2 and self.downsample layers downsample the input when stride != 1
         conv_args1 = copy.deepcopy(conv_args)
         conv_args1["kernel_size"] = 1
