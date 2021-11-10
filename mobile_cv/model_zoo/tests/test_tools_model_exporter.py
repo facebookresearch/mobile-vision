@@ -95,12 +95,12 @@ class TestToolsModelExporter(unittest.TestCase):
     def test_tools_model_exporter_fx_quant(self):
         blocks_factory.PRIMITIVES.register_dict(
             {
-                "trace_test": lambda in_channels, out_channels, stride, **kwargs: TestModel(
+                "exporter_fx_quant_test": lambda in_channels, out_channels, stride, **kwargs: TestModel(
                     num=2
                 )
             }
         )
-        arch = {"blocks": [[("trace_test", 1, 1, 1)]]}
+        arch = {"blocks": [[("exporter_fx_quant_test", 1, 1, 1)]]}
 
         fbnet_args = {
             "builder": "fbnet_v2_backbone",
@@ -119,7 +119,7 @@ class TestToolsModelExporter(unittest.TestCase):
                 json.dumps({"model_args": fbnet_args, "dataset_args": dataset_args}),
                 "--output_dir",
                 output_dir,
-                "--ut_tools_model_exporter_fx_quante_graph_mode_quant",
+                "--use_graph_mode_quant",
                 "--raise_if_failed",
                 "1",
                 "--export_types",

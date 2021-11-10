@@ -8,7 +8,6 @@ from .batch_norm import (
     NaiveSyncBatchNorm3d,
 )
 
-
 # isort/black has issues in processing those import
 from .misc import (  # isort:skip
     AvgPool2d,

@@ -7,7 +7,6 @@ import unittest
 import mobile_cv.model_zoo.models.hub_utils as hu
 import torch
 from mobile_cv.model_zoo.models.hub_utils import pretrained_download
-
 from mobile_cv.model_zoo.models.utils import is_devserver
 
 
