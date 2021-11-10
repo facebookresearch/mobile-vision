@@ -92,21 +92,45 @@ class TestToolsModelExporter(unittest.TestCase):
             for _, path in out_paths.items():
                 self.assertTrue(os.path.exists(path))
 
-    def test_tools_model_exporter_ext_task(self):
+    def test_tools_model_exporter_fx_quant(self):
+        blocks_factory.PRIMITIVES.register_dict(
+            {
+                "trace_test": lambda in_channels, out_channels, stride, **kwargs: TestModel(
+                    num=2
+                )
+            }
+        )
+        arch = {"blocks": [[("trace_test", 1, 1, 1)]]}
+
+        fbnet_args = {
+            "builder": "fbnet_v2_backbone",
+            "arch_name": json.dumps(arch),
+        }
+        dataset_args = {
+            "builder": "tensor_shape",
+            "input_shapes": [[2, 2]],
+        }
+
         with tempfile.TemporaryDirectory() as output_dir:
             export_args = [
                 "--task",
-                "test_task@ext.test.lib.external_task_for_test",
+                "general",
+                "--task_args",
+                json.dumps({"model_args": fbnet_args, "dataset_args": dataset_args}),
                 "--output_dir",
                 output_dir,
+                "--ut_tools_model_exporter_fx_quante_graph_mode_quant",
+                "--raise_if_failed",
+                "1",
                 "--export_types",
                 "torchscript",
-                "--opt_for_mobile",
-                "1",
+                "torchscript_int8",
             ]
             out_paths = model_exporter.run_with_cmdline_args_list(export_args)
-            self.assertEqual(len(out_paths), 1)
-            self.assertSetEqual(set(out_paths.keys()), {"torchscript"})
+            self.assertEqual(len(out_paths), 2)
+            self.assertSetEqual(
+                set(out_paths.keys()), {"torchscript", "torchscript_int8"}
+            )
             for _, path in out_paths.items():
                 self.assertTrue(os.path.exists(path))
 
