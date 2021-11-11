@@ -1,0 +1,16 @@
+[
+    {
+        "dataset": "ImageNet 1k",
+        "flops_m": 1836.283136,
+        "job": "f160154214",
+        "model_file_type": "pytorch",
+        "model_path": "https://dl.fbaipublicfiles.com/fbnet/models/20200115/mUDYdn/eff_3_f160154214/model.pth",
+        "model_type": "Classification",
+        "name": "eff_3",
+        "params_m": 12.124856,
+        "resize": 332,
+        "resolution": 300,
+        "top_1_accuracy": 81.73999786376953,
+        "top_5_accuracy": 95.58599853515625
+    }
+]

@@ -1,0 +1,44 @@
+[
+    {
+        "dataset": "ImageNet 1k",
+        "flops_m": 1084.941512,
+        "job": "f161288344",
+        "model_file_type": "pytorch",
+        "model_path": "https://dl.fbaipublicfiles.com/fbnet/models/20200114/DVWnMc/FBNetV2_L1_f161288344/model.pth",
+        "model_type": "Classification",
+        "name": "FBNetV2_L1",
+        "params_m": 9.66982,
+        "resize": 280,
+        "resolution": 260,
+        "top_1_accuracy": 80.63399505615234,
+        "top_5_accuracy": 95.0119857788086
+    },
+    {
+        "dataset": "ImageNet 1k",
+        "flops_m": 1936.688856,
+        "job": "f161063729",
+        "model_file_type": "pytorch",
+        "model_path": "https://dl.fbaipublicfiles.com/fbnet/models/20200114/DVWnMc/FBNetV2_L2_f161063729/model.pth",
+        "model_type": "Classification",
+        "name": "FBNetV2_L2",
+        "params_m": 12.23026,
+        "resize": 316,
+        "resolution": 300,
+        "top_1_accuracy": 81.8280029296875,
+        "top_5_accuracy": 95.85399627685547
+    },
+    {
+        "dataset": "ImageNet 1k",
+        "flops_m": 4671.734392,
+        "job": "f161089912",
+        "model_file_type": "pytorch",
+        "model_path": "https://dl.fbaipublicfiles.com/fbnet/models/20200114/DVWnMc/FBNetV2_L3_f161089912/model.pth",
+        "model_type": "Classification",
+        "name": "FBNetV2_L3",
+        "params_m": 19.427588,
+        "resize": 397,
+        "resolution": 380,
+        "top_1_accuracy": 83.1259994506836,
+        "top_5_accuracy": 96.44001007080078
+    }
+]
