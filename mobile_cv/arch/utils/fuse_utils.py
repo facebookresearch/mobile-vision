@@ -19,7 +19,7 @@ from mobile_cv.arch.layers.batch_norm import (
 
 
 TORCH_VERSION: Tuple[int, ...] = tuple(int(x) for x in torch.__version__.split(".")[:2])
-if TORCH_VERSION >= (1, 10):
+if TORCH_VERSION > (1, 10):
     from torch.ao.quantization import fuse_modules
     from torch.ao.quantization.fuse_modules import (
         fuse_conv_bn,
