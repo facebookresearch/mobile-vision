@@ -23,6 +23,7 @@ class BasicBlock(nn.Module):
         drop_connect_rate=None,
         downsample_in_conv2=True,
         bn_in_skip=False,
+        bias_in_skip=True,
         # method for qconfig_dict for fx quantization
         qmethod: Optional[str] = None,
         # additional arguments for conv
@@ -84,6 +85,7 @@ class BasicBlock(nn.Module):
             skip_args = copy.deepcopy(conv_args)
             skip_args["kernel_size"] = 1
             skip_args["padding"] = 0
+            skip_args["bias"] = bias_in_skip
             self.skip = ConvBNRelu(
                 in_channels,
                 out_channels,
@@ -147,18 +149,19 @@ class Bottleneck(nn.Module):
         if width is None:
             width = int(out_channels * expand_ratio)
         # Both self.conv2 and self.downsample layers downsample the input when stride != 1
+        conv_args = hp.merge_unify_args(conv_args, kwargs)
         conv_args1 = copy.deepcopy(conv_args)
         conv_args1["kernel_size"] = 1
         conv_args1["stride"] = 1
         conv_args1["padding"] = 0
         self.conv1 = ConvBNRelu(
-            in_channels, width, conv_args1, bn_args, relu_args, upsample_args, **kwargs
+            in_channels, width, conv_args1, bn_args, relu_args, upsample_args
         )
         self.conv2 = ConvBNRelu(
-            width, width, conv_args, bn_args, relu_args, upsample_args, **kwargs
+            width, width, conv_args, bn_args, relu_args, upsample_args
         )
         self.conv3 = ConvBNRelu(
-            width, out_channels, conv_args1, bn_args, None, upsample_args, **kwargs
+            width, out_channels, conv_args1, bn_args, None, upsample_args
         )
         if conv_args["stride"] == 1 and in_channels == out_channels:
             self.downsample = None
@@ -172,7 +175,6 @@ class Bottleneck(nn.Module):
                 conv_args=skip_args,
                 bn_args=bn_args if bn_in_skip else None,
                 relu_args=None,
-                **kwargs,
             )
         self.relu = build_relu(num_channels=out_channels, **hp.unify_args(relu_args))
         self.add = build_residual_connect(

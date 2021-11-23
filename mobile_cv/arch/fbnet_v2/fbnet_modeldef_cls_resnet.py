@@ -4,12 +4,22 @@
 from .fbnet_modeldef_cls import MODEL_ARCH
 
 
-BASIC_ARGS = {
+BASIC_ARGS = {}
+
+NO_BIAS = {
     "bias": False,
 }
 
 RES_CFG = {
     "downsample_in_conv2": False,
+    "bn_in_skip": True,
+    "bias_in_skip": False,
+    "bias": False,
+}
+
+
+RES_BN_CFG = {
+    "bias": False,
     "bn_in_skip": True,
 }
 
@@ -20,7 +30,7 @@ MODEL_ARCH_RESNET = {
         "basic_args": BASIC_ARGS,
         "blocks": [
             [
-                ("conv_k7", 64, 2, 1),
+                ("conv_k7", 64, 2, 1, NO_BIAS),
                 ("maxpool", 64, 2, 1, {"kernel_size": 3, "padding": 1}),
             ],
             [("res_k3", 64, 1, 2, RES_CFG)],
@@ -34,7 +44,7 @@ MODEL_ARCH_RESNET = {
         "basic_args": BASIC_ARGS,
         "blocks": [
             [
-                ("conv_k7", 64, 2, 1),
+                ("conv_k7", 64, 2, 1, NO_BIAS),
                 ("maxpool", 64, 2, 1, {"kernel_size": 3, "padding": 1}),
             ],
             [("res_k3", 64, 1, 3, RES_CFG)],
@@ -48,13 +58,13 @@ MODEL_ARCH_RESNET = {
         "basic_args": BASIC_ARGS,
         "blocks": [
             [
-                ("conv_k7", 64, 2, 1),
+                ("conv_k7", 64, 2, 1, NO_BIAS),
                 ("maxpool", 64, 2, 1, {"kernel_size": 3, "padding": 1}),
             ],
-            [("res_block_k3", 256, 1, 3)],
-            [("res_block_k3", 512, 2, 4)],
-            [("res_block_k3", 1024, 2, 6)],
-            [("res_block_k3", 2048, 2, 3)],
+            [("res_block_k3", 256, 1, 3, RES_BN_CFG)],
+            [("res_block_k3", 512, 2, 4, RES_BN_CFG)],
+            [("res_block_k3", 1024, 2, 6, RES_BN_CFG)],
+            [("res_block_k3", 2048, 2, 3, RES_BN_CFG)],
         ],
     },
     "ResNet101": {
@@ -62,13 +72,13 @@ MODEL_ARCH_RESNET = {
         "basic_args": BASIC_ARGS,
         "blocks": [
             [
-                ("conv_k7", 64, 2, 1),
+                ("conv_k7", 64, 2, 1, NO_BIAS),
                 ("maxpool", 64, 2, 1, {"kernel_size": 3, "padding": 1}),
             ],
-            [("res_block_k3", 256, 1, 3)],
-            [("res_block_k3", 512, 2, 4)],
-            [("res_block_k3", 1024, 2, 23)],
-            [("res_block_k3", 2048, 2, 3)],
+            [("res_block_k3", 256, 1, 3, RES_BN_CFG)],
+            [("res_block_k3", 512, 2, 4, RES_BN_CFG)],
+            [("res_block_k3", 1024, 2, 23, RES_BN_CFG)],
+            [("res_block_k3", 2048, 2, 3, RES_BN_CFG)],
         ],
     },
     "ResNet152": {
@@ -76,13 +86,13 @@ MODEL_ARCH_RESNET = {
         "basic_args": BASIC_ARGS,
         "blocks": [
             [
-                ("conv_k7", 64, 2, 1),
+                ("conv_k7", 64, 2, 1, NO_BIAS),
                 ("maxpool", 64, 2, 1, {"kernel_size": 3, "padding": 1}),
             ],
-            [("res_block_k3", 256, 1, 3)],
-            [("res_block_k3", 512, 2, 8)],
-            [("res_block_k3", 1024, 2, 36)],
-            [("res_block_k3", 2048, 2, 3)],
+            [("res_block_k3", 256, 1, 3, RES_BN_CFG)],
+            [("res_block_k3", 512, 2, 8, RES_BN_CFG)],
+            [("res_block_k3", 1024, 2, 36, RES_BN_CFG)],
+            [("res_block_k3", 2048, 2, 3, RES_BN_CFG)],
         ],
     },
 }
