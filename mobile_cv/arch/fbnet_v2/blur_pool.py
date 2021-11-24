@@ -11,6 +11,7 @@ class BlurPool2d(nn.Module):
         self.kernel_size = kernel_size
         self.stride = stride
         self.padding_mode = padding_mode
+        assert num_channels is not None
         assert (
             self.stride >= 1
         ), f"Only positive stride >= 1 is allowed, got: stride={self.stride}"
