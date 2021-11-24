@@ -42,6 +42,7 @@ class IRFBlock(nn.Module):
         dw_group_ratio=1,  # dw_group == mid_channels // dw_group_ratio
         pwl_groups=1,
         always_pw=False,
+        skip_shuffle=False,
         less_se_channels=False,
         zero_last_bn_gamma=False,
         drop_connect_rate=None,
@@ -84,7 +85,7 @@ class IRFBlock(nn.Module):
                 bn_args=hp.merge_unify_args(bn_args, pw_bn_args),
                 relu_args=relu_args,
             )
-        if pw_groups > 1:
+        if pw_groups > 1 and not skip_shuffle:
             self.shuffle = bb.ChannelShuffle(pw_groups)
         # use negative stride for upsampling
         self.upsample, dw_stride = bb.build_upsample_neg_stride(
@@ -129,6 +130,7 @@ class IRFBlock(nn.Module):
             width_divisor=width_divisor,
             **hp.merge(relu_args=relu_args, kwargs=hp.unify_args(se_args))
         )
+
         self.pwl = (
             bb.ConvBNRelu(
                 in_channels=mid_channels,
