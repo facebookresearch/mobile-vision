@@ -38,7 +38,7 @@ class BlurPool2d(nn.Module):
             self.conv.weight.shape == kernel.shape
         ), f"{self.conv.weight.shape} == {kernel.shape}"
         del self.conv.weight
-        self.conv.weight = kernel
+        self.conv.weight = nn.Parameter(kernel, requires_grad=False)
 
     def forward(self, x):
         if self.uneven_pad is not None:
