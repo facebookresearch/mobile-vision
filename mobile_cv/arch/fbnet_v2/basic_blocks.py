@@ -694,55 +694,6 @@ class Upsample(nn.Module):
         return f"Upsample({', '.join(ret)})"
 
 
-@UPSAMPLE_REGISTRY.register()
-class AntialiasedUpsample(Upsample):
-    """
-    Antialiased version of upsample Op. Upsample + Blur.
-
-    By default (when blur_args=None) it is exactle the same as original Upsample
-    """
-
-    def __init__(
-        self,
-        size=None,
-        scale_factor=None,
-        mode="nearest",
-        align_corners=None,
-        blur_args=None,
-    ):
-        super().__init__(
-            size=size,
-            scale_factor=scale_factor,
-            mode=mode,
-            align_corners=align_corners,
-        )
-        self.blur_args = hp.unify_args(blur_args)
-
-        self.blur = build_blur(stride=1, **self.blur_args)
-        assert (
-            self.blur is None or self.blur.stride == 1
-        ), "blur stride must be 1 for AntialiasedUpsample module"
-
-    def forward(self, x):
-        x = super().forward(x)
-        if self.blur is not None:
-            x = self.blur(x)
-        return x
-
-    def __repr__(self):
-        ret = []
-        attr_list = ["size", "scale", "mode", "align_corners"]
-        for x in attr_list:
-            val = getattr(self, x, None)
-            if val is not None:
-                ret.append(f"{x}={val}")
-
-        if self.blur is not None:
-            return f"AntialiasedUpsample(\n  {', '.join(ret)}\n  (blur): {self.blur}\n)"
-        else:
-            return f"AntialiasedUpsample({', '.join(ret)})"
-
-
 def build_upsample(name=None, scales=None, **kwargs):
     if name is None or scales is None:
         return None
