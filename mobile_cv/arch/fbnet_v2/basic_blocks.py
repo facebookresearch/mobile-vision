@@ -25,6 +25,7 @@ from mobile_cv.arch.layers import (
 )
 from torch.nn.quantized.modules import FloatFunctional
 
+from .blur_pool import BlurPool2d as BlurPool
 
 # needed for SE module with fx tracing
 torch.fx.wrap("len")
@@ -463,6 +464,68 @@ class ConvBNRelu(nn.Module):
         return x
 
 
+def antialiased_conv_bn_relu(
+    in_channels,
+    out_channels,
+    conv_args="conv",
+    bn_args="bn",
+    relu_args="relu",
+    upsample_args="default",
+    # additional arguments for conv
+    **kwargs,
+):
+    conv_full_args = hp.merge_unify_args(conv_args, kwargs).copy()
+    conv_stride = conv_full_args.pop("stride", 1)
+
+    if conv_stride > 1:
+        blur_args = conv_full_args.pop("blur_args", {"name": "default"})
+        blur_args = hp.unify_args(blur_args)
+
+        apply_blur_before_conv = blur_args.pop("apply_blur_before_conv", False)
+        if apply_blur_before_conv:
+            blur = build_blur(num_channels=in_channels, stride=1, **blur_args)
+            # keep conv stride intact
+        else:
+            blur = build_blur(
+                num_channels=out_channels, stride=conv_stride, **blur_args
+            )
+            if blur is not None:
+                # override conv stride to be 1
+                conv_stride = 1
+
+        # remove 'stride' from kwargs if it exists
+        kwargs.pop("stride", None)
+        conv_full_args["stride"] = conv_stride
+
+        conv_bn_relu = ConvBNRelu(
+            in_channels,
+            out_channels,
+            conv_args=conv_full_args,
+            bn_args=bn_args,
+            relu_args=relu_args,
+            upsample_args=upsample_args,
+            **kwargs,
+        )
+    else:
+        conv_bn_relu = ConvBNRelu(
+            in_channels,
+            out_channels,
+            conv_args=conv_args,
+            bn_args=bn_args,
+            relu_args=relu_args,
+            upsample_args=upsample_args,
+            **kwargs,
+        )
+        blur = None
+    if blur is not None:
+        if apply_blur_before_conv:
+            return nn.Sequential(blur, conv_bn_relu)
+        else:
+            return nn.Sequential(conv_bn_relu, blur)
+    else:
+        return conv_bn_relu
+
+
 def _se_op_fc(in_channels, mid_channels, relu_args, sigmoid_type):
     conv1_relu = ConvBNRelu(
         in_channels,
@@ -631,6 +694,55 @@ class Upsample(nn.Module):
         return f"Upsample({', '.join(ret)})"
 
 
+@UPSAMPLE_REGISTRY.register()
+class AntialiasedUpsample(Upsample):
+    """
+    Antialiased version of upsample Op. Upsample + Blur.
+
+    By default (when blur_args=None) it is exactle the same as original Upsample
+    """
+
+    def __init__(
+        self,
+        size=None,
+        scale_factor=None,
+        mode="nearest",
+        align_corners=None,
+        blur_args=None,
+    ):
+        super().__init__(
+            size=size,
+            scale_factor=scale_factor,
+            mode=mode,
+            align_corners=align_corners,
+        )
+        self.blur_args = hp.unify_args(blur_args)
+
+        self.blur = build_blur(stride=1, **self.blur_args)
+        assert (
+            self.blur is None or self.blur.stride == 1
+        ), "blur stride must be 1 for AntialiasedUpsample module"
+
+    def forward(self, x):
+        x = super().forward(x)
+        if self.blur is not None:
+            x = self.blur(x)
+        return x
+
+    def __repr__(self):
+        ret = []
+        attr_list = ["size", "scale", "mode", "align_corners"]
+        for x in attr_list:
+            val = getattr(self, x, None)
+            if val is not None:
+                ret.append(f"{x}={val}")
+
+        if self.blur is not None:
+            return f"AntialiasedUpsample(\n  {', '.join(ret)}\n  (blur): {self.blur}\n)"
+        else:
+            return f"AntialiasedUpsample({', '.join(ret)})"
+
+
 def build_upsample(name=None, scales=None, **kwargs):
     if name is None or scales is None:
         return None
@@ -642,6 +754,21 @@ def build_upsample(name=None, scales=None, **kwargs):
         ret = Upsample(scale_factor=scales, **kwargs)
     else:
         ret = UPSAMPLE_REGISTRY.get(name)(scales, **kwargs)
+
+    return ret
+
+
+def build_blur(name=None, num_channels=None, stride=None, **kwargs):
+    """
+    Create blur
+    """
+    if name is None:
+        return None
+
+    if name == "default":
+        ret = BlurPool(num_channels, stride=stride, **kwargs)
+    else:
+        raise ValueError(f"Unknown blur name: {name}")
 
     return ret
 

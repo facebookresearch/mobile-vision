@@ -75,6 +75,19 @@ _PRIMITIVES = {
             kwargs=kwargs,
         )
     ),
+    "aa_conv_k3": lambda in_channels, out_channels, stride, **kwargs: bb.antialiased_conv_bn_relu(
+        in_channels,
+        out_channels,
+        **hp.merge(
+            conv_args={
+                "stride": stride,
+                "kernel_size": 3,
+                "padding": 1,
+                "blur_args": {"name": "default"},
+            },
+            kwargs=kwargs,
+        )
+    ),
     "conv_k5": lambda in_channels, out_channels, stride, **kwargs: bb.ConvBNRelu(
         in_channels,
         out_channels,
@@ -147,6 +160,22 @@ _PRIMITIVES = {
     ),
     "ir_k5_g2": lambda in_channels, out_channels, stride, **kwargs: irf_block.IRFBlock(  # noqa
         in_channels, out_channels, stride=stride, kernel_size=5, pw_groups=2, **kwargs
+    ),
+    "aa_ir_k3": lambda in_channels, out_channels, stride, **kwargs: irf_block.IRFBlock(
+        in_channels,
+        out_channels,
+        stride=stride,
+        kernel_size=3,
+        is_antialiased=True,
+        **kwargs
+    ),
+    "aa_ir_k5": lambda in_channels, out_channels, stride, **kwargs: irf_block.IRFBlock(
+        in_channels,
+        out_channels,
+        stride=stride,
+        kernel_size=5,
+        is_antialiased=True,
+        **kwargs
     ),
     "ir_k3_hs": lambda in_channels, out_channels, stride, **kwargs: irf_block.IRFBlock(
         in_channels,

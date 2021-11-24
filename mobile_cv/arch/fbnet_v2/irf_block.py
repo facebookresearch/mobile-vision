@@ -48,6 +48,7 @@ class IRFBlock(nn.Module):
         drop_connect_rate=None,
         mid_expand_out=False,  # mid_channels = out_channels * expansion if mid_expand_out=True
         last_relu=False,  # apply relu after res_conn
+        is_antialiased=False,  # apply antialiasing (BlurPool) for strided convolutions?
     ):
         super().__init__()
 
@@ -98,24 +99,22 @@ class IRFBlock(nn.Module):
             else dw_args.pop("padding")
         )
         self.dw = (
-            bb.ConvBNRelu(
-                in_channels=mid_channels,
-                out_channels=mid_channels,
-                conv_args={
-                    "kernel_size": kernel_size,
-                    "stride": dw_stride,
-                    "padding": dw_padding,
-                    "groups": mid_channels // dw_group_ratio,
-                    "bias": bias,
-                    **hp.merge_unify_args(conv_args, dw_args),
-                },
-                bn_args=hp.merge_unify_args(bn_args, dw_bn_args)
-                if not dw_skip_bnrelu
-                else None,
-                relu_args=relu_args if not dw_skip_bnrelu else None,
-            )
-            if not skip_dw
-            else None
+            bb.ConvBNRelu if not is_antialiased else bb.antialiased_conv_bn_relu
+        )(
+            in_channels=mid_channels,
+            out_channels=mid_channels,
+            conv_args={
+                "kernel_size": kernel_size,
+                "stride": dw_stride,
+                "padding": dw_padding,
+                "groups": mid_channels // dw_group_ratio,
+                "bias": bias,
+                **hp.merge_unify_args(conv_args, dw_args),
+            },
+            bn_args=hp.merge_unify_args(bn_args, dw_bn_args)
+            if not dw_skip_bnrelu
+            else None,
+            relu_args=relu_args if not dw_skip_bnrelu else None,
         )
         se_ratio = 0.25
         if less_se_channels:
@@ -132,7 +131,7 @@ class IRFBlock(nn.Module):
         )
 
         self.pwl = (
-            bb.ConvBNRelu(
+            (bb.ConvBNRelu if not is_antialiased else bb.antialiased_conv_bn_relu)(
                 in_channels=mid_channels,
                 out_channels=out_channels,
                 conv_args={
