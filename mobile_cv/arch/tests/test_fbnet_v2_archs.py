@@ -45,6 +45,7 @@ class TestFBNetV2Archs(unittest.TestCase):
             "ResNet34",
             "ResNet101",
             "ResNet152",
+            "fbnet_vit_tiny_v3",
         ]
 
         for name in selected_archs:
