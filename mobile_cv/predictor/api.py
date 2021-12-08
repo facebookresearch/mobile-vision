@@ -47,7 +47,7 @@ class FuncInfo(NamedTuple):
     Args:
         name (str): the name to identify the function, for python it's the full module
             name and object name (eg. foo.bar.MyPreprocessFunc).
-        params (str): the kwargs used to construct the object.
+        params (Dict[str, Any]): the kwargs used to construct the object.
     """
 
     name: str
