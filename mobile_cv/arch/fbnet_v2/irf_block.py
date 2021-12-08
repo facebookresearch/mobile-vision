@@ -99,22 +99,24 @@ class IRFBlock(nn.Module):
             else dw_args.pop("padding")
         )
         self.dw = (
-            bb.ConvBNRelu if not is_antialiased else bb.antialiased_conv_bn_relu
-        )(
-            in_channels=mid_channels,
-            out_channels=mid_channels,
-            conv_args={
-                "kernel_size": kernel_size,
-                "stride": dw_stride,
-                "padding": dw_padding,
-                "groups": mid_channels // dw_group_ratio,
-                "bias": bias,
-                **hp.merge_unify_args(conv_args, dw_args),
-            },
-            bn_args=hp.merge_unify_args(bn_args, dw_bn_args)
-            if not dw_skip_bnrelu
-            else None,
-            relu_args=relu_args if not dw_skip_bnrelu else None,
+            (bb.ConvBNRelu if not is_antialiased else bb.antialiased_conv_bn_relu)(
+                in_channels=mid_channels,
+                out_channels=mid_channels,
+                conv_args={
+                    "kernel_size": kernel_size,
+                    "stride": dw_stride,
+                    "padding": dw_padding,
+                    "groups": mid_channels // dw_group_ratio,
+                    "bias": bias,
+                    **hp.merge_unify_args(conv_args, dw_args),
+                },
+                bn_args=hp.merge_unify_args(bn_args, dw_bn_args)
+                if not dw_skip_bnrelu
+                else None,
+                relu_args=relu_args if not dw_skip_bnrelu else None,
+            )
+            if not skip_dw
+            else None
         )
         se_ratio = 0.25
         if less_se_channels:
