@@ -54,6 +54,32 @@ _PRIMITIVES = {
             kwargs=kwargs,
         )
     ),
+    "res_block_3D_k133": lambda in_channels, out_channels, stride, **kwargs: res_block.Bottleneck(
+        in_channels,
+        out_channels,
+        **hp.merge(
+            conv_args={
+                "name": "conv3d",
+                "stride": (1, stride, stride),
+                "kernel_size": (1, 3, 3),
+                "padding": (0, 1, 1),
+            },
+            kwargs=kwargs,
+        )
+    ),
+    "res_block_3D_k155": lambda in_channels, out_channels, stride, **kwargs: res_block.Bottleneck(
+        in_channels,
+        out_channels,
+        **hp.merge(
+            conv_args={
+                "name": "conv3d",
+                "stride": (1, stride, stride),
+                "kernel_size": (1, 5, 5),
+                "padding": (0, 2, 2),
+            },
+            kwargs=kwargs,
+        )
+    ),
     "conv": lambda in_channels, out_channels, stride, **kwargs: bb.ConvBNRelu(
         in_channels,
         out_channels,
