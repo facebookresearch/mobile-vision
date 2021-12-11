@@ -186,6 +186,50 @@ class TestIRFBlocks(unittest.TestCase):
         print(op)
         self.assertEqual(op.dw.out_channels, 16)
 
+    def test_irf_block_fusedMBConv(self):
+        N, C_in, C_out = 2, 16, 32
+        input_dim = 8
+
+        create_test_irf(
+            self,
+            C_out,
+            op_args={
+                "stride": 2,
+                "kernel_size": 3,
+                "expansion": 4,
+                "always_pw": True,
+                "skip_dw": True,
+                "pw_args": {
+                    "kernel_size": 3,
+                    "padding": 1,
+                    "stride": 2,
+                },
+            },
+            input_shape=[N, C_in, input_dim, input_dim],
+            gt_output_dim=input_dim // 2,
+        )
+
+        create_test_irf(
+            self,
+            C_out,
+            op_args={
+                "stride": 2,
+                "kernel_size": 5,
+                "expansion": 1,
+                "always_pw": True,
+                "skip_dw": True,
+                "skip_pwl": True,
+                "mid_expand_out": True,
+                "pw_args": {
+                    "kernel_size": 5,
+                    "padding": 2,
+                    "stride": 2,
+                },
+            },
+            input_shape=[N, C_in, input_dim, input_dim],
+            gt_output_dim=input_dim // 2,
+        )
+
     def test_irpool_block(self):
         N, C_in, C_out = 2, 16, 32
         input_dim = 8
