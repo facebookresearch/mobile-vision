@@ -99,11 +99,11 @@ class TestResBlock(unittest.TestCase):
         print(model)
 
         dequants = [x.name for x in model.graph.nodes if x.op == "call_method"]
-        self.assertEqual(dequants, ["dequantize", "dequantize_1", "dequantize_2"])
+        self.assertEqual(dequants, ["dequantize_1", "dequantize_3", "dequantize_4"])
 
         funcs = [x.name for x in model.graph.nodes if x.op == "call_function"]
         self.assertEqual(
-            funcs, ["quantize_per_tensor", "add", "quantize_per_tensor_1", "add_1"]
+            funcs, ["quantize_per_tensor", "add", "quantize_per_tensor_2", "add_1"]
         )
 
         out = model(data)
