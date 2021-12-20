@@ -51,20 +51,20 @@ class IRFBlock(nn.Module):
         is_antialiased=False,  # apply antialiasing (BlurPool) for strided convolutions?
     ):
         super().__init__()
-
         conv_args = hp.unify_args(conv_args)
         bn_args = hp.unify_args(bn_args)
         relu_args = hp.unify_args(relu_args)
 
-        mid_channels_base = out_channels if mid_expand_out else in_channels
-        mid_channels = hp.get_divisible_by(mid_channels_base * expansion, width_divisor)
+        mid_channels = self._calc_mid_channels(
+            in_channels, out_channels, mid_expand_out, expansion, width_divisor
+        )
 
         res_conn = bb.build_residual_connect(
             in_channels=in_channels,
             out_channels=out_channels,
             stride=stride,
             drop_connect_rate=drop_connect_rate,
-            **hp.unify_args(res_conn_args)
+            **hp.unify_args(res_conn_args),
         )
 
         self.pw = None
@@ -106,7 +106,7 @@ class IRFBlock(nn.Module):
                     "kernel_size": kernel_size,
                     "stride": dw_stride,
                     "padding": dw_padding,
-                    "groups": mid_channels // dw_group_ratio,
+                    "groups": self._calc_dw_groups(mid_channels, dw_group_ratio),
                     "bias": bias,
                     **hp.merge_unify_args(conv_args, dw_args),
                 },
@@ -121,15 +121,22 @@ class IRFBlock(nn.Module):
         se_ratio = 0.25
         if less_se_channels:
             se_ratio /= expansion
-        self.se = bb.build_se(
-            in_channels=mid_channels,
-            mid_channels=(
-                int(mid_channels * se_ratio)
-                if not round_se_channels
-                else round(mid_channels * se_ratio)
-            ),
-            width_divisor=width_divisor,
-            **hp.merge(relu_args=relu_args, kwargs=hp.unify_args(se_args))
+
+        # create se if se_args["name"] is specified
+        full_se_args = hp.merge(relu_args=relu_args, kwargs=hp.unify_args(se_args))
+        self.se = (
+            bb.build_se(
+                in_channels=mid_channels,
+                mid_channels=(
+                    int(mid_channels * se_ratio)
+                    if not round_se_channels
+                    else round(mid_channels * se_ratio)
+                ),
+                width_divisor=width_divisor,
+                **full_se_args,
+            )
+            if full_se_args.get("name") is not None
+            else None
         )
 
         self.pwl = (
@@ -169,6 +176,26 @@ class IRFBlock(nn.Module):
             bb.build_relu(num_channels=out_channels, **relu_args) if last_relu else None
         )
         self.out_channels = out_channels
+
+    @staticmethod
+    def _calc_mid_channels(
+        in_channels, out_channels, mid_expand_out, expansion, width_divisor
+    ):
+        """
+        Calculate mid channels for IRF block.
+        Override this method in subclass to change behavior of expansion and mid channels
+        """
+        mid_channels_base = out_channels if mid_expand_out else in_channels
+        mid_channels = hp.get_divisible_by(mid_channels_base * expansion, width_divisor)
+        return mid_channels
+
+    @staticmethod
+    def _calc_dw_groups(mid_channels, dw_group_ratio):
+        """
+        Calculate depth conv groups lofic for IRF block.
+        Override this method in subclass to change behavior of dw_groups
+        """
+        return mid_channels // dw_group_ratio
 
     def forward(self, x):
         y = x
@@ -239,7 +266,7 @@ class IRPoolBlock(nn.Module):
             in_channels=mid_channels,
             mid_channels=(mid_channels * pw_se_ratio),
             width_divisor=width_divisor,
-            **hp.merge_unify_args({"relu_args": relu_args}, pw_se_args)
+            **hp.merge_unify_args({"relu_args": relu_args}, pw_se_args),
         )
 
         if kernel_size == -1:
@@ -256,7 +283,7 @@ class IRPoolBlock(nn.Module):
             in_channels=mid_channels,
             mid_channels=(mid_channels * se_ratio),
             width_divisor=width_divisor,
-            **hp.merge_unify_args({"relu_args": relu_args}, se_args)
+            **hp.merge_unify_args({"relu_args": relu_args}, se_args),
         )
         self.pwl = bb.ConvBNRelu(
             in_channels=mid_channels,
@@ -277,7 +304,7 @@ class IRPoolBlock(nn.Module):
             in_channels=in_channels,
             out_channels=out_channels,
             stride=stride,
-            **hp.unify_args(res_conn_args)
+            **hp.unify_args(res_conn_args),
         )
         self.out_channels = out_channels
 
