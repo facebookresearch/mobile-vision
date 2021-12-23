@@ -3,13 +3,19 @@
 
 """ python utils """
 
-import fcntl
 import logging
 import os
 import pdb
 import sys
 import threading
 import traceback
+
+try:
+    import fcntl
+except ImportError:
+    # fcntl is not available on windows, skip the import since it's for using the file
+    # lock from MultiprocessingPdb, which is an optional feature.
+    pass
 
 
 logger = logging.getLogger(__name__)
