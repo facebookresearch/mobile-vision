@@ -124,6 +124,8 @@ class Caffe2Wrapper(nn.Module):
                 logger.warning("Catch the error and use partial results.")
 
             c2_outputs = [ws.FetchBlob(b) for b in self.net.Proto().external_output]
+            # import pdb; pdb.set_trace()
+
             # Remove outputs of current run, this is necessary in order to
             # prevent fetching the result from previous run if the model fails
             # in the middle.
