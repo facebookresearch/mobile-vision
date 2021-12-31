@@ -16,6 +16,35 @@ IRF_CFG = {
 
 
 MODEL_ARCH_FBNETV3 = {
+    "FBNetV3_A0": {
+        # a scaled version of FBNetV3_A, 217M FLOP, top-1 accuracy around 78.4%
+        "input_size": 224,
+        "basic_args": BASIC_ARGS,
+        "blocks": [
+            [["conv_k3_hs", 12, 2, 1]],
+            [["ir_k3_hs", 12, 1, 1, {"expansion": 1}, IRF_CFG]],
+            [
+                ["ir_k3_hs", 24, 2, 1, {"expansion": 4}, IRF_CFG],
+                ["ir_k3_hs", 24, 1, 2, {"expansion": 2}, IRF_CFG],
+            ],
+            [
+                ["ir_k3_sehsig_hs", 40, 2, 1, {"expansion": 4}, IRF_CFG],
+                ["ir_k3_sehsig_hs", 40, 1, 2, {"expansion": 2}, IRF_CFG],
+            ],
+            [
+                ["ir_k5_hs", 72, 2, 1, {"expansion": 4}, IRF_CFG],
+                ["ir_k3_hs", 72, 1, 2, {"expansion": 3}, IRF_CFG],
+                ["ir_k3_sehsig_hs", 104, 1, 1, {"expansion": 4}, IRF_CFG],
+                ["ir_k5_sehsig_hs", 104, 1, 3, {"expansion": 3}, IRF_CFG],
+            ],
+            [
+                ["ir_k3_sehsig_hs", 176, 2, 1, {"expansion": 4}, IRF_CFG],
+                ["ir_k3_sehsig_hs", 176, 1, 3, {"expansion": 4}, IRF_CFG],
+                ["ir_k3_sehsig_hs", 208, 1, 1, {"expansion": 5}, IRF_CFG],
+            ],
+            [["ir_pool_hs", 1984, 1, 1, {"expansion": 5}]],
+        ],
+    },
     # applied a width multiplier of 8 for latency optimization
     "FBNetV3_A": {
         "input_size": 224,
