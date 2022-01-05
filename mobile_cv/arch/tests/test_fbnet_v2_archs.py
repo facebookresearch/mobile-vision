@@ -40,6 +40,8 @@ class TestFBNetV2Archs(unittest.TestCase):
             "fbnet_a",
             "fbnet_b",
             "fbnet_c",
+            "FBNetV3_A_GPU",
+            "FBNetV3_C_GPU",
             "ResNet50",
             "ResNet18",
             "ResNet34",

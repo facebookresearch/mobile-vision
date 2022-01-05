@@ -14,6 +14,9 @@ IRF_CFG = {
     "zero_last_bn_gamma": True,
 }
 
+FUSEDMB_CFG = {"skip_dw": True, "always_pw": True}
+FUSEDMB_e1 = {"skip_pwl": True, "mid_expand_out": True, "expansion": 1}
+
 
 MODEL_ARCH_FBNETV3 = {
     "FBNetV3_A0": {
@@ -419,5 +422,533 @@ MODEL_ARCH_FBNETV3 = {
     },
 }
 
+# GPU-friendly FBNetV3
+MODEL_ARCH_FBNETV3_GPU = {
+    # applied a width multiplier of 8 for latency optimization
+    "FBNetV3_A_GPU": {
+        "input_size": 224,
+        "basic_args": BASIC_ARGS,
+        "blocks": [
+            MODEL_ARCH_FBNETV3["FBNetV3_A"]["blocks"][0],
+            MODEL_ARCH_FBNETV3["FBNetV3_A"]["blocks"][1],
+            [
+                [
+                    "ir_k5_hs",
+                    24,
+                    2,
+                    1,
+                    FUSEDMB_CFG,
+                    {"expansion": 4},
+                    {
+                        "pw_args": {
+                            "kernel_size": 5,
+                            "padding": 2,
+                            "stride": 2,
+                        },
+                    },
+                    IRF_CFG,
+                ],
+                [
+                    "ir_k5_hs",
+                    24,
+                    1,
+                    3,
+                    FUSEDMB_CFG,
+                    {"expansion": 2},
+                    {
+                        "pw_args": {
+                            "kernel_size": 5,
+                            "padding": 2,
+                            "stride": 1,
+                        },
+                    },
+                    IRF_CFG,
+                ],
+            ],
+            [
+                [
+                    "ir_k5_sehsig_hs",
+                    40,
+                    2,
+                    1,
+                    FUSEDMB_CFG,
+                    {"expansion": 5},
+                    {
+                        "pw_args": {
+                            "kernel_size": 5,
+                            "padding": 2,
+                            "stride": 2,
+                        },
+                    },
+                    IRF_CFG,
+                ],
+                [
+                    "ir_k5_sehsig_hs",
+                    40,
+                    1,
+                    4,
+                    FUSEDMB_CFG,
+                    {"expansion": 3},
+                    {
+                        "pw_args": {
+                            "kernel_size": 5,
+                            "padding": 2,
+                            "stride": 1,
+                        },
+                    },
+                    IRF_CFG,
+                ],
+            ],
+            MODEL_ARCH_FBNETV3["FBNetV3_A"]["blocks"][4],
+            MODEL_ARCH_FBNETV3["FBNetV3_A"]["blocks"][5],
+            MODEL_ARCH_FBNETV3["FBNetV3_A"]["blocks"][6],
+        ],
+    },
+    "FBNetV3_B_GPU": {
+        "input_size": 248,
+        "basic_args": BASIC_ARGS,
+        "blocks": [
+            MODEL_ARCH_FBNETV3["FBNetV3_B"]["blocks"][0],
+            MODEL_ARCH_FBNETV3["FBNetV3_B"]["blocks"][1],
+            [
+                [
+                    "ir_k5_hs",
+                    24,
+                    2,
+                    1,
+                    FUSEDMB_CFG,
+                    {"expansion": 4},
+                    {
+                        "pw_args": {
+                            "kernel_size": 5,
+                            "padding": 2,
+                            "stride": 2,
+                        },
+                    },
+                    IRF_CFG,
+                ],
+                [
+                    "ir_k5_hs",
+                    24,
+                    1,
+                    3,
+                    FUSEDMB_CFG,
+                    {"expansion": 2},
+                    {
+                        "pw_args": {
+                            "kernel_size": 5,
+                            "padding": 2,
+                            "stride": 1,
+                        },
+                    },
+                    IRF_CFG,
+                ],
+            ],
+            [
+                [
+                    "ir_k5_sehsig_hs",
+                    40,
+                    2,
+                    1,
+                    FUSEDMB_CFG,
+                    {"expansion": 5},
+                    {
+                        "pw_args": {
+                            "kernel_size": 5,
+                            "padding": 2,
+                            "stride": 2,
+                        },
+                    },
+                    IRF_CFG,
+                ],
+                [
+                    "ir_k5_sehsig_hs",
+                    40,
+                    1,
+                    4,
+                    FUSEDMB_CFG,
+                    {"expansion": 3},
+                    {
+                        "pw_args": {
+                            "kernel_size": 5,
+                            "padding": 2,
+                            "stride": 1,
+                        },
+                    },
+                    IRF_CFG,
+                ],
+            ],
+            MODEL_ARCH_FBNETV3["FBNetV3_B"]["blocks"][4],
+            MODEL_ARCH_FBNETV3["FBNetV3_B"]["blocks"][5],
+            MODEL_ARCH_FBNETV3["FBNetV3_B"]["blocks"][6],
+        ],
+    },
+    "FBNetV3_C_GPU": {
+        "input_size": 248,
+        "basic_args": BASIC_ARGS,
+        "blocks": [
+            MODEL_ARCH_FBNETV3["FBNetV3_C"]["blocks"][0],
+            MODEL_ARCH_FBNETV3["FBNetV3_C"]["blocks"][1],
+            [
+                [
+                    "ir_k5_hs",
+                    24,
+                    2,
+                    1,
+                    FUSEDMB_CFG,
+                    {"expansion": 5},
+                    {
+                        "pw_args": {
+                            "kernel_size": 5,
+                            "padding": 2,
+                            "stride": 2,
+                        },
+                    },
+                    IRF_CFG,
+                ],
+                [
+                    "ir_k3_hs",
+                    24,
+                    1,
+                    4,
+                    FUSEDMB_CFG,
+                    {"expansion": 3},
+                    {
+                        "pw_args": {
+                            "kernel_size": 3,
+                            "padding": 1,
+                            "stride": 1,
+                        },
+                    },
+                    IRF_CFG,
+                ],
+            ],
+            [
+                [
+                    "ir_k5_sehsig_hs",
+                    48,
+                    2,
+                    1,
+                    FUSEDMB_CFG,
+                    {"expansion": 5},
+                    {
+                        "pw_args": {
+                            "kernel_size": 5,
+                            "padding": 2,
+                            "stride": 2,
+                        },
+                    },
+                    IRF_CFG,
+                ],
+                [
+                    "ir_k5_sehsig_hs",
+                    48,
+                    1,
+                    4,
+                    FUSEDMB_CFG,
+                    {"expansion": 2},
+                    {
+                        "pw_args": {
+                            "kernel_size": 5,
+                            "padding": 2,
+                            "stride": 1,
+                        },
+                    },
+                    IRF_CFG,
+                ],
+            ],
+            MODEL_ARCH_FBNETV3["FBNetV3_C"]["blocks"][4],
+            MODEL_ARCH_FBNETV3["FBNetV3_C"]["blocks"][5],
+            MODEL_ARCH_FBNETV3["FBNetV3_C"]["blocks"][6],
+        ],
+    },
+    "FBNetV3_D_GPU": {
+        "input_size": 248,
+        "basic_args": BASIC_ARGS,
+        "blocks": [
+            MODEL_ARCH_FBNETV3["FBNetV3_D"]["blocks"][0],
+            MODEL_ARCH_FBNETV3["FBNetV3_D"]["blocks"][1],
+            [
+                [
+                    "ir_k5_hs",
+                    24,
+                    2,
+                    1,
+                    FUSEDMB_CFG,
+                    {"expansion": 5},
+                    {
+                        "pw_args": {
+                            "kernel_size": 5,
+                            "padding": 2,
+                            "stride": 2,
+                        },
+                    },
+                    IRF_CFG,
+                ],
+                [
+                    "ir_k3_hs",
+                    24,
+                    1,
+                    4,
+                    FUSEDMB_CFG,
+                    {"expansion": 3},
+                    {
+                        "pw_args": {
+                            "kernel_size": 3,
+                            "padding": 1,
+                            "stride": 1,
+                        },
+                    },
+                    IRF_CFG,
+                ],
+            ],
+            [
+                [
+                    "ir_k5_sehsig_hs",
+                    40,
+                    2,
+                    1,
+                    FUSEDMB_CFG,
+                    {"expansion": 4},
+                    {
+                        "pw_args": {
+                            "kernel_size": 5,
+                            "padding": 2,
+                            "stride": 2,
+                        },
+                    },
+                    IRF_CFG,
+                ],
+                [
+                    "ir_k3_sehsig_hs",
+                    40,
+                    1,
+                    4,
+                    FUSEDMB_CFG,
+                    {"expansion": 3},
+                    {
+                        "pw_args": {
+                            "kernel_size": 3,
+                            "padding": 1,
+                            "stride": 1,
+                        },
+                    },
+                    IRF_CFG,
+                ],
+            ],
+            MODEL_ARCH_FBNETV3["FBNetV3_D"]["blocks"][4],
+            MODEL_ARCH_FBNETV3["FBNetV3_D"]["blocks"][5],
+            MODEL_ARCH_FBNETV3["FBNetV3_D"]["blocks"][6],
+        ],
+    },
+    "FBNetV3_E_GPU": {
+        "input_size": 264,
+        "basic_args": BASIC_ARGS,
+        "blocks": [
+            MODEL_ARCH_FBNETV3["FBNetV3_E"]["blocks"][0],
+            MODEL_ARCH_FBNETV3["FBNetV3_E"]["blocks"][1],
+            [
+                [
+                    "ir_k5_hs",
+                    24,
+                    2,
+                    1,
+                    FUSEDMB_CFG,
+                    {"expansion": 4},
+                    {
+                        "pw_args": {
+                            "kernel_size": 5,
+                            "padding": 2,
+                            "stride": 2,
+                        },
+                    },
+                    IRF_CFG,
+                ],
+                [
+                    "ir_k5_hs",
+                    24,
+                    1,
+                    4,
+                    FUSEDMB_CFG,
+                    {"expansion": 2},
+                    {
+                        "pw_args": {
+                            "kernel_size": 5,
+                            "padding": 2,
+                            "stride": 1,
+                        },
+                    },
+                    IRF_CFG,
+                ],
+            ],
+            MODEL_ARCH_FBNETV3["FBNetV3_E"]["blocks"][3],
+            MODEL_ARCH_FBNETV3["FBNetV3_E"]["blocks"][4],
+            MODEL_ARCH_FBNETV3["FBNetV3_E"]["blocks"][5],
+            MODEL_ARCH_FBNETV3["FBNetV3_E"]["blocks"][6],
+        ],
+    },
+    "FBNetV3_F_GPU": {
+        "input_size": 272,
+        "basic_args": BASIC_ARGS,
+        "blocks": [
+            MODEL_ARCH_FBNETV3["FBNetV3_F"]["blocks"][0],
+            MODEL_ARCH_FBNETV3["FBNetV3_F"]["blocks"][1],
+            [
+                [
+                    "ir_k5_hs",
+                    32,
+                    2,
+                    1,
+                    FUSEDMB_CFG,
+                    {"expansion": 4},
+                    {
+                        "pw_args": {
+                            "kernel_size": 5,
+                            "padding": 2,
+                            "stride": 2,
+                        },
+                    },
+                    IRF_CFG,
+                ],
+                [
+                    "ir_k5_hs",
+                    32,
+                    1,
+                    4,
+                    FUSEDMB_CFG,
+                    {"expansion": 2},
+                    {
+                        "pw_args": {
+                            "kernel_size": 5,
+                            "padding": 2,
+                            "stride": 1,
+                        },
+                    },
+                    IRF_CFG,
+                ],
+            ],
+            [
+                [
+                    "ir_k5_sehsig_hs",
+                    56,
+                    2,
+                    1,
+                    FUSEDMB_CFG,
+                    FUSEDMB_e1,
+                    {
+                        "pw_args": {
+                            "kernel_size": 5,
+                            "padding": 2,
+                            "stride": 2,
+                        },
+                    },
+                    IRF_CFG,
+                ],
+                [
+                    "ir_k5_sehsig_hs",
+                    56,
+                    1,
+                    4,
+                    FUSEDMB_CFG,
+                    FUSEDMB_e1,
+                    {
+                        "pw_args": {
+                            "kernel_size": 5,
+                            "padding": 2,
+                            "stride": 1,
+                        },
+                    },
+                    IRF_CFG,
+                ],
+            ],
+            MODEL_ARCH_FBNETV3["FBNetV3_F"]["blocks"][4],
+            MODEL_ARCH_FBNETV3["FBNetV3_F"]["blocks"][5],
+            MODEL_ARCH_FBNETV3["FBNetV3_F"]["blocks"][6],
+        ],
+    },
+    "FBNetV3_G_GPU": {
+        "input_size": 320,
+        "basic_args": BASIC_ARGS,
+        "blocks": [
+            MODEL_ARCH_FBNETV3["FBNetV3_G"]["blocks"][0],
+            MODEL_ARCH_FBNETV3["FBNetV3_G"]["blocks"][1],
+            [
+                [
+                    "ir_k5_hs",
+                    40,
+                    2,
+                    1,
+                    FUSEDMB_CFG,
+                    {"expansion": 4},
+                    {
+                        "pw_args": {
+                            "kernel_size": 5,
+                            "padding": 2,
+                            "stride": 2,
+                        },
+                    },
+                    IRF_CFG,
+                ],
+                [
+                    "ir_k5_hs",
+                    40,
+                    1,
+                    4,
+                    FUSEDMB_CFG,
+                    {"expansion": 2},
+                    {
+                        "pw_args": {
+                            "kernel_size": 5,
+                            "padding": 2,
+                            "stride": 1,
+                        },
+                    },
+                    IRF_CFG,
+                ],
+            ],
+            [
+                [
+                    "ir_k5_sehsig_hs",
+                    56,
+                    2,
+                    1,
+                    FUSEDMB_CFG,
+                    FUSEDMB_e1,
+                    {
+                        "pw_args": {
+                            "kernel_size": 5,
+                            "padding": 2,
+                            "stride": 2,
+                        },
+                    },
+                    IRF_CFG,
+                ],
+                [
+                    "ir_k5_sehsig_hs",
+                    56,
+                    1,
+                    4,
+                    FUSEDMB_CFG,
+                    FUSEDMB_e1,
+                    {
+                        "pw_args": {
+                            "kernel_size": 5,
+                            "padding": 2,
+                            "stride": 1,
+                        },
+                    },
+                    IRF_CFG,
+                ],
+            ],
+            MODEL_ARCH_FBNETV3["FBNetV3_G"]["blocks"][4],
+            MODEL_ARCH_FBNETV3["FBNetV3_G"]["blocks"][5],
+            MODEL_ARCH_FBNETV3["FBNetV3_G"]["blocks"][6],
+        ],
+    },
+}
+
 MODEL_ARCH.register_dict(MODEL_ARCH_FBNETV3)
 MODEL_ARCH.register_dict(mdu.get_i8f_models(MODEL_ARCH_FBNETV3))
+
+MODEL_ARCH.register_dict(MODEL_ARCH_FBNETV3_GPU)
+MODEL_ARCH.register_dict(mdu.get_i8f_models(MODEL_ARCH_FBNETV3_GPU))
