@@ -99,7 +99,7 @@ def get_input_data(args):
         return all(isinstance(val, int) for val in obj)
 
     iters = iu.recursive_iterate(
-        data_shape, seq_check_func=lambda x: not _is_value_list(x)
+        data_shape, seq_check_func=lambda x: iu.is_seq(x) and not _is_value_list(x)
     )
     for x in iters:
         iters.send(torch.zeros(x))

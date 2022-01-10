@@ -275,7 +275,7 @@ def _get_expected_output_to_tensor(outputs):
 
     # get all tensors
     riter = iu.recursive_iterate(
-        outputs, seq_check_func=lambda x: not _is_shape_value_tuple(x)
+        outputs, seq_check_func=lambda x: iu.is_seq(x) and not _is_shape_value_tuple(x)
     )
     for item in riter:
         item_tensor = torch.FloatTensor(item[1]).reshape(item[0])
@@ -283,7 +283,7 @@ def _get_expected_output_to_tensor(outputs):
 
     # get all tensor shapes
     shape_iter = iu.recursive_iterate(
-        outputs, seq_check_func=lambda x: not _is_shape_value_tuple(x)
+        outputs, seq_check_func=lambda x: iu.is_seq(x) and not _is_shape_value_tuple(x)
     )
     for item in shape_iter:
         shape_iter.send(item[0])

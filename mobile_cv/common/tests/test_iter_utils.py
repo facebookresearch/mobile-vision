@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import unittest
+from typing import NamedTuple
 
 import mobile_cv.common.misc.iter_utils as iu
 
@@ -51,6 +52,16 @@ class TestIterUtils(unittest.TestCase):
         result = iters.value
         self.assertEqual(result, gt_values)
 
+    def test_recursive_iter_send_int(self):
+        values = {"k1": "v1", "k2": ["v2", 3, "v4"], "k3": 5}
+        gt_values = {"k1": "v1", "k2": ["v2", 4, "v4"], "k3": 6}
+
+        iters = iu.recursive_iterate(values, iter_types=int)
+        for x in iters:
+            iters.send(x + 1)
+        result = iters.value
+        self.assertEqual(result, gt_values)
+
     def test_recursive_iter_send_None(self):
         values = {"k1": "v1", "k2": ["v2", 3, "v4"], "k3": 5}
         gt_values = {
@@ -88,7 +99,9 @@ class TestIterUtils(unittest.TestCase):
         values = [{"k1": [1, 2, 3], "k2": ["v2", 3, "v4"], "k3": 5}]
         # List of ints are not considered as a list
         val_list = list(
-            iu.recursive_iterate(values, seq_check_func=lambda x: not _is_int_list(x))
+            iu.recursive_iterate(
+                values, seq_check_func=lambda x: iu.is_seq(x) and not _is_int_list(x)
+            )
         )
         self.assertEqual(val_list, [[1, 2, 3], "v2", 3, "v4", 5])
 
@@ -102,10 +115,28 @@ class TestIterUtils(unittest.TestCase):
             iu.recursive_iterate(
                 values,
                 iter_types=dict,
-                map_check_func=lambda x: not _is_int_dict_key(x),
+                map_check_func=lambda x: iu.is_map(x) and not _is_int_dict_key(x),
             )
         )
         self.assertEqual(val_list, [{1: 1, 2: 2, 3: 3}])
+
+    def test_named_tuple(self):
+        class Type(NamedTuple):
+            field1: str
+            field2: int
+
+        space = [Type("t1", 2), Type("t2", 3), 3]
+
+        # NamedTuple will be treated as a sequence by default
+        ret = list(
+            iu.recursive_iterate(
+                space,
+                iter_types=Type,
+                map_check_func=lambda x: iu.is_map(x, strict=True),
+                seq_check_func=lambda x: iu.is_seq(x, strict=True),
+            )
+        )
+        self.assertEqual(ret, [space[0], space[1]])
 
     def test_paired(self):
         self.assertIsInstance(iu.PairedDict({}, {}), iu.cabc.Mapping)
