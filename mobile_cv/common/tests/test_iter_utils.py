@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import unittest
-from typing import NamedTuple
+from dataclasses import dataclass
+from typing import Any, List, NamedTuple
 
 import mobile_cv.common.misc.iter_utils as iu
 
@@ -137,6 +138,197 @@ class TestIterUtils(unittest.TestCase):
             )
         )
         self.assertEqual(ret, [space[0], space[1]])
+
+        ret = list(iu.recursive_iterate(space, iter_types=Type, yield_container=True))
+        self.assertEqual(ret, [space[0], space[1]])
+
+    def test_yield_container(self):
+        data = {
+            "ab": {"cd": 123, "ef": "ga"},
+            "cd": [1, 2, 3],
+            "j": 6,
+        }
+        # basic case
+        ret = list(iu.recursive_iterate(data, yield_container=True))
+        self.assertEqual(
+            ret, [123, "ga", {"cd": 123, "ef": "ga"}, 1, 2, 3, [1, 2, 3], 6, data]
+        )
+
+        # yield with name
+        ret = list(iu.recursive_iterate(data, yield_name=True, yield_container=True))
+        self.assertEqual(
+            ret,
+            [
+                ("ab.cd", 123),
+                ("ab.ef", "ga"),
+                ("ab", {"cd": 123, "ef": "ga"}),
+                ("cd.0", 1),
+                ("cd.1", 2),
+                ("cd.2", 3),
+                ("cd", [1, 2, 3]),
+                ("j", 6),
+                ("", data),
+            ],
+        )
+
+    def test_yield_container_send(self):
+        data = {
+            "ab": {"cd": 123, "ef": "ga"},
+            "cd": [1, 2, 3],
+            "j": 6,
+        }
+        # yield container with send
+        riter = iu.recursive_iterate(data, yield_container=True)
+        for item in riter:
+            if iu.is_container(item):
+                sent_item = riter.sent_value()
+                if item == data:
+                    # for the last item (the full object), replace the sent object
+                    riter.send(sent_item)
+                else:
+                    # replace the container with its first item
+                    if iu.is_map(sent_item):
+                        riter.send(tuple(list(sent_item.items())[0]))
+                    else:
+                        riter.send(sent_item[0])
+            else:
+                riter.send(item)
+        self.assertEqual(
+            riter.value,
+            {"ab": ("cd", 123), "cd": 1, "j": 6},
+        )
+
+    def test_linearize_remap(self):
+        """Convert a specific types of objects to a list and reconstruct the list
+        to the original structure"""
+
+        @dataclass
+        class Type1(object):
+            name: str
+
+        @dataclass
+        class Type2(object):
+            name: str
+
+        adict = {
+            "ab": "cd",
+            "t1": Type1("t1"),
+            "t2": Type2("t2"),
+            "dict": {
+                "t3": Type1("t3"),
+                "list": ["val", Type2("t4"), Type1("t5"), 10],
+                "value": "value",
+            },
+        }
+        # convert to a list
+        ret = list(iu.recursive_iterate(adict, iter_types=(Type1, Type2)))
+        self.assertEqual(
+            ret,
+            [
+                adict["t1"],
+                adict["t2"],
+                adict["dict"]["t3"],
+                adict["dict"]["list"][1],
+                adict["dict"]["list"][2],
+            ],
+        )
+
+        # process on the list
+        ret = [x.name + str(idx) for idx, x in enumerate(ret)]
+
+        # reconstruct the original structure with the new values
+        riter = iu.recursive_iterate(adict, iter_types=(Type1, Type2))
+        # riter needs to come first in zip
+        for _value, new_value in zip(riter, ret):
+            # replace value with new_value
+            riter.send(new_value)
+        out = riter.value
+        self.assertEqual(
+            out,
+            {
+                "ab": "cd",
+                "t1": "t10",
+                "t2": "t21",
+                "dict": {
+                    "t3": "t32",
+                    "list": ["val", "t43", "t54", 10],
+                    "value": "value",
+                },
+            },
+        )
+
+    def test_linearize_remap_nested(self):
+        """Convert a specific types of objects to a list and reconstruct the list
+        to the original structure"""
+
+        @dataclass
+        class Type1(object):
+            name: str
+
+            def process(self, _):
+                return self.name + "_t1"
+
+        @dataclass
+        class Type2(object):
+            name: str
+
+            def process(self, _):
+                return self.name + "_t2"
+
+        @dataclass
+        class TypeChoice(object):
+            name: str
+            data: List[Any]
+
+            def __iter__(self):
+                return iter(self.data)
+
+            def process(self, data):
+                return data[1]
+
+        adict = {
+            "ab": "cd",
+            "t3": Type1("t3"),
+            "choice": TypeChoice("choice", ["val", Type2("t4"), Type1("t5"), 10]),
+        }
+        # convert to a list
+        ret = list(
+            iu.recursive_iterate(
+                adict,
+                iter_types=(Type1, Type2, TypeChoice),
+                seq_check_func=lambda x: isinstance(x, (list, tuple, TypeChoice)),
+                yield_container=True,
+            )
+        )
+        self.assertEqual(
+            ret,
+            [
+                adict["t3"],
+                adict["choice"].data[1],
+                adict["choice"].data[2],
+                adict["choice"],
+            ],
+        )
+
+        # reconstruct the original structure with the new values
+        riter = iu.recursive_iterate(
+            adict,
+            iter_types=(Type1, Type2, TypeChoice),
+            seq_check_func=lambda x: isinstance(x, (list, tuple, TypeChoice)),
+            yield_container=True,
+        )
+        for _value, new_value in zip(riter, ret):
+            riter.send(new_value.process(riter.sent_value()))
+
+        out = riter.value
+        self.assertEqual(
+            out,
+            {
+                "ab": "cd",
+                "t3": "t3_t1",
+                "choice": "t4_t2",
+            },
+        )
 
     def test_paired(self):
         self.assertIsInstance(iu.PairedDict({}, {}), iu.cabc.Mapping)

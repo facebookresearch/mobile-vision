@@ -3,7 +3,7 @@
 import collections.abc as cabc
 from dataclasses import dataclass
 from functools import wraps
-from typing import Callable, Tuple, Union, Optional, Any
+from typing import List, Callable, Tuple, Union, Optional, Any
 
 
 class ValueKeepingGenerator(object):
@@ -40,6 +40,10 @@ def is_map(obj, strict=False):
     return isinstance(obj, cabc.Mapping)
 
 
+def is_container(obj, strict=False):
+    return is_seq(obj, strict) or is_map(obj, strict)
+
+
 def _yield_obj(obj, wait_on_send: bool, yield_name: bool, name_prefix: str):
     ret = obj
     yield_obj = obj if not yield_name else (name_prefix, obj)
@@ -61,7 +65,6 @@ def _yield_obj(obj, wait_on_send: bool, yield_name: bool, name_prefix: str):
     return ret  # noqa
 
 
-@keep_value_generator
 def recursive_iterate(
     obj: Any,
     iter_types: Optional[Union[Any, Tuple[Any]]] = None,
@@ -69,9 +72,9 @@ def recursive_iterate(
     seq_check_func: Optional[Callable[[Any], bool]] = None,
     wait_on_send: Optional[bool] = None,
     yield_name: bool = False,
-    _name_prefix: str = "",
+    yield_container: bool = False,
 ):
-    """Return an iterable `iter` to allow to access the nested obj (`obj`) linearly.
+    """Return an iterable `iter` to allow access to the nested obj (`obj`) linearly.
     The iterator also supports returns a object with the same hierarchy as
     `obj` but stores values passed from `iter.send(x)`. The returned object
     is stored in `iter.value`.
@@ -82,10 +85,69 @@ def recursive_iterate(
     `wait_on_send`: user will call `iter.send(x)` to send data for every element
     if True. The iter will not work properly if the number of elements sent
     do not match. The data sent will be ignored if `wait_on_send` is False.
-    `wait_on_send` is None is for backward compatiblity. The iter could accept
+    `wait_on_send` is None for backward compatibility. The iter could accept
+    any data sent back except `None`, which will cause an error.
+    'yield_name` decides if to yield the name with the object together. If yes,
+    the yield values will be ('m1.m2.m3.name', obj), otherwise only `obj` is
+    returned.
+    `yield_container` indicates whether to yield the container object (list/dict etc.)
+    itself during the iteration. If True, it will be yielded after all elements
+    inside it are yielded. At the time a container object is yielded, `iter.sent_value()`
+    contains the corresponding container object with the elements inside it replaced
+    with the values users have sent. This is useful to process and send the container
+    object back to construct the output.
+    """
+    out_sent_container = []
+    ret = _recursive_iterate(
+        obj,
+        iter_types=iter_types,
+        map_check_func=map_check_func,
+        seq_check_func=seq_check_func,
+        wait_on_send=wait_on_send,
+        yield_name=yield_name,
+        yield_container=yield_container,
+        out_sent_container=out_sent_container,
+        _name_prefix="",
+    )
+    ret.sent_value = lambda: out_sent_container[-1]
+    return ret
+
+
+@keep_value_generator
+def _recursive_iterate(
+    obj: Any,
+    iter_types: Optional[Union[Any, Tuple[Any]]] = None,
+    map_check_func: Optional[Callable[[Any], bool]] = None,
+    seq_check_func: Optional[Callable[[Any], bool]] = None,
+    wait_on_send: Optional[bool] = None,
+    yield_name: bool = False,
+    yield_container: bool = False,
+    out_sent_container: Optional[List[Any]] = None,
+    _name_prefix: str = "",
+):
+    """Return an iterable `iter` to allow access to the nested obj (`obj`) linearly.
+    The iterator also supports returns a object with the same hierarchy as
+    `obj` but stores values passed from `iter.send(x)`. The returned object
+    is stored in `iter.value`.
+    `iter_types` specifies the type or a tuple of types that will be returned
+    during iteration, use `None` to return all objects.
+    `map_check_func` function to check for if `obj` is a dict, func(x) -> bool.
+    `seq_check_func` function to check for if `obj` is a list, func(x) -> bool.
+    `wait_on_send`: user will call `iter.send(x)` to send data for every element
+    if True. The iter will not work properly if the number of elements sent
+    do not match. The data sent will be ignored if `wait_on_send` is False.
+    `wait_on_send` is None for backward compatibility. The iter could accept
     any data sent back except `None`, which will cause an error.
     'yield_name` decides if to yield the name with the object together. If yes,
     the yield values will be ('m1.m2.m3.name', obj), otherwise only `obj` is returned
+    `yield_container` indicates whether to yield the container object (list/dict etc.)
+    itself during the iteration. If True, it will be yielded after all elements
+    inside it are yielded.
+    `out_sent_container` is an empty list provided from the user and use to store
+    the container value created based on the values from `send()` during the iteration.
+    At the time a container object is yielded, out_sent_container[-1] stores the
+    corresponding container object but with the elements inside it replaced with
+    the values users have sent.
     """
 
     def _get_name_with_prefix(name):
@@ -101,7 +163,7 @@ def recursive_iterate(
     is_obj_container = is_obj_map or is_obj_seq
 
     # by default yield every object except dict and list
-    is_obj_yield = not is_obj_container
+    is_obj_yield = not is_obj_container if not yield_container else True
     if iter_types is not None:
         is_obj_yield = is_obj_yield and isinstance(obj, iter_types)
 
@@ -109,38 +171,50 @@ def recursive_iterate(
     if is_obj_map:
         ret = {}
         for x in obj:
-            cur = yield from recursive_iterate(
+            cur = yield from _recursive_iterate(
                 obj[x],
                 iter_types,
                 map_check_func,
                 seq_check_func,
                 wait_on_send,
                 yield_name=yield_name,
+                yield_container=yield_container,
+                out_sent_container=out_sent_container,
                 _name_prefix=_get_name_with_prefix(x),
             )
             ret[x] = cur
     elif is_obj_seq:
         ret = []
         for idx, x in enumerate(obj):
-            cur = yield from recursive_iterate(
+            cur = yield from _recursive_iterate(
                 x,
                 iter_types,
                 map_check_func,
                 seq_check_func,
                 wait_on_send,
                 yield_name=yield_name,
+                yield_container=yield_container,
+                out_sent_container=out_sent_container,
                 _name_prefix=_get_name_with_prefix(idx),
             )
             ret.append(cur)
         if isinstance(obj, tuple):
             ret = tuple(ret)
-    elif is_obj_yield:
+
+    if is_obj_yield:
+        # store the sent container in `out_sent_container` to be used outside
+        if out_sent_container is not None:
+            assert isinstance(out_sent_container, list)
+            out_sent_container.append(ret)
         ret = yield from _yield_obj(
             obj,
             wait_on_send=wait_on_send,
             yield_name=yield_name,
             name_prefix=_name_prefix,
         )
+        if out_sent_container is not None:
+            out_sent_container.pop(-1)
+
     return ret  # noqa
 
 
