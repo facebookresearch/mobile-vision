@@ -98,12 +98,18 @@ class TestResBlock(unittest.TestCase):
         model = convert_fx(model)
         print(model)
 
-        dequants = [x.name for x in model.graph.nodes if x.op == "call_method"]
-        self.assertEqual(dequants, ["dequantize_1", "dequantize_3", "dequantize_4"])
+        dequants = [x.target for x in model.graph.nodes if x.op == "call_method"]
+        self.assertEqual(dequants, ["dequantize", "dequantize", "dequantize"])
 
-        funcs = [x.name for x in model.graph.nodes if x.op == "call_function"]
+        funcs = [x.target for x in model.graph.nodes if x.op == "call_function"]
         self.assertEqual(
-            funcs, ["quantize_per_tensor", "add", "quantize_per_tensor_2", "add_1"]
+            funcs,
+            [
+                torch.quantize_per_tensor,
+                torch.add,
+                torch.quantize_per_tensor,
+                torch.add,
+            ],
         )
 
         out = model(data)
