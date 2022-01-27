@@ -66,8 +66,7 @@ class TestUtilsFuseUtils(unittest.TestCase):
         cbr = bb.ConvBNRelu(
             3, 6, kernel_size=3, padding=1, bn_args="bn", relu_args="relu"
         ).eval()
-        is_qat = False
-        fused = fuse_utils.fuse_convbnrelu(cbr, is_qat, inplace=False)
+        fused = fuse_utils.fuse_convbnrelu(cbr, inplace=False)
 
         self.assertTrue(helper.find_modules(cbr, torch.nn.BatchNorm2d))
         self.assertFalse(helper.find_modules(fused, torch.nn.BatchNorm2d))
@@ -81,8 +80,7 @@ class TestUtilsFuseUtils(unittest.TestCase):
         ).eval()
         self.assertTrue(helper.find_modules(cbr, torch.nn.BatchNorm2d))
 
-        is_qat = False
-        fused = fuse_utils.fuse_convbnrelu(cbr, is_qat, inplace=True)
+        fused = fuse_utils.fuse_convbnrelu(cbr, inplace=True)
 
         self.assertFalse(helper.find_modules(cbr, torch.nn.BatchNorm2d))
         self.assertFalse(helper.find_modules(fused, torch.nn.BatchNorm2d))
@@ -95,8 +93,7 @@ class TestUtilsFuseUtils(unittest.TestCase):
             3, 6, kernel_size=3, padding=1, bn_args="bn", relu_args="relu"
         )
         cbr = bb.ConvNormAct(cbr.conv, cbr.bn, cbr.relu).eval()
-        is_qat = False
-        fused = fuse_utils.fuse_convbnrelu(cbr, is_qat, inplace=False)
+        fused = fuse_utils.fuse_convbnrelu(cbr, inplace=False)
 
         self.assertTrue(helper.find_modules(cbr, torch.nn.BatchNorm2d))
         self.assertFalse(helper.find_modules(fused, torch.nn.BatchNorm2d))
@@ -455,9 +452,8 @@ def _test_fuse_conv(
 
     cbr.eval()
 
-    # @jerryzh: I think we can merge the following calls with fuse_model?
     if not use_fx:
-        fused = fuse_utils.fuse_model(cbr, inplace=False)
+        fused = fuse_utils.fuse_convbnrelu(cbr, inplace=False)
     else:
         fused = fuse_utils.fuse_model_fx(cbr)
 
