@@ -21,6 +21,7 @@ from mobile_cv.arch.layers.batch_norm import (
 TORCH_VERSION: Tuple[int, ...] = tuple(int(x) for x in torch.__version__.split(".")[:2])
 if TORCH_VERSION > (1, 10):
     from torch.ao.quantization import fuse_modules
+    from torch.ao.quantization import fuse_modules_qat
     from torch.ao.quantization.fuse_modules import (
         fuse_conv_bn,
         fuse_conv_bn_relu,
@@ -35,6 +36,18 @@ else:
         fuse_known_modules,
     )
     from torch.quantization.quantize_fx import _fuse_fx
+
+
+def sequential_wrapper2(sequential):
+    """Given a sequential class for two modules, return a function that takes
+    is_qat, and then two modules as argument, that ignores the is_qat flag
+    and always returns the sequential that combines the two input modules
+    """
+
+    def fuser_method(is_qat, m1, m2):
+        return sequential(m1, m2)
+
+    return fuser_method
 
 
 # Registry to get the names for fusing the supported module
@@ -113,7 +126,7 @@ def swap_modules(
 
 # TODO: Is this the same as fuse_known_modules? should we just refactor this using `additioanl_fuser_method_mapping`?
 def fuse_more_modules(
-    mod_list: typing.List[nn.Module], additional_fuser_method_mapping=None
+    mod_list: typing.List[nn.Module], additional_fuser_method_mapping=None, is_qat=False
 ):
     r"""Returns a list of modules that fuses the operations specified
      in the input module list.
@@ -148,8 +161,12 @@ def fuse_more_modules(
         ): fuse_conv_bn_relu,
         (torch.nn.Conv3d, nn.SyncBatchNorm): fuse_conv_bn,
         (torch.nn.Conv3d, nn.SyncBatchNorm, torch.nn.ReLU): fuse_conv_bn_relu,
-        (NaiveSyncBatchNorm, torch.nn.ReLU): torch.nn.intrinsic.BNReLU2d,
-        (NaiveSyncBatchNorm3d, torch.nn.ReLU): torch.nn.intrinsic.BNReLU3d,
+        (NaiveSyncBatchNorm, torch.nn.ReLU): sequential_wrapper2(
+            torch.nn.intrinsic.BNReLU2d
+        ),
+        (NaiveSyncBatchNorm3d, torch.nn.ReLU): sequential_wrapper2(
+            torch.nn.intrinsic.BNReLU3d
+        ),
     }
 
     types = tuple(type(m) for m in mod_list)
@@ -158,10 +175,10 @@ def fuse_more_modules(
     fuser_method = OP_LIST_TO_FUSER_METHOD.get(types, None)
     # Currently only support fusing for evaluation mode
     if fuser_method is None or mod_list[0].training:
-        return fuse_known_modules(mod_list)
+        return fuse_known_modules(mod_list, is_qat=is_qat)
 
     new_mod = [None] * len(mod_list)
-    new_mod[0] = fuser_method(*mod_list)
+    new_mod[0] = fuser_method(is_qat, *mod_list)
 
     for i in range(1, len(mod_list)):
         new_mod[i] = torch.nn.Identity()
@@ -202,7 +219,7 @@ def _get_fuser_name_cbr(
     return [ret]
 
 
-def fuse_convbnrelu(module, inplace=False):
+def fuse_convbnrelu(module, is_qat, inplace=False):
     if not isinstance(module, tuple(FUSE_LIST_GETTER.keys())):
         return module
 
@@ -213,25 +230,44 @@ def fuse_convbnrelu(module, inplace=False):
     )
 
     if len(fuse_names) > 0:
-        ret = fuse_modules(ret, fuse_names, inplace=True, fuser_func=fuse_more_modules)
+        if TORCH_VERSION > (1, 10) and is_qat:
+            ret = fuse_modules_qat(
+                ret, fuse_names, inplace=True, fuser_func=fuse_more_modules
+            )
+        else:
+            ret = fuse_modules(
+                ret, fuse_names, inplace=True, fuser_func=fuse_more_modules
+            )
     return ret
 
 
-def fuse_model_inplace(model: nn.Module):
-    model = fuse_convbnrelu(model, inplace=True)
+def fuse_model_inplace(model: nn.Module, is_qat: bool):
+    model = fuse_convbnrelu(model, is_qat=is_qat, inplace=True)
     children = {}
     for name, child in model.named_children():
-        children[name] = fuse_model_inplace(child)
+        children[name] = fuse_model_inplace(child, is_qat=is_qat)
     return model
 
 
-def fuse_model(model: nn.Module, inplace=False, use_fx=False):
+def _fuse_model(model: nn.Module, is_qat, inplace=False, use_fx=False):
     if use_fx:
         assert inplace is False
-        return fuse_model_fx(model)
+        if is_qat:
+            return fuse_model_qat_fx(model)
+        else:
+            return fuse_model_fx(model)
     if not inplace:
         model = copy.deepcopy(model)
-    return fuse_model_inplace(model)
+    swap_modules_inplace(model)
+    return fuse_model_inplace(model, is_qat=is_qat)
+
+
+def fuse_model(model: nn.Module, inplace=False, use_fx=False):
+    return _fuse_model(model, False, inplace=inplace, use_fx=use_fx)
+
+
+def fuse_model_qat(model: nn.Module, inplace=False, use_fx=False):
+    return _fuse_model(model, True, inplace=inplace, use_fx=use_fx)
 
 
 def check_bn_exist(model):
@@ -282,17 +318,17 @@ def _remove_asserts(mod: torch.fx.GraphModule) -> torch.fx.GraphModule:
     return torch.fx.GraphModule(mod, graph)
 
 
-def _fuse_model_fx_single(model: torch.nn.Module) -> torch.nn.Module:
+def _fuse_model_fx_single(model: torch.nn.Module, is_qat: bool) -> torch.nn.Module:
     model = torch.fx.symbolic_trace(model)
     model = _remove_asserts(model)
-    model = _fuse_fx(model)
+    model = _fuse_fx(model, is_qat=is_qat)
     return model
 
 
-def _fuse_model_fx_recursive(model: torch.nn.Module):
+def _fuse_model_fx_recursive(model: torch.nn.Module, is_qat: bool):
     traceable = True
     try:
-        model = _fuse_model_fx_single(model)
+        model = _fuse_model_fx_single(model, is_qat=is_qat)
     except Exception as e:  # noqa
         # print(f"Error in tracing {model}: {e}")
         traceable = False
@@ -300,17 +336,25 @@ def _fuse_model_fx_recursive(model: torch.nn.Module):
     if not traceable:
         # pyre-ignore Undefined attribute [16]: `torch.nn.Module` has no attribute `named_children`.
         for name, module in model.named_children():
-            module = _fuse_model_fx_recursive(module)
+            module = _fuse_model_fx_recursive(module, is_qat=is_qat)
             setattr(model, name, module)
 
     return model
 
 
-def fuse_model_fx(model: torch.nn.Module):
+def _fuse_model_fx(model: torch.nn.Module, is_qat: bool):
     """
     Fusing model using fx, the fusing will run recursively if some of the modules
     are not symbolic traceable
     Note the returned model is a graph module
     """
     model = swap_modules(model)
-    return _fuse_model_fx_recursive(model)
+    return _fuse_model_fx_recursive(model, is_qat=is_qat)
+
+
+def fuse_model_fx(model: torch.nn.Module):
+    return _fuse_model_fx(model, False)
+
+
+def fuse_model_qat_fx(model: torch.nn.Module):
+    return _fuse_model_fx(model, True)
