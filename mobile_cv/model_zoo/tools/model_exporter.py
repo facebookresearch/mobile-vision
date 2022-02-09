@@ -156,6 +156,15 @@ class TraceWrapperP2(torch.nn.Module):
         return self.model(x, y)
 
 
+class TraceWrapperP3(torch.nn.Module):
+    def __init__(self, model):
+        super().__init__()
+        self.model = model
+
+    def forward(self, x, y, z):
+        return self.model(x, y, z)
+
+
 def _get_traced_model_with_attrs(traced_model, num_inputs, model_attrs):
     """For a module that has already been traced, adding additional attributes on
     top of it and script it again will not work. This workaround add a wrapper to
@@ -171,6 +180,8 @@ def _get_traced_model_with_attrs(traced_model, num_inputs, model_attrs):
         traced_model = TraceWrapperP1(traced_model)
     elif num_inputs == 2:
         traced_model = TraceWrapperP2(traced_model)
+    elif num_inputs == 3:
+        traced_model = TraceWrapperP3(traced_model)
     else:
         raise Exception("Traced models with at most two parameters are supported.")
     _set_attrs_to_model(traced_model, model_attrs)
