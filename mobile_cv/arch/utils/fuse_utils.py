@@ -262,8 +262,8 @@ def _fuse_model(model: nn.Module, is_qat, inplace=False, use_fx=False):
     return fuse_model_inplace(model, is_qat=is_qat)
 
 
-def fuse_model(model: nn.Module, inplace=False, use_fx=False):
-    return _fuse_model(model, False, inplace=inplace, use_fx=use_fx)
+def fuse_model(model: nn.Module, *, is_qat=False, inplace=False, use_fx=False):
+    return _fuse_model(model, is_qat, inplace=inplace, use_fx=use_fx)
 
 
 def fuse_model_qat(model: nn.Module, inplace=False, use_fx=False):
