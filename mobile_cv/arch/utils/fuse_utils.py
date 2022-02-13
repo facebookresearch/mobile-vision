@@ -96,7 +96,7 @@ def swap_modules_inplace(
         Type[nn.Module], Callable[[nn.Module], nn.Module]
     ] = SWAPPING_MODULES,
 ):
-    is_training = model.training
+    is_training = getattr(model, "training", False)
     if type(model) in module_mapping:
         model = module_mapping[type(model)](model)
 

@@ -115,7 +115,10 @@ def parse_args(args_list=None):
 def _set_attrs_to_model(model, attrs):
     assert isinstance(attrs, dict)
     for k, w in attrs.items():
-        assert not hasattr(model, k), f"{k} has already existed inside the model"
+        if hasattr(model, k) and getattr(model, k) != w:
+            logger.warning(
+                f"{k} has already existed inside the model, the value {getattr(model, k)} is override with {w}"
+            )
         setattr(model, k, w)
 
 
