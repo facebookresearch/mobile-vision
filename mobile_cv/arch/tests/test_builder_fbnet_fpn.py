@@ -4,8 +4,8 @@
 import unittest
 
 import torch
-from mobile_cv.arch.fbnet_v2.fbnet_builder import FBNetBuilder
-from mobile_cv.arch.fbnet_v2.fbnet_fpn import FBNetFPNBuilder
+from mobile_cv.arch.builder.fbnet_fpn import FBNetFPNBuilder
+from mobile_cv.arch.builder.meta_builder import FBNetBuilder
 
 
 class TestFBNetFPN(unittest.TestCase):

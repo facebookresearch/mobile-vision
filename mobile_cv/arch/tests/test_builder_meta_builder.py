@@ -3,17 +3,17 @@
 
 import unittest
 
+import mobile_cv.arch.builder.meta_builder as mbuilder
 import mobile_cv.arch.fbnet_v2.basic_blocks as basic_blocks
 import mobile_cv.arch.fbnet_v2.blocks_factory as blocks_factory
-import mobile_cv.arch.fbnet_v2.fbnet_builder as fbnet_builder
 import mobile_cv.arch.fbnet_v2.irf_block as irf_block
 import torch
 
 
 def _build_model(arch_def, dim_in, **kwargs):
-    arch_def = fbnet_builder.unify_arch_def(arch_def, ["blocks"])
+    arch_def = mbuilder.unify_arch_def(arch_def, ["blocks"])
     torch.manual_seed(0)
-    builder = fbnet_builder.FBNetBuilder(1.0)
+    builder = mbuilder.FBNetBuilder(1.0)
     builder.add_basic_args(**arch_def.get("basic_args", {}))
     model = builder.build_blocks(arch_def["blocks"], dim_in=dim_in, **kwargs)
     model.eval()

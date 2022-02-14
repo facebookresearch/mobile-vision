@@ -3,7 +3,7 @@
 
 import unittest
 
-import mobile_cv.arch.fbnet_v2.fbnet_builder as mbuilder
+import mobile_cv.arch.builder.meta_builder as mbuilder
 
 
 class TestFBNetV2BuilderUtils(unittest.TestCase):

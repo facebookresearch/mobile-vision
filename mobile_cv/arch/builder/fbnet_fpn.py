@@ -3,19 +3,19 @@
 import copy
 from typing import Dict, List, Optional, Tuple
 
+import mobile_cv.arch.builder.meta_builder as mbuilder
 import mobile_cv.arch.fbnet_v2.basic_blocks as bb
-import mobile_cv.arch.fbnet_v2.fbnet_builder as fbnet_builder
 import mobile_cv.common.misc.registry as registry
 import torch
 import torch.nn as nn
-from mobile_cv.arch.fbnet_v2.fbnet_builder import FBNetBuilder
+from mobile_cv.arch.builder.meta_builder import MetaBuilder
 
 
 STAGE_COMBINERS_REGISTRY = registry.Registry("stage_combiners")
 
 
 class FBNetFPNBuilder:
-    def __init__(self, builder: FBNetBuilder):
+    def __init__(self, builder: MetaBuilder):
         """
         Builder to create feature pyramid network (FPN) with the shape:
 
@@ -44,8 +44,8 @@ class FBNetFPNBuilder:
 
         In order to create the network, create this builder and then, call build_model
         by specifying the number of spatial resolutions and a valid arch_def:
-            fbnet_builder = FBNetBuilder()
-            fbnet_fpn_builder = FBNetFPNBuilder(fbnet_builder)
+            meta_builder = MetaBuilder()
+            fbnet_fpn_builder = FBNetFPNBuilder(meta_builder)
             model = fbnet_fpn_builder.build_model(num_resolutions, arch_def)
 
         See build_model to get an example of valid arch_def.
@@ -82,8 +82,8 @@ class FBNetFPNBuilder:
                 "stages": [],
                 "stage_combiners": ["add"],
             }
-            fbnet_builder = FBNetBuilder()
-            fbnet_fpn_builder = FBNetHRBuilder(fbnet_builder)
+            meta_builder = MetaBuilder()
+            fbnet_fpn_builder = FBNetHRBuilder(meta_builder)
             model = fbnet_fpn_builder.build_model(arch_def)
 
         The resulting model has the structure:
@@ -150,8 +150,8 @@ class FBNetFPNBuilder:
 
         # iterate over stages and check that the inputs to the combiners
         # have the same number of channels or 1
-        self.blocks = fbnet_builder.unify_arch_def_blocks(arch_def["stages"])
-        self.blocks_out_dims = fbnet_builder.get_stages_dim_out(self.blocks)
+        self.blocks = mbuilder.unify_arch_def_blocks(arch_def["stages"])
+        self.blocks_out_dims = mbuilder.get_stages_dim_out(self.blocks)
         # pyre-fixme[16]: `FBNetFPNBuilder` has no attribute
         #  `stage_combiner_num_inputs`.
         self.stage_combiner_num_inputs = [0] * self.num_resolutions
