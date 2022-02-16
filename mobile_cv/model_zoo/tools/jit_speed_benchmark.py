@@ -6,20 +6,20 @@ import time
 
 import numpy as np
 import torch
+from mobile_cv.model_zoo.tools.common_libs import load_libraries
 from numpy import percentile as np_pctile
 
-torch.ops.load_library("//caffe2/fb/custom_ops/gans:gans")
+load_libraries()
 
 
 """
 Example run:
 buck run @mode/opt mobile-vision/mobile_cv/mobile_cv/model_zoo/tools:jit_speed_benchmark -- --model \
-/mnt/vol/gfsai-oregon/aml/mobile-vision/model_zoo/models/20200103/fACAVX/fbnet_c_i8f_int8_jit_f152918373/model.jpt \
---input_dims 1,3,224,224 --torch_threads 1 --int8_backend fbgemm
+/path/to/model.jit --input_dims 1,3,224,224 --torch_threads 1 --int8_backend fbgemm
 """
 
 
-def parse_args():
+def parse_args(input_args):
     parser = argparse.ArgumentParser(description="jit speed benchmark")
     parser.add_argument("--model", type=str)
     parser.add_argument("--input_dims", type=str, default=None)
@@ -35,7 +35,7 @@ def parse_args():
     parser.add_argument("--int8_backend", type=str, default=None)
     parser.add_argument("--flush_denormal", action="store_true", default=False)
     parser.add_argument("--on_gpu", action="store_true", default=False)
-    args = parser.parse_args()
+    args = parser.parse_args(input_args)
     return args
 
 
@@ -133,8 +133,9 @@ class Timer(object):
 def maybe_run_autograd_profile(args, run_model):
     if args.no_autograd_profiling:
         return
-    with torch.autograd.profiler.profile(record_shapes=True) as prof:
-        run_model()
+    with torch.no_grad():
+        with torch.autograd.profiler.profile(record_shapes=True) as prof:
+            run_model()
     print(
         "autograd prof:\n {} \n".format(prof.key_averages(group_by_input_shape=False))
     )
@@ -164,16 +165,17 @@ def bench_model(run_model, iter, check_freq, prefix, run_garbage_collector):
     timer = Timer()
     runtimes = []
 
-    for i in range(iter):
-        if i and i % check_freq == 0:
-            log_check_info(i, runtimes=runtimes, timer=timer, prefix=prefix)
+    with torch.no_grad():
+        for i in range(iter):
+            if i and i % check_freq == 0:
+                log_check_info(i, runtimes=runtimes, timer=timer, prefix=prefix)
 
-        if run_garbage_collector:
-            gc.collect()
+            if run_garbage_collector:
+                gc.collect()
 
-        timer.tic()
-        run_model()
-        runtimes.append(1000 * timer.toc(average=False))
+            timer.tic()
+            run_model()
+            runtimes.append(1000 * timer.toc(average=False))
 
     return runtimes
 
@@ -207,13 +209,14 @@ def move_to_device(data, device):
     return data
 
 
-def main():
-    args = parse_args()
+def main(args_list=None):
+    args = parse_args(args_list)
 
     init_env(args)
 
     # load jit model
     model = torch.jit.load(args.model)
+    model.eval()
     # prepare input
     input_data = parse_inputs(args)
 
