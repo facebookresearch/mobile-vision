@@ -3,6 +3,8 @@
 import torch
 from mobile_cv.arch.fbnet_v2.blocks_factory import PRIMITIVES
 
+torch.fx.wrap("len")
+
 
 class ReshapeToBatch(torch.nn.Module):
     """Reshape the channel dimension of the tensor to batch dimension
@@ -19,8 +21,11 @@ class ReshapeToBatch(torch.nn.Module):
         return ReshapeToBatch(out_channels=out_channels)
 
     def forward(self, x):
-        assert len(x.shape) == 4
-        assert x.shape[1] % self.out_channels == 0
+        torch._assert(len(x.shape) == 4, "must have 4 dims")
+        torch._assert(
+            x.shape[1] % self.out_channels == 0,
+            f"{x.shape[1]} is not divisible by {self.out_channels}",
+        )
         num_views = x.shape[1] // self.out_channels
         return x.reshape(
             x.shape[0] * num_views, self.out_channels, x.shape[2], x.shape[3]
@@ -42,12 +47,15 @@ class ReshapeToChannel(torch.nn.Module):
         return ReshapeToChannel(out_channels=out_channels)
 
     def forward(self, x):
-        assert len(x.shape) == 4
-        assert (
-            self.out_channels % x.shape[1] == 0
-        ), f"out_channels = {self.out_channels}, x = {x.shape}"
+        torch._assert(len(x.shape) == 4, "must has 4 dims")
+        torch._assert(
+            self.out_channels % x.shape[1] == 0,
+            f"out_channels = {self.out_channels}, x = {x.shape}",
+        )
         num_views = self.out_channels // x.shape[1]
-        assert x.shape[0] % num_views == 0, f"x = {x.shape}, num_views = {num_views}"
+        torch._assert(
+            x.shape[0] % num_views == 0, f"x = {x.shape}, num_views = {num_views}"
+        )
         return x.reshape(
             x.shape[0] // num_views,
             self.out_channels,
