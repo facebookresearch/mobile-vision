@@ -88,6 +88,7 @@ class LocalCache(object):
         else:
             self.cache = diskcache.FanoutCache(
                 cache_dir,
+                timeout=60,
                 shards=num_shards,
                 size_limit=int(1e12),
                 cull_limit=0,
