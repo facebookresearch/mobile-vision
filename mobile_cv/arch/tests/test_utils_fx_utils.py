@@ -147,7 +147,7 @@ class TestUtilsFXUtils(unittest.TestCase):
         outputs1 = fu.get_outputs_for_quantized_submodule(subnodes1)
         self.assertEqual(len(subnodes1), 5)
         self.assertEqual({x.name for x in inputs1}, {"x"})
-        self.assertEqual({x.name for x in outputs1}, {"dequantize"})
+        self.assertEqual({x.name for x in outputs1}, {"dequantize_1"})
 
         # extract sub modules
         nqmodel = fu.extract_quantized_submodule_as_model(qmodel, "sub1")
