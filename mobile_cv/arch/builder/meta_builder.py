@@ -403,7 +403,9 @@ def count_stride_each_block(arch_def_blocks):
         stride = block["block_cfg"]["stride"]
 
         def parse_stride(stride):
-            assert stride != 0, stride
+            """parse the stride from "op, c, s, n" format to actual resolution ratio"""
+            if stride == 0:
+                return 1
             return stride if stride > 0 else -1.0 / stride
 
         if isinstance(stride, list):
