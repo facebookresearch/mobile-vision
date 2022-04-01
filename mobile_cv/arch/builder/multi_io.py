@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
+import itertools
 import logging
+import operator
 
 import torch
 import torch.nn as nn
@@ -9,6 +11,7 @@ from mobile_cv.arch.builder import meta_builder as mbuilder
 from mobile_cv.arch.fbnet_v2 import (
     fbnet_modeldef_cls as modeldef,
 )
+from mobile_cv.arch.layers import ShapeSpec
 from mobile_cv.arch.utils.helper import format_dict_expanding_list_values
 
 logger = logging.getLogger(__name__)
@@ -117,6 +120,17 @@ def build_multi_io_net_backbone(arch_name, build_cls_header=True):
     paths = torch.nn.ModuleDict({})
     fusions = torch.nn.ModuleDict({})
 
+    # record all computed channels/strides for further computing the output ShapeSpec
+    computed_channels = {}
+    computed_strides = {}
+
+    def _compute_out_channels_and_strides(block_name):
+        out_channels = mbuilder.get_stages_dim_out(unified_arch_def[block_name])[-1]
+        strides = mbuilder.count_strides(unified_arch_def[block_name])
+        computed_channels[block_name] = out_channels
+        computed_strides[block_name] = strides
+        return out_channels, strides
+
     in_channels = [3] * num_paths
     for path_idx in range(num_paths):
         block_name = f"path{path_idx}_s{0}"
@@ -124,9 +138,7 @@ def build_multi_io_net_backbone(arch_name, build_cls_header=True):
         paths[block_name] = builder.build_blocks(
             unified_arch_def[block_name], dim_in=dim_in
         )
-        in_channels[path_idx] = mbuilder.get_stages_dim_out(
-            unified_arch_def[block_name]
-        )[-1]
+        in_channels[path_idx], _ = _compute_out_channels_and_strides(block_name)
         if vertical_connect_stage0:
             if path_idx + 1 < num_paths:
                 in_channels[path_idx + 1] = in_channels[path_idx]
@@ -137,7 +149,7 @@ def build_multi_io_net_backbone(arch_name, build_cls_header=True):
         fusions[block_name] = builder.build_blocks(
             unified_arch_def[block_name], dim_in=dim_in
         )
-        in_channels = mbuilder.get_stages_dim_out(unified_arch_def[block_name])[-1]
+        in_channels, _ = _compute_out_channels_and_strides(block_name)
 
         for path_idx in range(num_paths):
             block_name = f"path{path_idx}_s{stage_idx}"
@@ -145,9 +157,7 @@ def build_multi_io_net_backbone(arch_name, build_cls_header=True):
             paths[block_name] = builder.build_blocks(
                 unified_arch_def[block_name], dim_in=dim_in
             )
-            in_channels[path_idx] = mbuilder.get_stages_dim_out(
-                unified_arch_def[block_name]
-            )[-1]
+            in_channels[path_idx], _ = _compute_out_channels_and_strides(block_name)
 
     if build_cls_header:
         block_name = "header"
@@ -156,7 +166,7 @@ def build_multi_io_net_backbone(arch_name, build_cls_header=True):
     else:
         header = None
 
-    return MultiIONetBackbone(
+    backbone = MultiIONetBackbone(
         num_paths,
         num_stages,
         paths,
@@ -164,3 +174,23 @@ def build_multi_io_net_backbone(arch_name, build_cls_header=True):
         vertical_connect_stage0=vertical_connect_stage0,
         header=header,
     )
+
+    # calculate output feature's strides & channels
+    # For HRNet, there can be down-samping in the first stage of first path. After
+    # that all the blocks keeps the resolution.
+    assert all(v == 1 for k, v in computed_strides.items() if k != "path0_s0")
+    # There's a hard-coded to do 2x downsampling during fusing nearby paths.
+    stride_per_path = [
+        computed_strides["path0_s0"] if p == 0 else 2 for p in range(num_paths)
+    ]
+    stride_per_path = list(itertools.accumulate(stride_per_path, operator.mul))
+    # out channels are determined by the last block of each path
+    channels_per_path = [
+        computed_channels[f"path{p}_s{num_stages-1}"] for p in range(num_paths)
+    ]
+    shape_specs = [
+        ShapeSpec(stride=s, channels=c)
+        for s, c in zip(stride_per_path, channels_per_path)
+    ]
+
+    return backbone, shape_specs

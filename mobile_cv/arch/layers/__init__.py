@@ -18,6 +18,7 @@ from .misc import (  # isort:skip
     cat,
     interpolate,
 )
+from .shape_spec import ShapeSpec
 
 
 __all__ = [
@@ -32,4 +33,5 @@ __all__ = [
     "NaiveSyncBatchNorm3d",
     "cat",
     "interpolate",
+    "ShapeSpec",
 ]
