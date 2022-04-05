@@ -756,9 +756,9 @@ def build_upsample_neg_stride(name=None, stride=None, **kwargs):
 class AddWithDropConnect(nn.Module):
     """Apply drop connect on x before adding with y"""
 
-    def __init__(self, drop_connect_rate):
+    def __init__(self, drop_connect_rate: float):
         super().__init__()
-        self.drop_connect_rate = drop_connect_rate
+        self.drop_connect_rate: float = drop_connect_rate
         self.add = TorchAdd()
 
     def forward(self, x, y):

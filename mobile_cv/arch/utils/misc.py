@@ -4,7 +4,9 @@
 import torch
 
 
-def drop_connect_batch(inputs, drop_prob, training):
+def drop_connect_batch(
+    inputs: torch.Tensor, drop_prob: float, training: bool
+) -> torch.Tensor:
     """Randomly drop batch during training"""
     assert drop_prob < 1.0, f"Invalid drop_prob {drop_prob}"
     if not training or drop_prob == 0.0:
