@@ -9,8 +9,8 @@ from mobile_cv.arch.quantization.observer import (
     FixedMinMaxObserver,
     UpdatableMovingAverageMaxStatObserver,
     UpdatableSymmetricMovingAverageMinMaxObserver,
-    UpdateableReLUMovingAverageMinMaxObserver,
     update_stat,
+    UpdateableReLUMovingAverageMinMaxObserver,
 )
 from torch.ao.quantization import QuantStub
 from torch.ao.quantization.fake_quantize import FakeQuantize

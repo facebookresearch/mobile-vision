@@ -7,7 +7,7 @@ import unittest
 import mobile_cv.arch.utils.fuse_utils as fuse_utils
 import torch
 from mobile_cv.model_zoo.models.fbnet_v2 import fbnet
-from torch.ao.quantization.observer import MinMaxObserver, default_weight_observer
+from torch.ao.quantization.observer import default_weight_observer, MinMaxObserver
 
 
 class TestModelZooFBNetV2Quantize(unittest.TestCase):

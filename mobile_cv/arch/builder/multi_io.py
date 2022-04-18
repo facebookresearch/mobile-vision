@@ -8,9 +8,7 @@ import operator
 import torch
 import torch.nn as nn
 from mobile_cv.arch.builder import meta_builder as mbuilder
-from mobile_cv.arch.fbnet_v2 import (
-    fbnet_modeldef_cls as modeldef,
-)
+from mobile_cv.arch.fbnet_v2 import fbnet_modeldef_cls as modeldef
 from mobile_cv.arch.layers import ShapeSpec
 from mobile_cv.arch.utils.helper import format_dict_expanding_list_values
 

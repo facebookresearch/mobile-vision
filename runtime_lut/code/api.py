@@ -8,7 +8,7 @@ import caffe2.proto.caffe2_pb2 as pb2
 import model_utils
 import numpy as np
 from caffe2.python import core
-from lut_schema import LUTSchema, load_caffe2_op
+from lut_schema import load_caffe2_op, LUTSchema
 
 
 DB_DIR = "../"

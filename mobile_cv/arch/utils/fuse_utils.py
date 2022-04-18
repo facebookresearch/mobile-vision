@@ -3,7 +3,7 @@
 
 import copy
 import typing
-from typing import Callable, Dict, Type, Tuple
+from typing import Callable, Dict, Tuple, Type
 
 import mobile_cv.arch.fbnet_v2.basic_blocks as bb
 import mobile_cv.arch.layers
@@ -20,8 +20,7 @@ from mobile_cv.arch.layers.batch_norm import (
 
 TORCH_VERSION: Tuple[int, ...] = tuple(int(x) for x in torch.__version__.split(".")[:2])
 if TORCH_VERSION > (1, 10):
-    from torch.ao.quantization import fuse_modules
-    from torch.ao.quantization import fuse_modules_qat
+    from torch.ao.quantization import fuse_modules, fuse_modules_qat
     from torch.ao.quantization.fuse_modules import (
         fuse_conv_bn,
         fuse_conv_bn_relu,

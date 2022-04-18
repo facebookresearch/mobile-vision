@@ -7,7 +7,7 @@ from typing import Optional
 import mobile_cv.arch.utils.helper as hp
 import torch.nn as nn
 
-from .basic_blocks import ConvBNRelu, build_relu, build_residual_connect
+from .basic_blocks import build_relu, build_residual_connect, ConvBNRelu
 
 
 class BasicBlock(nn.Module):

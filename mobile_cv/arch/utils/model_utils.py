@@ -2,7 +2,7 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
 from collections import defaultdict
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 
 import torch
 

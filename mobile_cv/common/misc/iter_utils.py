@@ -3,7 +3,7 @@
 import collections.abc as cabc
 from dataclasses import dataclass
 from functools import wraps
-from typing import List, Callable, Tuple, Union, Optional, Any
+from typing import Any, Callable, List, Optional, Tuple, Union
 
 
 class ValueKeepingGenerator(object):

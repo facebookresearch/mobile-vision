@@ -4,7 +4,7 @@
 import copy
 import itertools
 from collections import defaultdict
-from typing import List, Callable, Optional
+from typing import Callable, List, Optional
 
 import mobile_cv.arch.utils.model_utils as mu
 import torch
