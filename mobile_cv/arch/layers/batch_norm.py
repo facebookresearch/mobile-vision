@@ -255,3 +255,21 @@ class NaiveSyncBatchNorm3d(nn.BatchNorm3d):
         module = copy.deepcopy(module)
         module.__class__ = nn.BatchNorm3d
         return module
+
+
+class SyncBatchNormWrapper(nn.SyncBatchNorm, NaiveSyncBatchNorm):
+    """
+    A wrapper to use torch.nn.SyncBatchNorm when the input is on GPU,
+    or NaiveSyncBatchNorm when the input is on CPU
+    """
+
+    def __init__(self, num_channels, **kwargs):
+        super().__init__(num_channels, **kwargs)
+
+    def forward(self, input):
+        # nn.SyncBatchNorm only supports GPUs, so use NaiveSyncBatchNorm
+        # when the input is on CPU and the communication backend is gloo
+        if input.is_cuda:
+            return nn.SyncBatchNorm.forward(self, input)
+        else:
+            return NaiveSyncBatchNorm.forward(self, input)
