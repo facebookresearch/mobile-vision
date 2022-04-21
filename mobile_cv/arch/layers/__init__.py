@@ -6,6 +6,7 @@ from .batch_norm import (
     NaiveSyncBatchNorm,
     NaiveSyncBatchNorm1d,
     NaiveSyncBatchNorm3d,
+    SyncBatchNormWrapper,
 )
 
 # isort/black has issues in processing those import
@@ -31,6 +32,7 @@ __all__ = [
     "NaiveSyncBatchNorm",
     "NaiveSyncBatchNorm1d",
     "NaiveSyncBatchNorm3d",
+    "SyncBatchNormWrapper",
     "cat",
     "interpolate",
     "ShapeSpec",

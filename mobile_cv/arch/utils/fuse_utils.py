@@ -15,6 +15,7 @@ from mobile_cv.arch.layers.batch_norm import (
     NaiveSyncBatchNorm,
     NaiveSyncBatchNorm1d,
     NaiveSyncBatchNorm3d,
+    SyncBatchNormWrapper,
 )
 
 
@@ -68,6 +69,7 @@ CONV_BN_RELU_SUPPORTED_FUSING_TYPES = {
         NaiveSyncBatchNorm,
         NaiveSyncBatchNorm1d,
         NaiveSyncBatchNorm3d,
+        SyncBatchNormWrapper,
     ],
     "relu": [nn.ReLU],
 }
@@ -82,6 +84,7 @@ SWAPPING_MODULES = {
     NaiveSyncBatchNorm: _cast_func,
     NaiveSyncBatchNorm1d: _cast_func,
     NaiveSyncBatchNorm3d: _cast_func,
+    SyncBatchNormWrapper: _cast_func,
 }
 
 

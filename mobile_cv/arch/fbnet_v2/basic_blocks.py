@@ -22,6 +22,7 @@ from mobile_cv.arch.layers import (
     NaiveSyncBatchNorm,
     NaiveSyncBatchNorm1d,
     NaiveSyncBatchNorm3d,
+    SyncBatchNormWrapper,
 )
 from torch.nn.quantized.modules import FloatFunctional
 
@@ -310,7 +311,7 @@ def build_bn(name, num_channels, zero_gamma=None, gamma_beta=None, **kwargs):
     BN_DEFAULT_MAPS = {
         # 2d
         "bn": lambda: _create_bn(nn.BatchNorm2d),
-        "sync_bn": lambda: _create_bn(NaiveSyncBatchNorm),
+        "sync_bn": lambda: _create_bn(SyncBatchNormWrapper),
         "naiveSyncBN": lambda: _create_bn(NaiveSyncBatchNorm),
         # 3d
         "bn3d": lambda: _create_bn(nn.BatchNorm3d),
