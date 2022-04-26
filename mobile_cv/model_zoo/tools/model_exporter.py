@@ -371,6 +371,9 @@ def export_to_torchscript_dynamic(
     model = task.get_model_by_name(model_name, model)
     model_attrs = _get_model_attributes(model)
 
+    if model_attrs is not None and "data" in model_attrs:
+        inputs = model_attrs["data"]
+
     print(f"Converting to {model_name}...")
     output_dir = os.path.join(output_base_dir, export_format)
     torch_script_path = trace_and_save_torchscript(
