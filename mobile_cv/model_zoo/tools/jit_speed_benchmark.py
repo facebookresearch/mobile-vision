@@ -4,6 +4,7 @@ import gc
 import os
 import time
 
+import mobile_cv.arch.utils.backend_utils as bu
 import numpy as np
 import torch
 from mobile_cv.model_zoo.tools.common_libs import load_libraries
@@ -199,16 +200,6 @@ def init_env(args):
         print("Use flush_denormal = True")
 
 
-def move_to_device(data, device):
-    if isinstance(data, dict):
-        return {x: move_to_device(y, device) for x, y in data.items()}
-    if isinstance(data, list):
-        return [move_to_device(x, device) for x in data]
-    if isinstance(data, torch.Tensor):
-        return data.to(device)
-    return data
-
-
 def main(args_list=None):
     args = parse_args(args_list)
 
@@ -225,7 +216,7 @@ def main(args_list=None):
 
     if args.on_gpu:
         model.cuda()
-        input_data = move_to_device(input_data, "cuda")
+        input_data = bu.move_to_device(input_data, "cuda")
 
     # run warmup trials
     print("Warming up...")
