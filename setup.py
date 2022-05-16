@@ -39,7 +39,11 @@ setup(
     url="https://github.com/facebookresearch/mobile-vision",
     description="FBNet model builder and model zoo",
     python_requires=">=3.6",
-    install_requires=[],
+    install_requires=[
+        "iopath",
+        "diskcache",
+        "termcolor",
+    ],
     extras_require={},
     packages=find_packages(),
 )

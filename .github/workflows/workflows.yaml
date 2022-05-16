@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 0 * * *"  # @daily
+
+jobs:
+  python-unittest-cpu:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: seanmiddleditch/gha-setup-ninja@master
+
+      - name: Set up Python
+        uses: s-weigand/setup-conda@v1
+        with:
+          python-version: 3.8
+
+      - name: Install PyTorch
+        run: |
+          conda install pytorch torchvision -c pytorch-nightly
+          wget https://raw.githubusercontent.com/pytorch/pytorch/master/torch/utils/collect_env.py
+          python collect_env.py
+
+      - name: Install Dependencies
+        run: |
+          pip install -U mock hypothesis parameterized pytest
+          pip install -e .
+
+      - name: Run pytest
+        env:
+            OSSRUN: 1
+        run: |
+          python -m unittest discover -v -s .
