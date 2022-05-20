@@ -140,9 +140,10 @@ def convert_int8_jit(args, model, data, folder_name="int8_jit"):
             )
         else:
             quant = qu.PostQuantizationFX(model)
+            example_inputs = tuple(data)
             quant_model = (
                 quant.set_quant_backend("default")
-                .prepare()
+                .prepare(example_inputs=example_inputs)
                 .calibrate_model([data], 1)
                 .convert_model()
             )

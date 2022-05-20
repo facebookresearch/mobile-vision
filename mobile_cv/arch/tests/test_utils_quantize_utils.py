@@ -361,7 +361,8 @@ class TestUtilsQuantizeUtils(unittest.TestCase):
         model = MM().eval()
         qconfig = torch.ao.quantization.get_default_qconfig("qnnpack")
         qconfig_dict = qu.get_qconfig_dict(model, qconfig)
-        model = prepare_fx(model, qconfig_dict)
+        example_inputs = (torch.rand(1, 1, 3, 3),)
+        model = prepare_fx(model, qconfig_dict, example_inputs=example_inputs)
         model = convert_fx(model)
         print(model)
 
