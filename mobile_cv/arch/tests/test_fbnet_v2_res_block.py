@@ -94,7 +94,8 @@ class TestResBlock(unittest.TestCase):
         data = torch.zeros(1, 8, 4, 4)
 
         qconfig_dict = qu.get_qconfig_dict(model, qconfig)
-        model = prepare_fx(model, qconfig_dict)
+        example_inputs = (data,)
+        model = prepare_fx(model, qconfig_dict, example_inputs=example_inputs)
         model = convert_fx(model)
         print(model)
 

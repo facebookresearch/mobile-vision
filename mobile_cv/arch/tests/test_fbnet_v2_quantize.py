@@ -86,7 +86,11 @@ class TestFBNetV2Quantize(unittest.TestCase):
         model.train()
 
         qconfig_dict = {"": torch.ao.quantization.get_default_qat_qconfig("fbgemm")}
-        model_prepared = quantize_fx.prepare_qat_fx(model, qconfig_dict)
+        example_inputs = (torch.rand(2, 3, 8, 8),)
+        model_prepared = quantize_fx.prepare_qat_fx(
+            model, qconfig_dict, example_inputs=example_inputs
+        )
+
         print(f"Prepared model {model_prepared}")
 
         # calibration
