@@ -32,7 +32,5 @@ jobs:
           pip install -e .
 
       - name: Run pytest
-        env:
-            OSSRUN: 1
         run: |
           python -m unittest discover -v -s .
