@@ -2,9 +2,9 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
 import unittest
+from unittest import mock
 
 import mobile_cv.arch.utils.backend_utils as bu
-import mock
 import torch
 
 

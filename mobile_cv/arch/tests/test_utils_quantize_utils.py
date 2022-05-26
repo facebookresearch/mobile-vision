@@ -3,10 +3,10 @@
 
 import copy
 import unittest
+from unittest import mock
 
 import mobile_cv.arch.fbnet_v2.fbnet_builder as fbnet_builder
 import mobile_cv.arch.utils.quantize_utils as qu
-import mock
 import torch
 from mobile_cv.arch.layers import NaiveSyncBatchNorm
 from torch.ao.quantization.quantize_fx import convert_fx, prepare_fx
