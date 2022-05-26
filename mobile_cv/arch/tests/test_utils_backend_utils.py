@@ -22,3 +22,28 @@ class TestUtilsBackendUtils(unittest.TestCase):
         self.assertEqual(
             data_out, {"a": "cuda", "b": ["cuda", "cuda", ("cuda", "cuda")]}
         )
+
+    @mock.patch.object(torch.Tensor, "cuda", lambda x: x)
+    @mock.patch.object(torch.nn.Module, "cuda", lambda x: x)
+    def test_seq_module_list_to_gpu(self):
+        class Add(torch.nn.Module):
+            def __init__(self, num):
+                super().__init__()
+                self.num = num
+
+            def forward(self, x):
+                return x + self.num
+
+        module_list = torch.nn.ModuleList([Add(2), Add(3)])
+
+        inputs = torch.tensor([1.0])
+        y = inputs
+        for m in module_list:
+            y = m(y)
+        self.assertEqual(y, 6.0)
+
+        new_model = bu.seq_module_list_to_gpu(module_list)
+        y = inputs
+        for m in new_model:
+            y = m(y)
+        self.assertEqual(y, 6.0)
