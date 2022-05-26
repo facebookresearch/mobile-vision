@@ -3,6 +3,7 @@
 
 import logging
 import types
+from dataclasses import dataclass
 from typing import Dict, Generic, ItemsView, KeysView, List, Optional, TypeVar, Union
 
 from mobile_cv.common.misc.py import dynamic_import
@@ -12,6 +13,20 @@ logger = logging.getLogger(__name__)
 
 VT = TypeVar("VT")
 CLASS_OR_FUNCTION_TYPES = (types.FunctionType, type)  # how to type annotate this?
+
+
+@dataclass
+class LazyRegisterable:
+    """
+    A dataclass representing an object that is lazy registered.
+
+    module (str): the name of the module where the registration happens, eg. `a.b.c`.
+    name (str or None): the qualified name of the object, eg. `MyClass`. When the object
+        doesn't have name (eg. a string), this can be None.
+    """
+
+    module: str
+    name: Optional[str] = None
 
 
 # NOTE: we can do `VK = TypeVar("VK")` and `Generic[VK, VT]` if the key can be non-string.
@@ -39,12 +54,12 @@ class Registry(Generic[VT]):
         self._name: str = name
         self._allow_override: bool = allow_override
 
-        self._obj_map: Dict[str, Union[VT, str]] = {}
+        self._obj_map: Dict[str, Union[VT, LazyRegisterable]] = {}
 
     def _do_register(
         self,
         name: str,
-        obj: Union[VT, str],
+        obj: Union[VT, LazyRegisterable],
     ) -> None:
         """
         The obj could be either a function/class or a "module-dot-name" string pointing
@@ -52,16 +67,21 @@ class Registry(Generic[VT]):
         be registered lazily.
         """
         if name in self._obj_map and not self._allow_override:
+            orig_obj = self._obj_map[name]
             # allow replacing lazy object with actual object
-            if not (
-                isinstance(self._obj_map[name], str)
-                and isinstance(obj, CLASS_OR_FUNCTION_TYPES)
-                and self._obj_map[name] == f"{obj.__module__}.{obj.__qualname__}"
+            if isinstance(orig_obj, LazyRegisterable) and not isinstance(
+                obj, LazyRegisterable
             ):
+                msg = f"orig obj ({orig_obj}) doesn't match the new obj ({obj})"
+                if isinstance(obj, CLASS_OR_FUNCTION_TYPES):
+                    assert orig_obj.module == obj.__module__, msg
+                    if orig_obj.name is not None:
+                        assert orig_obj.name == obj.__name__, msg
+            else:
                 raise ValueError(
                     "An object named '{}' was already registered in '{}' registry!"
                     " Existing object ({}) vs new object ({})".format(
-                        name, self._name, self._obj_map[name], obj
+                        name, self._name, orig_obj, obj
                     )
                 )
         self._obj_map[name] = obj
@@ -69,7 +89,7 @@ class Registry(Generic[VT]):
     def register(
         self,
         name: Optional[str] = None,
-        obj: Optional[Union[VT, str]] = None,
+        obj: Optional[Union[VT, LazyRegisterable]] = None,
     ) -> Union[types.FunctionType, None]:
         """
         Register the given object under the the name or `obj.__name__` if name is None.
@@ -89,7 +109,7 @@ class Registry(Generic[VT]):
         # used as a function call
         if name is None:
             assert not isinstance(
-                obj, str
+                obj, LazyRegisterable
             ), f"Can't lazy-register {obj} without specifying name"
             assert isinstance(
                 obj, CLASS_OR_FUNCTION_TYPES
@@ -97,7 +117,7 @@ class Registry(Generic[VT]):
             name = obj.__name__
         self._do_register(name, obj)
 
-    def register_dict(self, mapping: Dict[str, Union[VT, str]]) -> None:
+    def register_dict(self, mapping: Dict[str, Union[VT, LazyRegisterable]]) -> None:
         """
         Register a dict of objects
         """
@@ -122,17 +142,21 @@ class Registry(Generic[VT]):
         # resolve lazy registration by dynamic importing the object, note that if the
         # module is imported for the first time, it will re-register the actual object
         # thus updating self._obj_map.
-        if isinstance(ret, str):
+        if isinstance(ret, LazyRegisterable):
             logger.info(f"Resolving lazy object '{ret}' in '{self._name}' registry ...")
-            ret = dynamic_import(ret)
-            assert isinstance(ret, CLASS_OR_FUNCTION_TYPES)
+            if ret.name is None:
+                dynamic_import(ret.module)
+                ret = self._obj_map.get(name)
+            else:
+                ret = dynamic_import(f"{ret.module}.{ret.name}")
+                assert isinstance(ret, CLASS_OR_FUNCTION_TYPES)
 
         return ret
 
     def get_names(self) -> List[str]:
         return list(self._obj_map.keys())
 
-    def items(self) -> ItemsView[str, Union[VT, str]]:
+    def items(self) -> ItemsView[str, Union[VT, LazyRegisterable]]:
         # NOTE: won't resolve lazy object
         return self._obj_map.items()
 
@@ -145,6 +169,6 @@ class Registry(Generic[VT]):
     def __contains__(self, key: str) -> bool:
         return key in self._obj_map
 
-    def __getitem__(self, key: str) -> Union[VT, str]:
+    def __getitem__(self, key: str) -> Union[VT, LazyRegisterable]:
         # NOTE: won't resolve lazy object
         return self._obj_map[key]
