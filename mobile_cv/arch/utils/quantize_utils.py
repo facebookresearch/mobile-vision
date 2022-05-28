@@ -193,7 +193,7 @@ class PostQuantizationFX(object):
             qconfig_dict = {"": self.qconfig}
         self._prepared_model = torch.ao.quantization.quantize_fx.prepare_fx(
             self.model,
-            qconfig_dict=qconfig_dict,
+            qconfig_dict,
             example_inputs=example_inputs,
         )
         return self
