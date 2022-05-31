@@ -511,7 +511,9 @@ def run_with_cmdline_args(args):
     )
 
 
-def run_with_cmdline_args_list(args_list=None):
+def run_with_cmdline_args_list(
+    args_list: typing.Optional[typing.List[str]] = None,
+) -> typing.Dict[str, typing.Any]:
     args = parse_args(args_list)
     return run_with_cmdline_args(args)
 
