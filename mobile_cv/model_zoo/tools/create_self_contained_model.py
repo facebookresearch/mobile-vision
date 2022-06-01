@@ -171,6 +171,9 @@ def trace_and_save_torchscript(
         else:
             script_model = torch.jit.script(model)
 
+    # Sanity check on the forward pass of the scripted model
+    script_model(*inputs)
+
     path_manager.mkdirs(output_path)
 
     try:
@@ -178,7 +181,7 @@ def trace_and_save_torchscript(
         for x in op_list:
             print(f'"{x}",')
     except Exception:
-        print(f"Could not create opnames, skipped")
+        print("Could not create opnames, skipped")
 
     model_file = os.path.join(output_path, "model.jit")
     with tempfile.NamedTemporaryFile() as tmp_fn:
@@ -337,13 +340,20 @@ def run(args):
             torch.utils.bundled_inputs.augment_model_with_bundled_inputs(
                 model, inputs, skip_size_check=True
             )
+            inputs = inputs[0]
         elif args.self_container_type == "wrapper":
             model = SelfContainedModel(model, inputs)
             print(model)
+            inputs = []
         else:
             raise Exception(f"Invalid container type {args.self_container_type}")
-        inputs = []
 
+
+    # Run sanity check before scripting to make sure forward pass is working with the provided inputs
+    # incase of self contained model the inputs are empty
+    model(*inputs)
+
+    # export model
     trace_and_save_torchscript(
         model,
         inputs,
