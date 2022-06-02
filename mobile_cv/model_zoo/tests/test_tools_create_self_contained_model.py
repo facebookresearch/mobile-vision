@@ -324,6 +324,31 @@ class TestModelZooToolsCreateSelfContainedModel(unittest.TestCase):
         self.assertIn("conv2d_clamp_run", out_model.model.code)
         self.assertEqual(out_model().shape, torch.Size(out_shape))
 
+    def test_invalid_self_contained_model_wrapper(self):
+        class Model(nn.Module):
+            def __init__(self):
+                super().__init__()
+                self.conv = nn.Conv2d(3, 4, 1, stride=2)
+
+            def forward(self, x):
+                return self.conv(x)
+
+        model = Model()
+        data_shape = [(1, 1, 4, 4)]
+        data = [torch.ones(data_shape[0])]
+        with self.assertRaises(RuntimeError):
+            model(*data)
+
+        with self.assertRaises(RuntimeError):
+            _test_create_self_contained_from_data(
+                self,
+                model,
+                data,
+                "trace",
+                "trace",
+                self_container_type="wrapper",
+            )
+
 
 if __name__ == "__main__":
     unittest.main()
