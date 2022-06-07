@@ -9,6 +9,7 @@ import pdb
 import sys
 import threading
 import traceback
+from unittest import mock
 
 try:
     import fcntl
@@ -139,3 +140,49 @@ def post_mortem_if_fail(pdb_=None):
         return new_func
 
     return decorator
+
+
+class MoreMagicMock(mock.MagicMock):
+    """
+    Subclass MagicMock to provide more features, such as: comparison, inheritance, ...
+    """
+
+    def __init__(self, *args, **kwargs):
+        # we don't pass `args` and `kwargs` so that it starts with a fresh Mock object
+        super(MoreMagicMock, self).__init__()
+
+        # resolve the `mocked_obj_info`
+        if (
+            # Speical handling for inheritance: B = MoreMagicMock(); Class A(B)
+            # is equivalent to calling: type(B)("A", (B,), {...})
+            len(args) == 3
+            and isinstance(args[0], str)
+            and isinstance(args[1], tuple)
+            and isinstance(args[1][0], MoreMagicMock)
+            and isinstance(args[2], dict)
+        ):
+            class_name = args[0]
+            assert "__module__" in args[2], args[2]
+            assert "__qualname__" in args[2], args[2]
+            self._mocked_obj_info = {
+                "__name__": class_name,
+                "__module__": args[2]["__module__"],
+                "__qualname__": args[2]["__qualname__"],
+            }
+        else:
+            self._mocked_obj_info = None
+
+        # modify the default implementation for some of the "Magic Methods"
+        # https://docs.python.org/3/library/unittest.mock.html#magic-mock
+        self.__lt__ = self
+        self.__gt__ = self
+        self.__le__ = self
+        self.__ge__ = self
+
+        # support some commonly used dunber methods (those are just ordinary member
+        # variables/methods that happen to have "__", not "Magic Methods")
+        self.__version__ = self
+
+    @property
+    def mocked_obj_info(self):
+        return self._mocked_obj_info

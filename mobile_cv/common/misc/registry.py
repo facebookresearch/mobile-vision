@@ -86,6 +86,25 @@ class Registry(Generic[VT]):
                 )
         self._obj_map[name] = obj
 
+    def _register(
+        self,
+        name: Optional[str],
+        obj: Union[VT, LazyRegisterable],
+    ):
+        """
+        Before calling `_do_register`, resolve the `name` from `obj` in case the `name`
+        is not explicity set.
+        """
+        if name is None:
+            assert not isinstance(
+                obj, LazyRegisterable
+            ), f"Can't lazy-register {obj} without specifying name"
+            assert isinstance(
+                obj, CLASS_OR_FUNCTION_TYPES
+            ), f"Can't infer name for non function/class object: {obj}"
+            name = obj.__name__
+        return self._do_register(name, obj)
+
     def register(
         self,
         name: Optional[str] = None,
@@ -98,24 +117,13 @@ class Registry(Generic[VT]):
         if obj is None:
             # used as a decorator
             def deco(func_or_class):
-                nonlocal name
-                if name is None:
-                    name = func_or_class.__name__
-                self._do_register(name, func_or_class)
+                self._register(name, func_or_class)
                 return func_or_class
 
             return deco
 
         # used as a function call
-        if name is None:
-            assert not isinstance(
-                obj, LazyRegisterable
-            ), f"Can't lazy-register {obj} without specifying name"
-            assert isinstance(
-                obj, CLASS_OR_FUNCTION_TYPES
-            ), f"Can't infer name for non function/class object: {obj}"
-            name = obj.__name__
-        self._do_register(name, obj)
+        self._register(name, obj)
 
     def register_dict(self, mapping: Dict[str, Union[VT, LazyRegisterable]]) -> None:
         """
