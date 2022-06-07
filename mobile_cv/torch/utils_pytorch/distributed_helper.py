@@ -6,6 +6,7 @@ Helper for distributed training in pytorch
 adapted from d2/d2go
 """
 
+import functools
 import logging
 import os
 import tempfile
@@ -15,6 +16,7 @@ import mobile_cv.torch.utils_pytorch.comm as comm
 import torch
 import torch.distributed as dist
 import torch.multiprocessing as mp
+from mobile_cv.common.misc.py import PicklableWrapper
 
 
 def get_mp_context():
@@ -185,3 +187,38 @@ def _distributed_worker(
             )
         )
         torch.save(ret, return_file)
+
+
+def launch_deco(
+    num_processes: int = 1,
+    backend: str = "GLOO",
+    always_spawn: bool = True,
+    # launch_method: str = "multiprocessing",
+):
+    """
+    A helper decorator to run the instance method via `launch`. This is convenient
+    to converte a unittest to distributed version.
+    """
+
+    def deco(func):
+        # use functools.wraps to preserve information like __name__, __doc__, which are
+        # very useful for unittest.
+        @functools.wraps(func)
+        def _launch_func(self, *args):
+            ret = launch(
+                # make func pickable for the sake of multiprocessing.spawn
+                PicklableWrapper(func),
+                num_processes_per_machine=num_processes,
+                backend=backend,
+                always_spawn=always_spawn,
+                # launch_method=launch_method,
+                # multiprocessing.spawn also requires `args` to be pickable, however
+                # the unittest.TestCase instance (i.e. `self`) is not pickable,
+                # therefore we also need to wrap it.
+                args=(PicklableWrapper(self), *args),
+            )
+            return ret
+
+        return _launch_func
+
+    return deco
