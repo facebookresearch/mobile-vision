@@ -6,7 +6,7 @@ import sys
 import unittest
 
 from mobile_cv.common.misc.file_utils import make_temp_directory
-from mobile_cv.common.misc.py import dynamic_import, import_file
+from mobile_cv.common.misc.py import dynamic_import, import_file, MoreMagicMock
 
 
 class TestMisc(unittest.TestCase):
@@ -42,3 +42,26 @@ class TestMisc(unittest.TestCase):
             from test_package.lib.a import bar
 
             self.assertEqual(bar, 42)
+
+
+class TestMoreMagicMock(unittest.TestCase):
+    def test_magic_methods(self):
+        torch = MoreMagicMock()  # this fails if using mock.MagicMock()
+        result = torch.__version__ > "1.2.3"
+        self.assertIsInstance(result, MoreMagicMock)
+
+    def test_inheritance(self):
+        nn = MoreMagicMock()
+        self.assertIsInstance(nn.Module, MoreMagicMock)
+
+        class MockedClass(nn.Module):
+            pass
+
+        class NormalClass(object):
+            pass
+
+        self.assertIsInstance(MockedClass, MoreMagicMock)
+        self.assertIsInstance(MockedClass.whatever_func, MoreMagicMock)
+        x = MockedClass
+        self.assertEqual(x.mocked_obj_info["__name__"], "MockedClass")
+        self.assertEqual(x.mocked_obj_info["__module__"], NormalClass.__module__)
