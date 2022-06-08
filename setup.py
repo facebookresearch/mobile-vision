@@ -43,6 +43,7 @@ setup(
         "iopath",
         "diskcache",
         "termcolor",
+        "cloudpickle",
     ],
     extras_require={},
     packages=find_packages(),
