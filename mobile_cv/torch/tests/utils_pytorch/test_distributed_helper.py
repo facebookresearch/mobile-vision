@@ -59,21 +59,25 @@ class TestUtilsPytorchDistributedHelper(unittest.TestCase):
         inputs = outputs = [1, 2]
         self._test_launch_deco_with_args(inputs, outputs)
 
+    def test_launch_deco_with_kwargs(self):
+        inputs = outputs = [1, 2]
+        self._test_launch_deco_with_args(inputs=inputs, outputs=outputs)
+
     @dh.launch_deco(num_processes=1)
     def test_launch_deco_access_member_variables(self):
         self.assertEqual(self.magic_value, 42)
         self.assertEqual(self.get_magic_value(), 42)
 
-    # @dh.launch_deco(num_processes=2, launch_method="elastic")  # elastic is slow
-    # def test_elastic_launch(self):
-    #     rank = comm.get_rank()
-    #     ranks = comm.all_gather(rank)
-    #     self.assertEqual(ranks, [0, 1])
-    #     world_size = comm.get_world_size()
-    #     self.assertEqual(world_size, 2)
-    #     # test local process group
-    #     local_rank = comm.get_local_rank()
-    #     local_ranks = comm.all_gather(local_rank)
-    #     self.assertEqual(local_ranks, [0, 1])
-    #     local_world_size = comm.get_local_size()
-    #     self.assertEqual(local_world_size, 2)
+    @dh.launch_deco(num_processes=2, launch_method="elastic")  # elastic is slow
+    def test_elastic_launch(self):
+        rank = comm.get_rank()
+        ranks = comm.all_gather(rank)
+        self.assertEqual(ranks, [0, 1])
+        world_size = comm.get_world_size()
+        self.assertEqual(world_size, 2)
+        # test local process group
+        local_rank = comm.get_local_rank()
+        local_ranks = comm.all_gather(local_rank)
+        self.assertEqual(local_ranks, [0, 1])
+        local_world_size = comm.get_local_size()
+        self.assertEqual(local_world_size, 2)
