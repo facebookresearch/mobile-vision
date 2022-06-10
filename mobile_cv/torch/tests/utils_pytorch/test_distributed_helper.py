@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 
+import time
 import unittest
+from datetime import timedelta
 
 import mobile_cv.torch.utils_pytorch.comm as comm
 import mobile_cv.torch.utils_pytorch.distributed_helper as dh
 import torch
+from mobile_cv.common.misc.oss_utils import is_oss
 
 
 def _test_func(value):
@@ -68,6 +71,7 @@ class TestUtilsPytorchDistributedHelper(unittest.TestCase):
         self.assertEqual(self.magic_value, 42)
         self.assertEqual(self.get_magic_value(), 42)
 
+    @unittest.skipIf(is_oss(), "rdzv_backend is not available")
     @dh.launch_deco(num_processes=2, launch_method="elastic")  # elastic is slow
     def test_elastic_launch(self):
         rank = comm.get_rank()
@@ -81,3 +85,18 @@ class TestUtilsPytorchDistributedHelper(unittest.TestCase):
         self.assertEqual(local_ranks, [0, 1])
         local_world_size = comm.get_local_size()
         self.assertEqual(local_world_size, 2)
+
+    @dh.launch_deco(num_processes=2, timeout=timedelta(milliseconds=100))
+    def test_timeout(self):
+        results = comm.all_gather(comm.get_rank())
+        self.assertEqual(results, [0, 1])
+
+        # the global timeout is set to 100ms, calling `all_gather` will cause timeout
+        # error because there's a 200ms gap between two processes at the beginning of
+        # `all_gather`. Here we use `process_group_with_timeout` to increate the timeout
+        # temporarily, so the `all_gather` can run successfully.
+        with dh.process_group_with_timeout(timeout=timedelta(milliseconds=1000)) as pg:
+            if comm.get_rank() == 0:
+                time.sleep(0.2)
+            comm.all_gather(comm.get_rank(), group=pg)
+        self.assertEqual(results, [0, 1])

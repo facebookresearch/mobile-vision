@@ -13,6 +13,7 @@ import os
 import tempfile
 import time
 import types
+from datetime import timedelta
 from typing import Any, Callable, Dict, Optional, Tuple
 
 import mobile_cv.torch.utils_pytorch.comm as comm
@@ -23,6 +24,9 @@ import torch.multiprocessing as mp
 from mobile_cv.common.misc.py import PicklableWrapper
 
 logger = logging.getLogger(__name__)
+
+DEFAULT_TIMEOUT = timedelta(minutes=30)
+DEFAULT_UNITTEST_TIMEOUT = timedelta(minutes=1)
 
 
 def get_mp_context():
@@ -99,6 +103,7 @@ def enable_dist_process_groups(
     backend: str,
     init_method: Optional[str],
     dist_params: DistributedParams,
+    timeout: timedelta = DEFAULT_TIMEOUT,
 ):
     assert backend.lower() in ["nccl", "gloo"]
     try:
@@ -107,6 +112,7 @@ def enable_dist_process_groups(
             init_method=init_method,
             world_size=dist_params.world_size,
             rank=dist_params.global_rank,
+            timeout=timeout,
         )
     except Exception as e:
         logger.error("Process group URL: {}".format(init_method))
@@ -152,9 +158,10 @@ def default_distributed_worker(
     dist_url: Optional[str] = None,
     dist_params: Optional[DistributedParams] = None,
     return_save_file: Optional[str] = None,
+    timeout: timedelta = DEFAULT_TIMEOUT,
 ):
     dist_params = dist_params or DistributedParams.from_environ()
-    with enable_dist_process_groups(backend, dist_url, dist_params):
+    with enable_dist_process_groups(backend, dist_url, dist_params, timeout):
         deco = save_return_deco(return_save_file, dist_params.global_rank)
         return deco(main_func)(*args, **kwargs)
 
@@ -168,6 +175,7 @@ def launch(
     backend: str = "NCCL",
     always_spawn: bool = False,
     launch_method: str = "multiprocessing",
+    timeout: timedelta = DEFAULT_TIMEOUT,
     args: Tuple[Any, ...] = (),
     kwargs: Dict[str, Any] = None,
     # NOTE: API of "distributed worker" is not finalized, please reach out if you want
@@ -224,6 +232,7 @@ def launch(
                 backend,
                 None,  # dist_url is not needed for elastic launch
                 None,  # no return file is needed
+                timeout,
             )
             return results[local_ranks[0]]
         else:
@@ -240,6 +249,7 @@ def launch(
                         backend,
                         dist_url,
                         return_file,  # is this needed?
+                        timeout,
                     )
                 else:
                     mp.spawn(
@@ -253,6 +263,7 @@ def launch(
                             backend,
                             dist_url,
                             return_file,
+                            timeout,
                             world_size,
                             num_processes_per_machine,
                             machine_rank,
@@ -273,6 +284,7 @@ def _mp_spawn_helper(
     backend: str,
     dist_url: Optional[str],
     return_save_file: Optional[str],
+    timeout: timedelta,
     world_size: int,
     num_processes_per_machine: int,
     machine_rank: int,
@@ -292,6 +304,7 @@ def _mp_spawn_helper(
             world_size=world_size,
         ),
         return_save_file=return_save_file,
+        timeout=timeout,
     )
 
 
@@ -326,6 +339,7 @@ def launch_deco(
     backend: str = "GLOO",
     always_spawn: bool = True,
     launch_method: str = "multiprocessing",
+    timeout: timedelta = DEFAULT_UNITTEST_TIMEOUT,
 ):
     """
     A helper decorator to run the instance method via `launch`. This is convenient
@@ -344,6 +358,7 @@ def launch_deco(
                 backend=backend,
                 always_spawn=always_spawn,
                 launch_method=launch_method,
+                timeout=timeout,
                 # multiprocessing.spawn also requires `args` to be pickable, however
                 # the unittest.TestCase instance (i.e. `self`) is not pickable,
                 # therefore we also need to wrap it.
@@ -355,3 +370,20 @@ def launch_deco(
         return _launch_func
 
     return deco
+
+
+@contextlib.contextmanager
+def process_group_with_timeout(timeout, backend=None):
+    """
+    A helper contextmanager to create a temporary process group using custom timeout
+    without changing the global timeout value set by during dist.init_process_group (
+    default value is 30 minutes). This is useful when doing heavy communication that the
+    default timeout might not be enough.
+    """
+    pg = torch.distributed.new_group(
+        ranks=list(range(comm.get_world_size())),
+        timeout=timeout,
+        backend=backend,
+    )
+    yield pg
+    torch.distributed.destroy_process_group(pg)
