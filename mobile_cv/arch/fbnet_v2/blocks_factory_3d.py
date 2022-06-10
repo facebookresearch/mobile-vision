@@ -18,7 +18,7 @@ _PRIMITIVES = {
             conv_args={"name": "conv3d", "stride": stride},
             bn_args={"name": "bn3d"},
             kwargs=kwargs,
-        )
+        ),
     )
 }
 blocks_factory.PRIMITIVES.register_dict(_PRIMITIVES)
