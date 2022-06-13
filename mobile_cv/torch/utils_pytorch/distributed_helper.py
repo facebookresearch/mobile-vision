@@ -155,13 +155,13 @@ def default_distributed_worker(
     args: Tuple[Any, ...],
     kwargs: Dict[str, Any],
     backend: str,
-    dist_url: Optional[str] = None,
+    init_method: Optional[str] = None,
     dist_params: Optional[DistributedParams] = None,
     return_save_file: Optional[str] = None,
     timeout: timedelta = DEFAULT_TIMEOUT,
 ):
     dist_params = dist_params or DistributedParams.from_environ()
-    with enable_dist_process_groups(backend, dist_url, dist_params, timeout):
+    with enable_dist_process_groups(backend, init_method, dist_params, timeout):
         deco = save_return_deco(return_save_file, dist_params.global_rank)
         return deco(main_func)(*args, **kwargs)
 
@@ -230,8 +230,9 @@ def launch(
                 args,
                 kwargs,
                 backend,
-                None,  # dist_url is not needed for elastic launch
-                None,  # no return file is needed
+                None,  # init_method is env by default
+                None,  # dist_params is inferred from env
+                None,  # return_save_file is None since no return file is needed
                 timeout,
             )
             return results[local_ranks[0]]
@@ -248,6 +249,7 @@ def launch(
                         kwargs,
                         backend,
                         dist_url,
+                        None,  # dist_params is inferred from env
                         return_file,  # is this needed?
                         timeout,
                     )
@@ -282,7 +284,7 @@ def _mp_spawn_helper(
     args: Tuple[Any, ...],
     kwargs: Dict[str, Any],
     backend: str,
-    dist_url: Optional[str],
+    init_method: Optional[str],
     return_save_file: Optional[str],
     timeout: timedelta,
     world_size: int,
@@ -295,7 +297,7 @@ def _mp_spawn_helper(
         args=args,
         kwargs=kwargs,
         backend=backend,
-        dist_url=dist_url,
+        init_method=init_method,
         dist_params=DistributedParams(
             local_rank=local_rank,
             machine_rank=machine_rank,
