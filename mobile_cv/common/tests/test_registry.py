@@ -45,6 +45,14 @@ class TestRegistry(unittest.TestCase):
         out1 = REG_LIST.get("test_func1")()
         self.assertEqual(out1, "test_func_1")
 
+        # test the registries can be used in ways defined by dunder methods
+        self.assertTrue("test_func" in REG_LIST)  # __contains__
+        self.assertEqual(len(REG_LIST), 2)  # __len__
+        for k, v in REG_LIST:  # __iter__
+            self.assertIs(REG_LIST.get(k), v)
+        self.assertEqual(str(REG_LIST), repr(REG_LIST))  # __str__, __repr__
+        self.assertIs(REG_LIST["test_func1"], REG_LIST.get("test_func1"))  # __getitem__
+
     def test_lazy_registration_with_obj_name(self):
         package_name = f"random_package_{str(uuid.uuid4().hex)[:8]}"
         self.assertTrue(package_name not in sys.modules)
