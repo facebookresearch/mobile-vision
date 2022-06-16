@@ -28,13 +28,18 @@ class TestUtilsPytorchDistributedHelper(unittest.TestCase):
         return 42
 
     def test_distributed_helper_launch(self):
-        result = dh.launch(
+        results = dh.launch(
             _test_func,
             num_processes_per_machine=2,
             backend="GLOO",
             args=(3,),
         )
-        self.assertEqual(result, {"a": torch.tensor([5.5]), "b": torch.tensor([6.5])})
+        self.assertEqual(
+            results[0], {"a": torch.tensor([5.5]), "b": torch.tensor([6.5])}
+        )
+        self.assertEqual(
+            results[1], {"a": torch.tensor([6.0]), "b": torch.tensor([7.0])}
+        )
 
     @dh.launch_deco(num_processes=2)
     def test_distributed_helper_launch_deco(self):
@@ -48,6 +53,10 @@ class TestUtilsPytorchDistributedHelper(unittest.TestCase):
         if rank == 0:
             self.assertEqual(
                 result, {"a": torch.tensor([5.5]), "b": torch.tensor([6.5])}
+            )
+        else:
+            self.assertEqual(
+                result, {"a": torch.tensor([6.0]), "b": torch.tensor([7.0])}
             )
 
     @dh.launch_deco(num_processes=2)

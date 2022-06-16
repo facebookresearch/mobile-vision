@@ -68,32 +68,35 @@ def _test_func_max_qsize(num_items, max_qsize):
 
 class TestUtilsPytorchCentralProcessDataLoader(unittest.TestCase):
     def test_central_process_data_loader_single_process(self):
-        result = dh.launch(
+        results = dh.launch(
             _test_func,
             num_processes_per_machine=1,
             backend="GLOO",
             args=(10,),
         )
+        result = results[0]
         self.assertEqual(result, list(range(10)))
 
     def test_central_process_data_loader_single_process_single_enqueue(self):
         # the enqueue func will run in main process as well
         single_process = True
-        result = dh.launch(
+        results = dh.launch(
             _test_func,
             num_processes_per_machine=1,
             backend="GLOO",
             args=(10, single_process),
         )
+        result = results[0]
         self.assertEqual(result, list(range(10)))
 
     def test_central_process_data_loader_multi_process(self):
-        result = dh.launch(
+        results = dh.launch(
             _test_func,
             num_processes_per_machine=2,
             backend="GLOO",
             args=(10,),
         )
+        result = results[0]
         self.assertEqual(result, sorted(result))
         self.assertLess(len(result), 10)
         self.assertTrue(all(x in range(10) for x in result))
@@ -101,12 +104,13 @@ class TestUtilsPytorchCentralProcessDataLoader(unittest.TestCase):
     # FIXME: this test fails on OSS
     @unittest.skipIf(is_oss(), "this test fails on OSS")
     def test_central_process_data_loader_multi_process_unbalanced(self):
-        result = dh.launch(
+        results = dh.launch(
             _test_func_unbalanced,
             num_processes_per_machine=2,
             backend="GLOO",
             args=(10,),
         )
+        result = results[0]
         self.assertEqual(result, sorted(result))
         self.assertEqual(len(result), 9)
         self.assertTrue(all(x in range(10) for x in result))
@@ -114,12 +118,13 @@ class TestUtilsPytorchCentralProcessDataLoader(unittest.TestCase):
     def test_central_process_data_loader_maxqsize(self):
         # test the queue size is 1
         max_qsize = 1
-        result = dh.launch(
+        results = dh.launch(
             _test_func_max_qsize,
             num_processes_per_machine=1,
             backend="GLOO",
             args=(10, max_qsize),
         )
+        result = results[0]
         self.assertEqual(result, list(range(10)))
 
 
