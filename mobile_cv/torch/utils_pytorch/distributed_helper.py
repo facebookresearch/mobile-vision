@@ -181,7 +181,7 @@ def launch(
     # NOTE: API of "distributed worker" is not finalized, please reach out if you want
     # to use customized "distributed worker".
     _distributed_worker: Callable = default_distributed_worker,
-):
+) -> Dict[int, Any]:
     """Run the `main_func` using multiple processes/nodes
     main_func(*args, **kwargs)
     """
@@ -235,7 +235,7 @@ def launch(
                 None,  # return_save_file is None since no return file is needed
                 timeout,
             )
-            return results[local_ranks[0]]
+            return results
         else:
             prefix = f"mcvdh_{main_func.__module__}.{main_func.__name__}_return"
             with tempfile.NamedTemporaryFile(prefix=prefix, suffix=".pth") as f:
@@ -272,9 +272,12 @@ def launch(
                         ),
                         daemon=False,
                     )
-                    return torch.load(f"{return_file}.rank{local_ranks[0]}")
+                    return {
+                        local_rank: torch.load(f"{return_file}.rank{local_rank}")
+                        for local_rank in local_ranks
+                    }
     else:
-        return main_func(*args, **kwargs)
+        return {0: main_func(*args, **kwargs)}
 
 
 def _mp_spawn_helper(
@@ -353,7 +356,7 @@ def launch_deco(
         # very useful for unittest.
         @functools.wraps(func)
         def _launch_func(self, *args, **kwargs):
-            ret = launch(
+            results = launch(
                 # make func pickable for the sake of multiprocessing.spawn
                 PicklableWrapper(func),
                 num_processes_per_machine=num_processes,
@@ -367,7 +370,7 @@ def launch_deco(
                 args=(PicklableWrapper(self), *args),
                 kwargs=kwargs,
             )
-            return ret
+            return results
 
         return _launch_func
 
