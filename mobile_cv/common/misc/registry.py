@@ -4,9 +4,21 @@
 import logging
 import types
 from dataclasses import dataclass
-from typing import Dict, Generic, ItemsView, KeysView, List, Optional, TypeVar, Union
+from typing import (
+    Dict,
+    Generic,
+    ItemsView,
+    Iterator,
+    KeysView,
+    List,
+    Optional,
+    Tuple,
+    TypeVar,
+    Union,
+)
 
 from mobile_cv.common.misc.py import dynamic_import
+from tabulate import tabulate
 
 logger = logging.getLogger(__name__)
 
@@ -180,3 +192,15 @@ class Registry(Generic[VT]):
     def __getitem__(self, key: str) -> Union[VT, LazyRegisterable]:
         # NOTE: won't resolve lazy object
         return self._obj_map[key]
+
+    def __iter__(self) -> Iterator[Tuple[str, Union[VT, LazyRegisterable]]]:
+        return iter(self._obj_map.items())
+
+    def __repr__(self) -> str:
+        table_headers = ["Names", "Objects"]
+        table = tabulate(
+            self._obj_map.items(), headers=table_headers, tablefmt="fancy_grid"
+        )
+        return "Registry of {}:\n".format(self._name) + table
+
+    __str__ = __repr__

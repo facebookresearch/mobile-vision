@@ -44,6 +44,7 @@ setup(
         "diskcache",
         "termcolor",
         "cloudpickle",
+        "tabulate",
     ],
     extras_require={},
     packages=find_packages(),
