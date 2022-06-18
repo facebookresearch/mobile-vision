@@ -130,6 +130,10 @@ def enable_dist_process_groups(
     dist.destroy_process_group()
 
 
+def _get_filename_for_rank(prefix: str, rank: int) -> str:
+    return f"{prefix}.rank{rank}"
+
+
 def save_return_deco(return_save_file: Optional[str], rank: int):
     def deco(func):
         """warp a function to save its return to the filename"""
@@ -138,7 +142,7 @@ def save_return_deco(return_save_file: Optional[str], rank: int):
         def new_func(*args, **kwargs):
             ret = func(*args, **kwargs)
             if return_save_file is not None:
-                filename = f"{return_save_file}.rank{rank}"
+                filename = _get_filename_for_rank(return_save_file, rank)
                 logger.info(
                     f"Save {func.__module__}.{func.__name__} return to: {filename}"
                 )
@@ -273,7 +277,9 @@ def launch(
                         daemon=False,
                     )
                     return {
-                        local_rank: torch.load(f"{return_file}.rank{local_rank}")
+                        local_rank: torch.load(
+                            _get_filename_for_rank(return_file, local_rank)
+                        )
                         for local_rank in local_ranks
                     }
     else:
