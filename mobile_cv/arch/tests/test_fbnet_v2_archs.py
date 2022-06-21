@@ -47,6 +47,16 @@ class TestFBNetV2Archs(unittest.TestCase):
             "ResNet34",
             "ResNet101",
             "ResNet152",
+            "MobileOne-S0-Train",
+            "MobileOne-S0-Deploy",
+            "MobileOne-S1-Train",
+            "MobileOne-S1-Deploy",
+            "MobileOne-S2-Train",
+            "MobileOne-S2-Deploy",
+            "MobileOne-S3-Train",
+            "MobileOne-S3-Deploy",
+            "MobileOne-S4-Train",
+            "MobileOne-S4-Deploy",
         ]
 
         for name in selected_archs:

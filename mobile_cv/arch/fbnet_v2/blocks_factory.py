@@ -9,7 +9,7 @@ import mobile_cv.arch.utils.helper as hp
 import mobile_cv.common.misc.registry as registry
 from torch import nn
 
-from . import basic_blocks as bb, irf_block, res_block, sg_block  # noqa
+from . import basic_blocks as bb, irf_block, mobileone_block, res_block, sg_block  # noqa
 
 
 PRIMITIVES = registry.Registry("blocks_factory")
@@ -271,6 +271,12 @@ _PRIMITIVES = {
         stride=stride,
         relu_args="hswish",
         **hp.filter_kwargs(irf_block.IRPoolBlock, kwargs),
+    ),
+    "mobileone": lambda in_channels, out_channels, stride, **kwargs: mobileone_block.MobileOneBlock(
+        in_channels,
+        out_channels,
+        stride=stride,
+        **kwargs,
     ),
 }
 PRIMITIVES.register_dict(_PRIMITIVES)
