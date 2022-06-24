@@ -12,6 +12,7 @@ from mobile_cv.arch.fbnet_v2 import (  # noqa
     fbnet_modeldef_cls_fbnetv2,
     fbnet_modeldef_cls_fbnetv3,
     fbnet_modeldef_cls_mnv3,
+    fbnet_modeldef_cls_mobileone,
     fbnet_modeldef_cls_regnet,
     fbnet_modeldef_cls_resnet,
     gb_block,
