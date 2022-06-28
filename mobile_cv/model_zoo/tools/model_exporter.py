@@ -15,13 +15,13 @@ import typing
 
 import mobile_cv.arch.utils.fuse_utils as fuse_utils
 import mobile_cv.arch.utils.jit_utils as ju
-import mobile_cv.arch.utils.quantize_utils as quantize_utils
+
 import mobile_cv.common.misc.registry as registry
 import mobile_cv.lut.lib.pt.flops_utils as flops_utils
 import mobile_cv.model_zoo.tasks.task_factory as task_factory
 import torch
 from mobile_cv.common import utils_io
-from mobile_cv.model_zoo.tools.utils import get_model_attributes
+from mobile_cv.model_zoo.tools.utils import get_model_attributes, get_ptq_model
 from torch.utils.mobile_optimizer import optimize_for_mobile
 
 
@@ -297,32 +297,10 @@ def export_to_torchscript(args, task, model, inputs, output_base_dir, **kwargs):
 def export_to_torchscript_int8(
     args, task, model, inputs, output_base_dir, *, data_iter, **kwargs
 ):
-    cur_loader = itertools.chain([inputs], data_iter)
+    ptq_model, model_attrs = get_ptq_model(args, task, model, inputs, data_iter)
 
-    example_inputs = tuple(inputs)
-    if hasattr(task, "get_quantized_model"):
-        print("calling get quantized model")
-        ptq_model = task.get_quantized_model(model, cur_loader)
-        model_attrs = get_model_attributes(ptq_model)
-        print("after calling get quantized model")
-    elif args.use_graph_mode_quant:
-        print(f"Post quantization using {args.post_quant_backend} backend fx mode...")
-        model_attrs = get_model_attributes(model)
-        quant = quantize_utils.PostQuantizationFX(model)
-        ptq_model = (
-            quant.set_quant_backend(args.post_quant_backend)
-            .prepare(example_inputs=example_inputs)
-            .calibrate_model(cur_loader, 1)
-            .convert_model()
-        )
-        print("after calling callback")
-    else:
-        print(f"Post quantization using {args.post_quant_backend} backend...")
-        qa_model = task.get_quantizable_model(model)
-        model_attrs = get_model_attributes(qa_model)
-        post_quant = quantize_utils.PostQuantization(qa_model)
-        post_quant.fuse_bn().set_quant_backend(args.post_quant_backend)
-        ptq_model = post_quant.prepare().calibrate_model(cur_loader, 1).convert_model()
+    logger.info(ptq_model)
+    ptq_model(*inputs)
 
     print(ptq_model)
     ptq_model(*inputs)
