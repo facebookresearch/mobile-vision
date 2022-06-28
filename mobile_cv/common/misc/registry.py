@@ -102,7 +102,7 @@ class Registry(Generic[VT]):
         self,
         name: Optional[str],
         obj: Union[VT, LazyRegisterable],
-    ):
+    ) -> None:
         """
         Before calling `_do_register`, resolve the `name` from `obj` in case the `name`
         is not explicity set.
