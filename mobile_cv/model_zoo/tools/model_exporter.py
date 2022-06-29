@@ -21,7 +21,7 @@ import mobile_cv.lut.lib.pt.flops_utils as flops_utils
 import mobile_cv.model_zoo.tasks.task_factory as task_factory
 import torch
 from mobile_cv.common import utils_io
-from mobile_cv.model_zoo.models import model_utils  # noqa
+from mobile_cv.model_zoo.tools.utils import get_model_attributes
 from torch.utils.mobile_optimizer import optimize_for_mobile
 
 
@@ -270,25 +270,15 @@ def trace_and_save_torchscript(
     return model_file
 
 
-def _get_model_attributes(model: torch.nn.Module):
-    model_attrs = None
-    if hasattr(model, "attrs"):
-        model_attrs = model.attrs
-        if model_attrs is not None:
-            assert isinstance(
-                model_attrs, dict
-            ), f"Invalid model attributes type: {model_attrs}"
-    return model_attrs
-
-
 @ExportFactory.register("torchscript")
 def export_to_torchscript(args, task, model, inputs, output_base_dir, **kwargs):
-    model_attrs = _get_model_attributes(model)
+    model_attrs = get_model_attributes(model)
 
     output_dir = os.path.join(output_base_dir, "torchscript")
 
     with torch.no_grad():
         fused_model = fuse_utils.fuse_model(model, inplace=False)
+
     print("fused model {}".format(fused_model))
     torch_script_path = trace_and_save_torchscript(
         fused_model,
@@ -313,11 +303,11 @@ def export_to_torchscript_int8(
     if hasattr(task, "get_quantized_model"):
         print("calling get quantized model")
         ptq_model = task.get_quantized_model(model, cur_loader)
-        model_attrs = _get_model_attributes(ptq_model)
+        model_attrs = get_model_attributes(ptq_model)
         print("after calling get quantized model")
     elif args.use_graph_mode_quant:
         print(f"Post quantization using {args.post_quant_backend} backend fx mode...")
-        model_attrs = _get_model_attributes(model)
+        model_attrs = get_model_attributes(model)
         quant = quantize_utils.PostQuantizationFX(model)
         ptq_model = (
             quant.set_quant_backend(args.post_quant_backend)
@@ -329,7 +319,7 @@ def export_to_torchscript_int8(
     else:
         print(f"Post quantization using {args.post_quant_backend} backend...")
         qa_model = task.get_quantizable_model(model)
-        model_attrs = _get_model_attributes(qa_model)
+        model_attrs = get_model_attributes(qa_model)
         post_quant = quantize_utils.PostQuantization(qa_model)
         post_quant.fuse_bn().set_quant_backend(args.post_quant_backend)
         ptq_model = post_quant.prepare().calibrate_model(cur_loader, 1).convert_model()
@@ -373,7 +363,7 @@ def export_to_torchscript_dynamic(
     assert export_format.startswith("torchscript_")
     model_name = export_format[len("torchscript_") :]
     model = task.get_model_by_name(model_name, model)
-    model_attrs = _get_model_attributes(model)
+    model_attrs = get_model_attributes(model)
 
     if model_attrs is not None and "data" in model_attrs:
         inputs = model_attrs["data"]
@@ -408,7 +398,7 @@ def main(
     output_dir,
     export_formats: typing.List[str] = DEFAULT_EXPORT_FORMATS,
     raise_if_failed: bool = False,
-):
+) -> typing.Dict[str, str]:
     _import_tasks(args.task)
     task = task_factory.get(args.task, **args.task_args)
     model = task.get_model()
