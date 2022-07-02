@@ -6,12 +6,12 @@ General model exporter, support torchscript and torchscript int8
 import argparse
 import copy
 import importlib
-import itertools
 import json
 import logging
 import multiprocessing as mp
 import os
 import typing
+from typing import Dict
 
 import mobile_cv.arch.utils.fuse_utils as fuse_utils
 import mobile_cv.arch.utils.jit_utils as ju
@@ -22,6 +22,7 @@ import mobile_cv.model_zoo.tasks.task_factory as task_factory
 import torch
 from mobile_cv.common import utils_io
 from mobile_cv.model_zoo.tools.utils import get_model_attributes, get_ptq_model
+from torch.utils.bundled_inputs import augment_model_with_bundled_inputs
 from torch.utils.mobile_optimizer import optimize_for_mobile
 
 
@@ -98,6 +99,11 @@ def parse_args(args_list=None):
         "--save_for_lite_interpreter",
         action="store_true",
         help="Also export lite interpreter model",
+    )
+    parser.add_argument(
+        "--save_bundle_input",
+        action="store_true",
+        help="Bundle inputs to the models when exporting",
     )
     parser.add_argument(
         "--batch_mode",
@@ -223,11 +229,12 @@ def trace_and_save_torchscript(
     model: torch.nn.Module,
     inputs: typing.Tuple[typing.Any, ...],
     output_path: str,
-    use_get_traceable=False,
-    trace_type="trace",
-    opt_for_mobile=False,
-    model_attrs=None,
-    save_for_lite_interpreter=False,
+    use_get_traceable: bool = False,
+    trace_type: str = "trace",
+    opt_for_mobile: bool = False,
+    model_attrs: Dict = None,
+    save_for_lite_interpreter: bool = True,
+    save_bundle_input: bool = False,
 ):
     logger.info("Tracing and saving TorchScript to {} ...".format(output_path))
 
@@ -245,6 +252,9 @@ def trace_and_save_torchscript(
 
     if not path_manager.isdir(output_path):
         path_manager.mkdirs(output_path)
+
+    if save_bundle_input:
+        augment_model_with_bundled_inputs(script_model, [inputs], skip_size_check=True)
 
     model_file = os.path.join(output_path, "model.jit")
     with path_manager.open(model_file, "wb") as fp:
@@ -289,6 +299,7 @@ def export_to_torchscript(args, task, model, inputs, output_base_dir, **kwargs):
         opt_for_mobile=args.opt_for_mobile,
         model_attrs=model_attrs,
         save_for_lite_interpreter=args.save_for_lite_interpreter,
+        save_bundle_input=args.save_bundle_input,
     )
     return torch_script_path
 
@@ -315,6 +326,7 @@ def export_to_torchscript_int8(
         opt_for_mobile=args.opt_for_mobile,
         model_attrs=model_attrs,
         save_for_lite_interpreter=args.save_for_lite_interpreter,
+        save_bundle_input=args.save_bundle_input,
     )
 
     return ptq_torchscript_path
@@ -357,6 +369,7 @@ def export_to_torchscript_dynamic(
         opt_for_mobile=args.opt_for_mobile,
         model_attrs=model_attrs,
         save_for_lite_interpreter=args.save_for_lite_interpreter,
+        save_bundle_input=args.save_bundle_input,
     )
     return torch_script_path
 
