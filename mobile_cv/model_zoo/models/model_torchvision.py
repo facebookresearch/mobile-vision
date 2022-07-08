@@ -47,3 +47,28 @@ model_zoo_factory.MODEL_ZOO_FACTORY.register(
     "resnext101_32x8d",
     pretrained_download(torchvision.models.resnext101_32x8d),
 )
+model_zoo_factory.MODEL_ZOO_FACTORY.register(
+    # pyre-fixme[16]: Module `models` has no attribute `swin_s`.
+    "swin_s",
+    pretrained_download(torchvision.models.swin_s),
+)
+model_zoo_factory.MODEL_ZOO_FACTORY.register(
+    # pyre-fixme[16]: Module `models` has no attribute `efficientnet_b0`.
+    "efficientnet_b0",
+    pretrained_download(torchvision.models.efficientnet_b0),
+)
+model_zoo_factory.MODEL_ZOO_FACTORY.register(
+    # pyre-fixme[16]: Module `models` has no attribute `efficientnet_v2_s`.
+    "efficientnet_v2_s",
+    pretrained_download(torchvision.models.efficientnet_v2_s),
+)
+model_zoo_factory.MODEL_ZOO_FACTORY.register(
+    # pyre-fixme[16]: Module `models` has no attribute `mobilenet_v3_large`.
+    "mobilenet_v3_large",
+    pretrained_download(torchvision.models.mobilenet_v3_large),
+)
+model_zoo_factory.MODEL_ZOO_FACTORY.register(
+    # pyre-fixme[16]: Module `models` has no attribute `convnext_small`.
+    "convnext_small",
+    pretrained_download(torchvision.models.convnext_small),
+)
