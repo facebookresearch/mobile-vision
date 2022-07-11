@@ -315,9 +315,6 @@ def export_to_torchscript_int8(
     logger.info(ptq_model)
     ptq_model(*inputs)
 
-    print(ptq_model)
-    ptq_model(*inputs)
-
     ptq_folder = os.path.join(output_base_dir, "torchscript_int8")
     ptq_torchscript_path = trace_and_save_torchscript(
         ptq_model,

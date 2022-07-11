@@ -131,3 +131,82 @@ class TestToolsModelExporter(unittest.TestCase):
             self.assertSetEqual(set(out_paths.keys()), {"torchscript"})
             for _, path in out_paths.items():
                 self.assertTrue(os.path.exists(path))
+
+    def test_tools_model_exporter_quantization_fx(self):
+        fbnet_args = {"builder": "fbnet_v2", "arch_name": "fbnet_c"}
+        dataset_args = {
+            "builder": "tensor_shape",
+            "input_shapes": [[1, 3, 64, 64]],
+        }
+
+        with tempfile.TemporaryDirectory() as output_dir:
+            export_args = [
+                "--task",
+                "general",
+                "--task_args",
+                json.dumps({"model_args": fbnet_args, "dataset_args": dataset_args}),
+                "--output_dir",
+                output_dir,
+                "--export_types",
+                "torchscript",
+                "torchscript_int8",
+                "--post_quant_backend",
+                "default",
+                # fx quantization
+                "--use_graph_mode_quant",
+                # currently int8 will fail due to copy issue in quantized op
+                # "--use_get_traceable",
+                # "1",
+            ]
+            out_paths = model_exporter.run_with_cmdline_args_list(export_args)
+            self.assertEqual(len(out_paths), 2)
+            self.assertSetEqual(
+                set(out_paths.keys()), {"torchscript", "torchscript_int8"}
+            )
+            for _, path in out_paths.items():
+                self.assertTrue(os.path.exists(path))
+
+    def test_tools_model_exporter_quantization_fx_swap_module(self):
+        arch_def = {
+            "input_size": 64,
+            "basic_args": {
+                "bn_args": "naiveSyncBN",
+            },
+            "blocks": [
+                [["conv_k3", 16, 2, 1]],
+                [["ir_k3", 16, 1, 1]],
+            ],
+        }
+
+        fbnet_args = {"builder": "fbnet_v2", "arch_name": arch_def}
+        dataset_args = {
+            "builder": "tensor_shape",
+            "input_shapes": [[1, 3, 64, 64]],
+        }
+
+        with tempfile.TemporaryDirectory() as output_dir:
+            export_args = [
+                "--task",
+                "general",
+                "--task_args",
+                json.dumps({"model_args": fbnet_args, "dataset_args": dataset_args}),
+                "--output_dir",
+                output_dir,
+                "--export_types",
+                "torchscript",
+                "torchscript_int8",
+                "--post_quant_backend",
+                "default",
+                # fx quantization
+                "--use_graph_mode_quant",
+                # currently int8 will fail due to copy issue in quantized op
+                # "--use_get_traceable",
+                # "1",
+            ]
+            out_paths = model_exporter.run_with_cmdline_args_list(export_args)
+            self.assertEqual(len(out_paths), 2)
+            self.assertSetEqual(
+                set(out_paths.keys()), {"torchscript", "torchscript_int8"}
+            )
+            for _, path in out_paths.items():
+                self.assertTrue(os.path.exists(path))

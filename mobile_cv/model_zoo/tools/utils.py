@@ -9,6 +9,8 @@ import os
 import shutil
 from typing import Any, Dict, Iterable, Optional, Tuple
 
+import mobile_cv.arch.utils.fuse_utils as fuse_utils
+
 import torch
 from mobile_cv.arch.utils import quantize_utils
 
@@ -62,6 +64,8 @@ def get_ptq_model(
             f"Post quantization using {args.post_quant_backend} backend fx mode..."
         )
         model_attrs = get_model_attributes(model)
+        # swap models that fx could not support
+        model = fuse_utils.swap_modules(model)
         quant = quantize_utils.PostQuantizationFX(model)
         ptq_model = (
             quant.set_quant_backend(args.post_quant_backend)
