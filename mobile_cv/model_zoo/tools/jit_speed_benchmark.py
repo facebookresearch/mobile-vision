@@ -7,6 +7,8 @@ import time
 import mobile_cv.arch.utils.backend_utils as bu
 import numpy as np
 import torch
+
+# @manual=//mobile-vision/mobile_cv/mobile_cv/model_zoo/tools:tools_common_libs
 from mobile_cv.model_zoo.tools.common_libs import load_libraries
 from numpy import percentile as np_pctile
 
@@ -147,7 +149,6 @@ def maybe_ai_pep_output(args, runtimes):
     if not args.report_pep:
         return
 
-    # @dep=//aibench/oss/benchmarking:aibench_observer_fbcode
     from aibench_observer.utils.observer import emitMetric
 
     for runtime in runtimes:
