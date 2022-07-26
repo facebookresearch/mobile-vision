@@ -10,6 +10,7 @@ import mobile_cv.arch.layers
 import mobile_cv.common.misc.registry as registry
 import torch
 import torch.nn as nn
+from detectron2.layers.batch_norm import FrozenBatchNorm2d
 from mobile_cv.arch.fbnet_v2.spade import _get_fuser_name_convbnrelu_with_tuple_left
 from mobile_cv.arch.layers.batch_norm import (
     NaiveSyncBatchNorm,
@@ -153,6 +154,8 @@ def fuse_more_modules(
         (torch.nn.Conv1d, nn.SyncBatchNorm, torch.nn.ReLU): fuse_conv_bn_relu,
         (torch.nn.Conv2d, NaiveSyncBatchNorm): fuse_conv_bn,
         (torch.nn.Conv2d, NaiveSyncBatchNorm, torch.nn.ReLU): fuse_conv_bn_relu,
+        (torch.nn.Conv2d, FrozenBatchNorm2d): fuse_conv_bn,
+        (torch.nn.Conv2d, FrozenBatchNorm2d, torch.nn.ReLU): fuse_conv_bn_relu,
         (torch.nn.Conv2d, nn.SyncBatchNorm): fuse_conv_bn,
         (torch.nn.Conv2d, nn.SyncBatchNorm, torch.nn.ReLU): fuse_conv_bn_relu,
         (torch.nn.Conv3d, NaiveSyncBatchNorm3d): fuse_conv_bn,
