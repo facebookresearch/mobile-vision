@@ -10,6 +10,7 @@ import contextlib
 import functools
 import logging
 import os
+import pickle
 import tempfile
 import time
 import types
@@ -146,6 +147,16 @@ def save_return_deco(return_save_file: Optional[str], rank: int):
                 logger.info(
                     f"Save {func.__module__}.{func.__name__} return to: {filename}"
                 )
+                # NOTE: test if the return of func is pickable, if not, wrap it
+                # so that the results can be saved by torch.save.
+                try:
+                    pickle.dumps(ret)
+                except pickle.PicklingError as e:
+                    logger.info(
+                        f"Can't pickle the return of function `{func}` due to error `{str(e)}`,"
+                        f" try wrapping it with PicklableWrapper to make it pickable."
+                    )
+                    ret = PicklableWrapper(ret)
                 torch.save(ret, filename)
             return ret
 
