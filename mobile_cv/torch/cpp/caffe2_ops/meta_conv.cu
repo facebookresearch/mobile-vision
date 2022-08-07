@@ -1,6 +1,6 @@
 #include "meta_conv.h"
 
-#include "caffe2/core/context_gpu.h"
+#include "caffe2/caffe2/core/context_gpu.h"
 
 namespace caffe2 {
 
