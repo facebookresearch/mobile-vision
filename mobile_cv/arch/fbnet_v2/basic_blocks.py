@@ -68,6 +68,16 @@ class Identity(nn.Module):
         return out
 
 
+class MatMul(nn.Module):
+    """A wrapper class such that we can count the FLOPs of matmul"""
+
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, A, B):
+        return torch.matmul(A, B)
+
+
 class TorchNoOp(nn.Module):
     """An operator used to cut certain edges"""
 
@@ -261,6 +271,11 @@ def _init_conv_weight(op, weight_init="kaiming_normal"):
         if hasattr(op, "bias") and op.bias is not None:
             nn.init.constant_(op.bias.data, 0.01)
 
+    elif weight_init == "trunc_normal":
+        nn.init.trunc_normal_(op.weight.data, std=0.02)
+        if hasattr(op, "bias") and op.bias is not None:
+            nn.init.zeros_(op.bias.data)
+
     else:
         raise AssertionError(f"Unsupported init type {weight_init}")
 
@@ -277,7 +292,7 @@ def build_conv(
 
     def _create_conv(conv_class, conv_args):
         conv_args = hp.filter_kwargs(conv_class, conv_args)
-        if "kernel_size" not in conv_args:
+        if "kernel_size" not in conv_args and name != "linear":
             conv_args["kernel_size"] = 1
         ret = conv_class(in_channels, out_channels, **conv_args)
         _init_conv_weight(ret, weight_init)
@@ -288,7 +303,7 @@ def build_conv(
         "conv": lambda: _create_conv(nn.Conv2d, conv_args),
         "conv2d": lambda: _create_conv(nn.Conv2d, conv_args),
         "conv3d": lambda: _create_conv(nn.Conv3d, conv_args),
-        "linear": lambda: nn.Linear(in_channels, out_channels),
+        "linear": lambda: _create_conv(nn.Linear, conv_args),
     }
 
     if name in CONV_DEFAULT_MAPS:
@@ -325,6 +340,7 @@ def build_bn(name, num_channels, zero_gamma=None, gamma_beta=None, **kwargs):
         "gn": lambda: GroupNorm(num_channels=num_channels, **kwargs),
         "instance": lambda: nn.InstanceNorm2d(num_channels, **kwargs),
         "frozen_bn": lambda: FrozenBatchNorm2d(num_channels, **kwargs),
+        "ln": lambda: nn.LayerNorm(num_channels, **kwargs),
     }
 
     if name is None or name == "none":
@@ -355,6 +371,8 @@ def build_relu(name=None, num_channels=None, **kwargs):
         return nn.Sigmoid()
     if name in ["hsig", "hsigmoid"]:
         return HSigmoid()
+    if name in ["gelu"]:
+        return nn.GELU()
 
     return RELU_REGISTRY.get(name)(**kwargs)
 
@@ -531,7 +549,7 @@ def _se_op_fc(in_channels, mid_channels, relu_args, sigmoid_type):
     conv1_relu = ConvBNRelu(
         in_channels,
         mid_channels,
-        conv_args="linear",
+        conv_args={"name": "linear", "bias": True, "weight_init": None},
         bn_args=None,
         relu_args=relu_args,
     )
