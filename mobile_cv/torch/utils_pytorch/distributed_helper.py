@@ -15,7 +15,7 @@ import tempfile
 import time
 import types
 from datetime import timedelta
-from typing import Any, Callable, Dict, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import mobile_cv.torch.utils_pytorch.comm as comm
 import torch
@@ -37,6 +37,19 @@ def get_mp_context():
 
 class DistributedParams(object):
     """store information about ranks and sizes"""
+
+    LOCAL_RANK_KEY: str = "LOCAL_RANK"
+    RANK_KEY: str = "RANK"
+    GROUP_RANK_KEY: str = "GROUP_RANK"
+    LOCAL_WORLD_SIZE_KEY: str = "LOCAL_WORLD_SIZE"
+    WORLD_SIZE_KEY: str = "WORLD_SIZE"
+    ENV_KEYS: List[str] = [
+        LOCAL_RANK_KEY,
+        RANK_KEY,
+        GROUP_RANK_KEY,
+        LOCAL_WORLD_SIZE_KEY,
+        WORLD_SIZE_KEY,
+    ]
 
     def __init__(
         self,
@@ -61,8 +74,8 @@ class DistributedParams(object):
         ):
             raise ValueError(f"{self} is not valid!")
 
-    @staticmethod
-    def from_environ() -> "DistributedParams":
+    @classmethod
+    def from_environ(cls) -> "DistributedParams":
         # Read environment variables according to the contract in:
         # https://pytorch.org/elastic/0.2.0rc1/distributed.html
         # Note that this is a superset of required environment variables of:
@@ -75,11 +88,11 @@ class DistributedParams(object):
                 )
             return os.environ.get(key, default)
 
-        local_rank = int(_get_key("LOCAL_RANK", 0))
-        global_rank = int(_get_key("RANK", 0))
-        machine_rank = int(_get_key("GROUP_RANK", 0))
-        num_processes_per_machine = int(_get_key("LOCAL_WORLD_SIZE", 1))
-        world_size = int(_get_key("WORLD_SIZE", 1))
+        local_rank = int(_get_key(cls.LOCAL_RANK_KEY, 0))
+        global_rank = int(_get_key(cls.RANK_KEY, 0))
+        machine_rank = int(_get_key(cls.GROUP_RANK_KEY, 0))
+        num_processes_per_machine = int(_get_key(cls.LOCAL_WORLD_SIZE_KEY, 1))
+        world_size = int(_get_key(cls.WORLD_SIZE_KEY, 1))
 
         logger.info(
             "Loaded distributed params from os.environ:\n"
@@ -97,6 +110,19 @@ class DistributedParams(object):
             num_processes_per_machine=num_processes_per_machine,
             world_size=world_size,
         )
+
+    @classmethod
+    def set_environ(cls, params: "DistributedParams") -> None:
+        def _assert_not_set(key):
+            if key in os.environ:
+                raise RuntimeError(f"Key {key} already set in OS environ")
+
+        [_assert_not_set(key) for key in cls.ENV_KEYS]
+        os.environ[cls.LOCAL_RANK_KEY] = str(params.local_rank)
+        os.environ[cls.RANK_KEY] = str(params.global_rank)
+        os.environ[cls.GROUP_RANK_KEY] = str(params.machine_rank)
+        os.environ[cls.LOCAL_WORLD_SIZE_KEY] = str(params.num_processes_per_machine)
+        os.environ[cls.WORLD_SIZE_KEY] = str(params.world_size)
 
 
 @contextlib.contextmanager
@@ -312,19 +338,24 @@ def _mp_spawn_helper(
     machine_rank: int,
 ):
     global_rank = machine_rank * num_processes_per_machine + local_rank
+    # Write into env variables rather than passing the args explicitly
+    DistributedParams.set_environ(
+        DistributedParams(
+            local_rank=local_rank,
+            machine_rank=machine_rank,
+            global_rank=global_rank,
+            num_processes_per_machine=num_processes_per_machine,
+            world_size=world_size,
+        )
+    )
+
     return distributed_worker(
         main_func=main_func,
         args=args,
         kwargs=kwargs,
         backend=backend,
         init_method=init_method,
-        dist_params=DistributedParams(
-            local_rank=local_rank,
-            machine_rank=machine_rank,
-            global_rank=global_rank,
-            num_processes_per_machine=num_processes_per_machine,
-            world_size=world_size,
-        ),
+        dist_params=None,  # dist_params will be inferred from env
         return_save_file=return_save_file,
         timeout=timeout,
     )
