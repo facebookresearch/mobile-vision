@@ -15,7 +15,7 @@ import tempfile
 import time
 import types
 from datetime import timedelta
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, Optional, Tuple
 
 import mobile_cv.torch.utils_pytorch.comm as comm
 import torch
@@ -43,13 +43,6 @@ class DistributedParams(object):
     GROUP_RANK_KEY: str = "GROUP_RANK"
     LOCAL_WORLD_SIZE_KEY: str = "LOCAL_WORLD_SIZE"
     WORLD_SIZE_KEY: str = "WORLD_SIZE"
-    ENV_KEYS: List[str] = [
-        LOCAL_RANK_KEY,
-        RANK_KEY,
-        GROUP_RANK_KEY,
-        LOCAL_WORLD_SIZE_KEY,
-        WORLD_SIZE_KEY,
-    ]
 
     def __init__(
         self,
@@ -113,16 +106,19 @@ class DistributedParams(object):
 
     @classmethod
     def set_environ(cls, params: "DistributedParams") -> None:
-        def _assert_not_set(key):
-            if key in os.environ:
-                raise RuntimeError(f"Key {key} already set in OS environ")
+        def _set_env_key(key: str, value: str):
+            if key in os.environ and (curr_value := os.environ[key]) != value:
+                raise RuntimeError(
+                    f"Key {key} already set in OS environ. "
+                    f"Current value {curr_value}, attempt to overwrite with {value}."
+                )
+            os.environ[key] = value
 
-        [_assert_not_set(key) for key in cls.ENV_KEYS]
-        os.environ[cls.LOCAL_RANK_KEY] = str(params.local_rank)
-        os.environ[cls.RANK_KEY] = str(params.global_rank)
-        os.environ[cls.GROUP_RANK_KEY] = str(params.machine_rank)
-        os.environ[cls.LOCAL_WORLD_SIZE_KEY] = str(params.num_processes_per_machine)
-        os.environ[cls.WORLD_SIZE_KEY] = str(params.world_size)
+        _set_env_key(cls.LOCAL_RANK_KEY, str(params.local_rank))
+        _set_env_key(cls.RANK_KEY, str(params.global_rank))
+        _set_env_key(cls.GROUP_RANK_KEY, str(params.machine_rank))
+        _set_env_key(cls.LOCAL_WORLD_SIZE_KEY, str(params.num_processes_per_machine))
+        _set_env_key(cls.WORLD_SIZE_KEY, str(params.world_size))
 
 
 @contextlib.contextmanager
