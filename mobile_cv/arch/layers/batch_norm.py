@@ -270,6 +270,10 @@ class SyncBatchNormWrapper(nn.SyncBatchNorm, NaiveSyncBatchNorm):
         # nn.SyncBatchNorm only supports GPUs, so use NaiveSyncBatchNorm
         # when the input is on CPU and the communication backend is gloo
         if input.is_cuda:
-            return nn.SyncBatchNorm.forward(self, input)
-        else:
-            return NaiveSyncBatchNorm.forward(self, input)
+            # nn.SyncBatchNorm also requires process group to be initialized, which
+            # is often not the case using single GPU/process, also fallback to
+            # NaiveSyncBatchNorm.
+            if get_world_size() > 1:
+                return nn.SyncBatchNorm.forward(self, input)
+
+        return NaiveSyncBatchNorm.forward(self, input)
