@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
 
 import torch
-from caffe2.python import dyndep
-from mobile_cv.torch.utils_caffe2.graph_transform import (
-    rename_op_input,
-    rename_op_output,
-)
-from mobile_cv.torch.utils_caffe2.protobuf import get_pb_arg_vali, get_pb_arg_vals
+from mobile_cv.common.misc.oss_utils import is_oss
 
 
-dyndep.InitOpsLibrary("@/mobile-vision/mobile_cv/mobile_cv/torch/cpp:caffe2_ops")
+if not is_oss():
+    from caffe2.python import dyndep
+
+    dyndep.InitOpsLibrary("@/mobile-vision/mobile_cv/mobile_cv/torch/cpp:caffe2_ops")
 
 
 def alias(x, name, is_backward=False):
@@ -21,6 +19,14 @@ def alias(x, name, is_backward=False):
 
 def fuse_alias_placeholder(predict_net, init_net):
     """Remove AliasWithName placeholder and rename the input/output of it"""
+
+    # Delay the import in case caffe2 is not available
+    from mobile_cv.torch.utils_caffe2.graph_transform import (
+        rename_op_input,
+        rename_op_output,
+    )
+    from mobile_cv.torch.utils_caffe2.protobuf import get_pb_arg_vali, get_pb_arg_vals
+
     # First we finish all the re-naming
     for i, op in enumerate(predict_net.op):
         if op.type == "AliasWithName":
