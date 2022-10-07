@@ -108,9 +108,9 @@ class DistributedParams(object):
     def set_environ(cls, params: "DistributedParams") -> None:
         def _set_env_key(key: str, value: str):
             if key in os.environ and (curr_value := os.environ[key]) != value:
-                raise RuntimeError(
+                logger.warning(
                     f"Key {key} already set in OS environ. "
-                    f"Current value {curr_value}, attempt to overwrite with {value}."
+                    f"Current value {curr_value}, overwriting with {value}."
                 )
             os.environ[key] = value
 
