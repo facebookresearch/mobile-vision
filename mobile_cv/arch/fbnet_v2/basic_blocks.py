@@ -396,7 +396,10 @@ def build_residual_connect(
         if in_channels == out_channels and stride_one:
             return add_f
         if name == "projection":
-            return AddWithResProj(in_channels, out_channels, stride, add_f, **res_args)
+            if stride_one or res_args.get("down_sample", None) is not None:
+                return AddWithResProj(
+                    in_channels, out_channels, stride, add_f, **res_args
+                )
         return None
     return RESIDUAL_REGISTRY.get(name)(in_channels, out_channels, stride, **res_args)
 
@@ -797,18 +800,30 @@ class AddWithResProj(nn.Module):
         out_channels,
         stride,
         add_f,
+        down_sample=None,
         bias=False,
         conv_args="conv",
         bn_args="bn",
     ):
+        """
+        Add a projection in the residual connection when channel or stride don't match
+        down_sample:
+            down sample method of the res connection when stride is not 1
+            can only be None when stride is 1
+            if avg_pool, add an avgpool layer before conv1x1
+            if max_pool, add a maxpool layer before conv1x1
+        """
         super().__init__()
+        assert stride == 1 or down_sample is not None
+
         self.add_f = add_f
-        self.proj = ConvBNRelu(
+
+        proj_conv = ConvBNRelu(
             in_channels=in_channels,
             out_channels=out_channels,
             conv_args={
                 "kernel_size": 1,
-                "stride": stride,
+                "stride": 1,
                 "padding": 0,
                 "groups": 1,
                 "bias": bias,
@@ -817,6 +832,17 @@ class AddWithResProj(nn.Module):
             bn_args=hp.unify_args(bn_args),
             relu_args=None,
         )
+
+        if stride != 1:
+            if down_sample == "avgpool":
+                ds = nn.AvgPool2d(stride)
+            elif down_sample == "maxpool":
+                ds = nn.MaxPool2d(stride)
+            else:
+                raise KeyError("Down sampling method {} not found!".format(down_sample))
+            self.proj = nn.Sequential(ds, proj_conv)
+        else:
+            self.proj = proj_conv
 
     def forward(self, y, x):
         x = self.proj(x)
