@@ -196,11 +196,29 @@ def default_distributed_worker(
     dist_params: Optional[DistributedParams] = None,
     return_save_file: Optional[str] = None,
     timeout: timedelta = DEFAULT_TIMEOUT,
+    shared_context: Optional[comm.BaseSharedContext] = None,
 ):
+    if shared_context:
+        comm.set_shared_context(
+            shared_context
+        )  # set the global shared context from the args passed in by mp spawn
     dist_params = dist_params or DistributedParams.from_environ()
     with enable_dist_process_groups(backend, init_method, dist_params, timeout):
         deco = save_return_deco(return_save_file, dist_params.global_rank)
         return deco(main_func)(*args, **kwargs)
+
+
+def non_distributed_worker(
+    main_func: Callable,
+    args: Tuple[Any, ...],
+    kwargs: Dict[str, Any],
+    shared_context: Optional[comm.BaseSharedContext] = None,
+):
+    if shared_context:
+        comm.set_shared_context(
+            shared_context
+        )  # set the global shared context from the args passed in by mp spawn
+    return {0: main_func(*args, **kwargs)}
 
 
 def launch(
@@ -212,6 +230,7 @@ def launch(
     backend: str = "NCCL",
     always_spawn: bool = False,
     launch_method: str = "multiprocessing",
+    shared_context: Optional[comm.BaseSharedContext] = None,
     timeout: timedelta = DEFAULT_TIMEOUT,
     args: Tuple[Any, ...] = (),
     kwargs: Dict[str, Any] = None,
@@ -271,6 +290,7 @@ def launch(
                 None,  # dist_params is inferred from env
                 None,  # return_save_file is None since no return file is needed
                 timeout,
+                shared_context,
             )
             return results
         else:
@@ -289,6 +309,7 @@ def launch(
                         None,  # dist_params is inferred from env
                         return_file,  # is this needed?
                         timeout,
+                        shared_context,
                     )
                 else:
                     mp.spawn(
@@ -303,6 +324,7 @@ def launch(
                             dist_url,
                             return_file,
                             timeout,
+                            shared_context,
                             world_size,
                             num_processes_per_machine,
                             machine_rank,
@@ -316,7 +338,7 @@ def launch(
                         for local_rank in local_ranks
                     }
     else:
-        return {0: main_func(*args, **kwargs)}
+        return non_distributed_worker(main_func, args, kwargs, shared_context)
 
 
 def _mp_spawn_helper(
@@ -329,6 +351,7 @@ def _mp_spawn_helper(
     init_method: Optional[str],
     return_save_file: Optional[str],
     timeout: timedelta,
+    shared_context: Optional[comm.BaseSharedContext],
     world_size: int,
     num_processes_per_machine: int,
     machine_rank: int,
@@ -354,6 +377,7 @@ def _mp_spawn_helper(
         dist_params=None,  # dist_params will be inferred from env
         return_save_file=return_save_file,
         timeout=timeout,
+        shared_context=shared_context,
     )
 
 
@@ -389,6 +413,7 @@ def launch_deco(
     always_spawn: bool = True,
     launch_method: str = "multiprocessing",
     timeout: timedelta = DEFAULT_UNITTEST_TIMEOUT,
+    shared_context: Optional[comm.BaseSharedContext] = None,
 ):
     """
     A helper decorator to run the instance method via `launch`. This is convenient
@@ -407,6 +432,7 @@ def launch_deco(
                 backend=backend,
                 always_spawn=always_spawn,
                 launch_method=launch_method,
+                shared_context=shared_context,
                 timeout=timeout,
                 # multiprocessing.spawn also requires `args` to be pickable, however
                 # the unittest.TestCase instance (i.e. `self`) is not pickable,

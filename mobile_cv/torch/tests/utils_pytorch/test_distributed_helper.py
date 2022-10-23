@@ -2,12 +2,19 @@
 
 import time
 import unittest
+from dataclasses import dataclass
 from datetime import timedelta
 
 import mobile_cv.torch.utils_pytorch.comm as comm
 import mobile_cv.torch.utils_pytorch.distributed_helper as dh
 import torch
 from mobile_cv.common.misc.oss_utils import is_oss
+from mobile_cv.torch.utils_pytorch.comm import BaseSharedContext
+
+
+@dataclass
+class SharedContext(BaseSharedContext):
+    value: int
 
 
 def _test_func(value):
@@ -109,3 +116,8 @@ class TestUtilsPytorchDistributedHelper(unittest.TestCase):
                 time.sleep(0.2)
             comm.all_gather(comm.get_rank(), group=pg)
         self.assertEqual(results, [0, 1])
+
+    @dh.launch_deco(num_processes=2, shared_context=SharedContext(10))
+    def test_shared_context(self):
+        # check that subprocess gets the correct shared_context
+        self.assertEqual(comm.get_shared_context().value, 10)
