@@ -17,6 +17,36 @@ This variable is set when processes are spawned by `launch()` in "engine/launch.
 _LOCAL_PROCESS_GROUP: Optional[dist.ProcessGroup] = None
 
 
+class BaseSharedContext(object):
+    """
+    Base class for shared context that can be initialied before launching the workers
+    passed to all workers.
+    """
+
+    pass
+
+
+# Distributed shared context for all workers
+_GLOBAL_SHARED_CONTEXT: Optional[BaseSharedContext] = None
+
+
+def set_shared_context(value: BaseSharedContext) -> None:
+    """Set distributed shared context for all workers"""
+    assert isinstance(
+        value, BaseSharedContext
+    ), "Shared context must be a BaseSharedContext"
+    global _GLOBAL_SHARED_CONTEXT
+    _GLOBAL_SHARED_CONTEXT = value
+
+
+def get_shared_context() -> BaseSharedContext:
+    """Get distributed shared context for all workers"""
+    assert (
+        _GLOBAL_SHARED_CONTEXT is not None
+    ), "Shared context is not set. Missing shared context initilization"
+    return _GLOBAL_SHARED_CONTEXT
+
+
 def get_world_size() -> int:
     if not dist.is_available():
         return 1
