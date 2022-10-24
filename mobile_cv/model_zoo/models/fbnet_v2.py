@@ -180,7 +180,12 @@ def fbnet(arch_name, pretrained=False, progress=True, **kwargs):
 
 @model_zoo_factory.MODEL_ZOO_FACTORY.register("fbnet_v2_backbone")
 def fbnet_backbone(
-    arch_name, pretrained=False, progress=True, stage_indices=None, **kwargs
+    arch_name,
+    pretrained=False,
+    progress=True,
+    stage_indices=None,
+    ignore_prefix: str = "module.backbone.",
+    **kwargs,
 ):
     """
     Constructs a FBNet backbone architecture named `arch_name`
@@ -200,7 +205,7 @@ def fbnet_backbone(
             arch_name,
             model,
             progress,
-            ignore_prefix="module.backbone.",
+            ignore_prefix=ignore_prefix,
             strict=False,
         )
     return model
