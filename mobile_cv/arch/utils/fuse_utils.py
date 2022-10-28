@@ -128,7 +128,7 @@ def swap_modules(
 
 # TODO: Is this the same as fuse_known_modules? should we just refactor this using `additioanl_fuser_method_mapping`?
 def fuse_more_modules(
-    mod_list: typing.List[nn.Module], additional_fuser_method_mapping=None, is_qat=False
+    mod_list: typing.List[nn.Module], is_qat=False, additional_fuser_method_mapping=None
 ):
     r"""Returns a list of modules that fuses the operations specified
      in the input module list.
