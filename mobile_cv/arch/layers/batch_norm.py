@@ -107,7 +107,7 @@ class NaiveSyncBatchNorm(nn.BatchNorm2d):
         self._stats_mode = stats_mode
 
     def forward(self, input):
-        if get_world_size() == 1 or not self.training:
+        if not self.training or get_world_size() == 1:
             return super().forward(input)
 
         B, C = input.shape[0], input.shape[1]
