@@ -399,7 +399,12 @@ def main(
     data_loader = task.get_dataloader()
     data_iter = iter(data_loader)
 
-    first_batch = next(data_iter) if len(data_loader) > 0 else []
+    try:
+        first_batch = next(data_iter)
+    except Exception:
+        first_batch = []
+        logger.warning("No data available from the data loader")
+
     with torch.no_grad():
         flops_utils.print_model_flops(model, first_batch)
 
