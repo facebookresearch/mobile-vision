@@ -8,7 +8,18 @@ import unittest
 
 import mobile_cv.arch.fbnet_v2.blocks_factory as blocks_factory
 import torch
+from mobile_cv.model_zoo.tasks import task_factory
+from mobile_cv.model_zoo.tasks.task_base import TaskBase
 from mobile_cv.model_zoo.tools import model_exporter
+
+
+class TestModel(torch.nn.Module):
+    def __init__(self, num=0):
+        super().__init__()
+        self.num = num
+
+    def forward(self, x):
+        return x + self.num
 
 
 class TestToolsModelExporter(unittest.TestCase):
@@ -210,3 +221,32 @@ class TestToolsModelExporter(unittest.TestCase):
             )
             for _, path in out_paths.items():
                 self.assertTrue(os.path.exists(path))
+
+    def test_tools_model_exporter_data_loader_generator(self):
+        @task_factory.TASK_FACTORY.register("task_dl_gen")
+        class TaskWithAnn(TaskBase):
+            def get_model(self):
+                ret = TestModel()
+                return ret
+
+            def get_dataloader(self):
+                return (x for x in [[torch.Tensor(1)], [torch.Tensor(1)]])
+
+        with tempfile.TemporaryDirectory() as output_dir:
+            export_args = [
+                "--task",
+                "task_dl_gen",
+                "--task_args",
+                json.dumps({}),
+                "--output_dir",
+                output_dir,
+                "--raise_if_failed",
+                "1",
+                "--export_types",
+                "torchscript",
+                "--trace_type",
+                "trace",
+            ]
+            out_paths = model_exporter.run_with_cmdline_args_list(export_args)
+            self.assertEqual(len(out_paths), 1)
+            self.assertSetEqual(set(out_paths.keys()), {"torchscript"})
