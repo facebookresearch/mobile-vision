@@ -7,6 +7,7 @@ import unittest
 
 from mobile_cv.common.misc.file_utils import make_temp_directory
 from mobile_cv.common.misc.py import dynamic_import, import_file, MoreMagicMock
+from mobile_cv.common.misc.test_utils import no_complaints_skip_if
 
 
 class TestMisc(unittest.TestCase):
@@ -42,6 +43,10 @@ class TestMisc(unittest.TestCase):
             from test_package.lib.a import bar
 
             self.assertEqual(bar, 42)
+
+    @no_complaints_skip_if(True, "Test should be skipped without complaints")
+    def test_skip_without_complaints(self):
+        raise RuntimeError("This test should be skipped")
 
 
 class TestMoreMagicMock(unittest.TestCase):
