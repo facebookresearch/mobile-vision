@@ -8,8 +8,10 @@ Helper utilities for unit test
 import glob
 import itertools
 import os
+import unittest
 
 import pkg_resources
+from mobile_cv.common.misc.oss_utils import fb_overwritable
 
 
 class SubPackageInitFileTestMixin(object):
@@ -57,3 +59,8 @@ class SubPackageInitFileTestMixin(object):
                 "\n".join(missing_init_files)
             ),
         )
+
+
+@fb_overwritable()
+def no_complaints_skip_if(condition, reason):
+    return unittest.skipIf(condition, reason)
