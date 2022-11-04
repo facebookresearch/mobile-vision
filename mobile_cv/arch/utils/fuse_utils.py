@@ -10,6 +10,7 @@ import mobile_cv.arch.layers
 import mobile_cv.common.misc.registry as registry
 import torch
 import torch.nn as nn
+import torch.nn.intrinsic as nni
 from mobile_cv.arch.fbnet_v2.spade import _get_fuser_name_convbnrelu_with_tuple_left
 from mobile_cv.arch.layers.batch_norm import (
     NaiveSyncBatchNorm,
@@ -21,7 +22,7 @@ from mobile_cv.arch.layers.batch_norm import (
 
 TORCH_VERSION: Tuple[int, ...] = tuple(int(x) for x in torch.__version__.split(".")[:2])
 if TORCH_VERSION > (1, 10):
-    from torch.ao.quantization import fuse_modules, fuse_modules_qat
+    from torch.ao.quantization import fuse_linear_bn, fuse_modules, fuse_modules_qat
     from torch.ao.quantization.fuse_modules import (
         fuse_conv_bn,
         fuse_conv_bn_relu,
@@ -29,7 +30,7 @@ if TORCH_VERSION > (1, 10):
     )
     from torch.ao.quantization.quantize_fx import _fuse_fx
 else:
-    from torch.quantization import fuse_modules
+    from torch.quantization import fuse_linear_bn, fuse_modules
     from torch.quantization.fuse_modules import (
         fuse_conv_bn,
         fuse_conv_bn_relu,
@@ -126,6 +127,12 @@ def swap_modules(
     return swap_modules_inplace(model, module_mapping)
 
 
+def fuse_linear_bn_relu(is_qat, linear, bn, relu):
+    r"""Given the linear, bn, and relu modules, fuses them and returns the fused module"""
+    fused_linear_bn = fuse_linear_bn(is_qat, linear, bn)
+    return nni.LinearReLU(fused_linear_bn, relu)
+
+
 # TODO: Is this the same as fuse_known_modules? should we just refactor this using `additioanl_fuser_method_mapping`?
 def fuse_more_modules(
     mod_list: typing.List[nn.Module], is_qat=False, additional_fuser_method_mapping=None
@@ -163,6 +170,7 @@ def fuse_more_modules(
         ): fuse_conv_bn_relu,
         (torch.nn.Conv3d, nn.SyncBatchNorm): fuse_conv_bn,
         (torch.nn.Conv3d, nn.SyncBatchNorm, torch.nn.ReLU): fuse_conv_bn_relu,
+        (torch.nn.Linear, nn.BatchNorm1d, torch.nn.ReLU): fuse_linear_bn_relu,
         (NaiveSyncBatchNorm, torch.nn.ReLU): sequential_wrapper2(
             torch.nn.intrinsic.BNReLU2d
         ),
