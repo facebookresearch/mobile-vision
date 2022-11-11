@@ -12,6 +12,11 @@ import mobile_cv.common.misc.iter_utils as iu
 import torch
 import torch.nn as nn
 from mobile_cv.arch.layers import NaiveSyncBatchNorm
+from torch.ao.quantization.backend_config import (
+    get_fbgemm_backend_config,
+    get_native_backend_config,
+    get_qnnpack_backend_config,
+)
 from torch.ao.quantization.stubs import DeQuantStub, QuantStub
 
 from . import fuse_utils
@@ -27,21 +32,40 @@ def get_backend_qconfig(backend):
             ),
             weight=torch.ao.quantization.default_per_channel_weight_observer,
         )
+    elif backend == "qnnpack_symmetric":
+        qconfig = torch.ao.quantization.default_symmetric_qnnpack_qconfig
     else:
         qconfig = torch.ao.quantization.get_default_qconfig(backend)
 
     return qconfig
 
 
+def get_backend_config(backend: str):
+    if backend in ["qnnpack", "qnnpack_per_channel", "qnnpack_symmetric"]:
+        ret = get_qnnpack_backend_config()
+    elif backend in ["fbgemm"]:
+        ret = get_fbgemm_backend_config()
+    else:
+        ret = get_native_backend_config()
+    return ret
+
+
 def map_backend_name(backend_config_name):
     """Map backend config name used in `get_backend_qconfig` to the backend name
     in pytoch
     """
-    if backend_config_name in ["qnnpack", "qnnpack_per_channel"]:
+    if backend_config_name in ["qnnpack", "qnnpack_per_channel", "qnnpack_symmetric"]:
         return "qnnpack"
     if backend_config_name in ["default", "fbgemm"]:
         return "fbgemm"
     raise Exception(f"Invalid backend config name {backend_config_name}")
+
+
+def set_pytorch_quantized_engine(backend_cofnig_name: str):
+    backend_name = map_backend_name(backend_cofnig_name)
+    old_backend = torch.backends.quantized.engine
+    torch.backends.quantized.engine = backend_name
+    return old_backend
 
 
 @contextmanager
@@ -56,6 +80,7 @@ def use_backends_quantized_engine(backend_config_name):
 def calibrate_model(model, data_loader, num_batches=1):
     assert not model.training
     with torch.no_grad():
+        idx = 0
         for idx, data in enumerate(data_loader):
             print(f"Collecting stats {idx}/{num_batches}...")
             model(*data)
@@ -179,11 +204,14 @@ class PostQuantizationFX(object):
             self.qconfig = torch.ao.quantization.default_qconfig
 
     def set_quant_backend(self, backend="fbgemm"):
+        set_pytorch_quantized_engine(backend)
         self.qconfig = get_backend_qconfig(backend)
+        self.backend_cfg = get_backend_config(backend)
         return self
 
-    def set_quant_config(self, quant_cfg):
+    def set_quant_config(self, quant_cfg, backend_cfg):
         self.qconfig = quant_cfg
+        self.backend_cfg = backend_cfg
         return self
 
     def prepare(self, example_inputs, qconfig_dict=None):
@@ -195,7 +223,9 @@ class PostQuantizationFX(object):
             self.model,
             qconfig_dict,
             example_inputs=example_inputs,
+            backend_config=self.backend_cfg,
         )
+        self._prepared_qconfig_dict = qconfig_dict
         return self
 
     def calibrate_model(self, data_loader, num_batches=1):
@@ -205,7 +235,11 @@ class PostQuantizationFX(object):
 
     def convert_model(self):
         assert hasattr(self, "_prepared_model"), "Call prepare() first"
-        quant_model = torch.ao.quantization.quantize_fx.convert_fx(self._prepared_model)
+        quant_model = torch.ao.quantization.quantize_fx.convert_fx(
+            self._prepared_model,
+            qconfig_mapping=self._prepared_qconfig_dict,
+            backend_config=self.backend_cfg,
+        )
         return quant_model
 
 

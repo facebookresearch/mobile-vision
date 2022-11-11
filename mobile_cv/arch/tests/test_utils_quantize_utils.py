@@ -89,6 +89,79 @@ class TestUtilsQuantizeUtils(unittest.TestCase):
         # make sure the original model was not modifed
         self.assertEqual(org_out.norm(), org_out_after.norm())
 
+    def test_utils_quantize_utils_quantize_model_fx_mode(self):
+        e6 = {"expansion": 6}
+        arch_def = {
+            "blocks": [
+                # [op, c, s, n, ...]
+                # stage 0
+                [("conv_k3", 4, 2, 1)],
+                # stage 1
+                [("ir_k3", 8, 2, 2, e6), ("ir_k5", 8, 1, 1, e6)],
+            ]
+        }
+        model = _build_model(arch_def, 3)
+        data = torch.rand((4, 3, 8, 8))
+        org_out = model(data)
+
+        pq = qu.PostQuantizationFX(model)
+        pq.set_quant_backend("qnnpack")
+        quant_model = (
+            pq.prepare(example_inputs=[data])
+            .calibrate_model([[data]], 1)
+            .convert_model()
+        )
+
+        print(quant_model)
+
+        quant_out = quant_model(data)
+        self.assertEqual(quant_out.shape, org_out.shape)
+
+        org_out_after = model(data)
+        # make sure the original model was not modifed
+        self.assertEqual(org_out.norm(), org_out_after.norm())
+
+    def test_utils_quantize_utils_quantize_model_fx_mode_qnnpack_symmetric(self):
+        e6 = {"expansion": 6}
+        arch_def = {
+            "blocks": [
+                # [op, c, s, n, ...]
+                # stage 0
+                [("conv_k3", 4, 2, 1)],
+                # stage 1
+                [("ir_k3", 8, 2, 2, e6), ("ir_k5", 8, 1, 1, e6)],
+            ]
+        }
+        model = _build_model(arch_def, 3)
+        data = torch.rand((4, 3, 8, 8))
+        org_out = model(data)
+
+        pq = qu.PostQuantizationFX(model)
+        pq.set_quant_backend("qnnpack_symmetric")
+        quant_model = (
+            pq.prepare(example_inputs=[data])
+            .calibrate_model([[data]], 1)
+            .convert_model()
+        )
+
+        print(quant_model)
+
+        quant_out = quant_model(data)
+        self.assertEqual(quant_out.shape, org_out.shape)
+
+        org_out_after = model(data)
+        # make sure the original model was not modifed
+        self.assertEqual(org_out.norm(), org_out_after.norm())
+
+        # check there is only one `quantize_per_tensor`
+        model_funcs = [
+            x.target.__name__
+            for x in quant_model.graph.nodes
+            if x.op in "call_function"
+        ]
+        model_funcs = [x for x in model_funcs if x == "quantize_per_tensor"]
+        self.assertEqual(len(model_funcs), 1, model_funcs)
+
     def test_utils_quantize_utils_quantstub_nested(self):
         class AddStub(torch.nn.Module):
             def __init__(self):
