@@ -63,7 +63,7 @@ def parse_args(args_list=None):
     parser.add_argument(
         "--post_quant_backend",
         type=str,
-        choices=["qnnpack", "fbgemm", "default"],
+        choices=["qnnpack", "qnnpack_symmetric", "fbgemm", "default"],
         default="fbgemm",
         help="Post quantization: backend",
     )
