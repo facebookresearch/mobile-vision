@@ -257,7 +257,7 @@ class NaiveSyncBatchNorm3d(nn.BatchNorm3d):
         return module
 
 
-class SyncBatchNormWrapper(nn.SyncBatchNorm, NaiveSyncBatchNorm):
+class SyncBatchNormWrapper(NaiveSyncBatchNorm, nn.SyncBatchNorm):
     """
     A wrapper to use torch.nn.SyncBatchNorm when the input is on GPU,
     or NaiveSyncBatchNorm when the input is on CPU
@@ -276,4 +276,4 @@ class SyncBatchNormWrapper(nn.SyncBatchNorm, NaiveSyncBatchNorm):
             if get_world_size() > 1:
                 return nn.SyncBatchNorm.forward(self, input)
 
-        return NaiveSyncBatchNorm.forward(self, input)
+        return super().forward(input)
