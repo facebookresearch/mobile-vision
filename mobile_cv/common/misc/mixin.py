@@ -37,7 +37,7 @@ def dynamic_mixin(
 
     assert not hasattr(
         obj, "_original_model_class"
-    ), f"Dynamic mixin attempting to override original_model_class that already exists: {obj.original_model_class}"
+    ), f"Dynamic mixin attempting to override original_model_class that already exists: {obj._original_model_class}"
     obj._original_model_class = original_model_class
 
 
