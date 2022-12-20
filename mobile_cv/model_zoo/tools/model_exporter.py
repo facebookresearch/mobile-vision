@@ -373,6 +373,38 @@ def export_to_torchscript_dynamic(
     return torch_script_path
 
 
+@ExportFactory.register("_executorch_")
+def export_to_executorch_dynamic(
+    args,
+    task,
+    model,
+    inputs,
+    output_base_dir,
+    *,
+    export_format=None,
+    **kwargs,
+):
+    """Task returns the model based on the given export_format
+    The code will try to access `task.get_{model_name}_model()` to get the model
+    for export, `model_name` starts with `executorch_` prefix.
+    """
+    assert hasattr(task, "get_model_by_name")
+
+    exec_prog = task.get_model_by_name(export_format, model)
+    flatbuffer = exec_prog.buffer
+    output_dir = os.path.join(output_base_dir, export_format)
+
+    logger.info("Saving Executorch flatbuffer to {} ...".format(output_dir))
+    if not path_manager.isdir(output_dir):
+        path_manager.mkdirs(output_dir)
+
+    executorch_path = os.path.join(output_dir, "model.ff")
+    with path_manager.open(executorch_path, "wb") as fp:
+        fp.write(flatbuffer)
+
+    return executorch_path
+
+
 def _import_tasks(task_name):
     """if "@" inside the task_name, use the path after it as the path to import"""
     if "@" not in task_name:
@@ -412,11 +444,12 @@ def main(
     for ef in export_formats:
         assert ef not in ret, f"Export format {ef} has already existed."
         try:
-            export_func = (
-                ExportFactory.get(ef)
-                if ef in ExportFactory
-                else ExportFactory.get("_dynamic_")
-            )
+            if ef in ExportFactory:
+                export_func = ExportFactory.get(ef)
+            elif ef.startswith("executorch"):
+                export_func = ExportFactory.get("_executorch_")
+            else:
+                export_func = ExportFactory.get("_dynamic_")
             out_path = export_func(
                 args,
                 task,
