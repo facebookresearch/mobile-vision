@@ -381,6 +381,7 @@ def export_to_executorch_dynamic(
     inputs,
     output_base_dir,
     *,
+    data_iter,
     export_format=None,
     **kwargs,
 ):
@@ -389,6 +390,10 @@ def export_to_executorch_dynamic(
     for export, `model_name` starts with `executorch_` prefix.
     """
     assert hasattr(task, "get_model_by_name")
+
+    if export_format in ["executorch_int8", "executorch_boltnn"]:
+        ptq_model, model_attrs = get_ptq_model(args, task, model, inputs, data_iter)
+        ptq_model(*inputs)
 
     exec_prog = task.get_model_by_name(export_format, model)
     flatbuffer = exec_prog.buffer
