@@ -6,6 +6,8 @@ import os
 import tempfile
 import unittest
 
+import executorch.exir as exir
+
 import mobile_cv.arch.fbnet_v2.blocks_factory as blocks_factory
 import torch
 from mobile_cv.model_zoo.tasks import task_factory
@@ -43,6 +45,14 @@ class UnitTestTask(TaskBase):
 
     def get_dataloader(self):
         return [[torch.Tensor(1)]]
+
+    def get_executorch_model(self, model):
+        model = TestModel(self.num).eval()
+        method_name = "forward"
+        inputs = (torch.rand(1, 3, 64, 64),)
+        gm = exir.capture(getattr(model, method_name), inputs).to_edge()
+        exec_prog = gm.to_executorch()
+        return exec_prog
 
 
 class TestToolsModelExporter(unittest.TestCase):
@@ -431,3 +441,24 @@ class TestToolsModelExporter(unittest.TestCase):
             for _task_name, paths in out_paths.items():
                 for _export_name, path in paths.items():
                     self.assertTrue(os.path.exists(path))
+
+    def test_tools_model_exporter_test_exeuctorch(self):
+        with tempfile.TemporaryDirectory() as output_dir:
+            export_args = [
+                "--task",
+                "test_task_unittest",
+                "--output_dir",
+                output_dir,
+                "--raise_if_failed",
+                "1",
+                "--export_types",
+                "executorch",
+            ]
+            out_paths = model_exporter.run_with_cmdline_args_list(export_args)
+            self.assertEqual(len(out_paths), 1)
+            self.assertSetEqual(
+                set(out_paths.keys()),
+                {"executorch"},
+            )
+            for _, path in out_paths.items():
+                self.assertTrue(os.path.exists(path))
