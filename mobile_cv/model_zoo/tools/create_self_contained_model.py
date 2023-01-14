@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Copyright (c) Meta Platforms, Inc. and affiliates. All rights reserved.
 
 """
 Create a self-contained model from given model and data

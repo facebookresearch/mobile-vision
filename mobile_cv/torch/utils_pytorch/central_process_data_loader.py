@@ -1,3 +1,5 @@
+# Copyright (c) Meta Platforms, Inc. and affiliates. All rights reserved.
+
 from typing import Any, Callable, Iterable, Optional, Tuple
 
 import mobile_cv.torch.utils_pytorch.comm as comm
