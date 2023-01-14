@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Copyright (c) Meta Platforms, Inc. and affiliates. All rights reserved.
 
 """
 This module provides reusable helper functions for doing caffe2 graph

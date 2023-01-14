@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Copyright (c) Meta Platforms, Inc. and affiliates. All rights reserved.
+
 """
 General model exporter, support torchscript and torchscript int8
 """

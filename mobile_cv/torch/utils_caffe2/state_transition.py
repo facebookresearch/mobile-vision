@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Copyright (c) Meta Platforms, Inc. and affiliates. All rights reserved.
+
 """
 This file is for analyze and/or optimize state transition (eg. NHWC/NCHW,
 fp32/int8, CPU/GPU).

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
 import torch
 from mobile_cv.arch.fbnet_v2.blocks_factory import PRIMITIVES

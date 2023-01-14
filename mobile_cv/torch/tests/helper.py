@@ -1,3 +1,5 @@
+# Copyright (c) Meta Platforms, Inc. and affiliates. All rights reserved.
+
 import uuid
 from contextlib import contextmanager
 from functools import wraps

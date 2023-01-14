@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Copyright (c) Meta Platforms, Inc. and affiliates. All rights reserved.
 
 import torch
 from mobile_cv.common.misc.oss_utils import is_oss

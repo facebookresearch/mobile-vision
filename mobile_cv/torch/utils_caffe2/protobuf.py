@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Copyright (c) Meta Platforms, Inc. and affiliates. All rights reserved.
+
 """
 Utilify functions for retrieving information from caffe2 net, i.e. protobuf.
 This file also contains static analysis tools.
