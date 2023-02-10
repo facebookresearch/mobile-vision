@@ -36,9 +36,10 @@ def _get_builder(model_name):
         model_fn = _get_model_builder(model_name)
         if kwargs.pop("pretrained", False):
             if _tv_version >= parse_version("0.14.0a0"):
-                kwargs["weights"] = torchvision.models.get_model_weights(
-                    model_fn
-                ).from_str("IMAGENET1K_V1")
+                kwargs["weights"] = torchvision.models.get_model_weights(model_fn)[
+                    "IMAGENET1K_V1"
+                ]
+
             elif _tv_version >= parse_version("0.13"):
                 kwargs["weights"] = "IMAGENET1K_V1"
             else:
