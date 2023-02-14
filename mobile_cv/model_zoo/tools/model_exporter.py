@@ -8,6 +8,7 @@ General model exporter, support torchscript and torchscript int8
 import argparse
 import copy
 import importlib
+import itertools
 import json
 import logging
 import multiprocessing as mp
@@ -394,8 +395,13 @@ def export_to_executorch_dynamic(
     assert hasattr(task, "get_model_by_name")
 
     if export_format in ["executorch_int8", "executorch_boltnn"]:
-        ptq_model, model_attrs = get_ptq_model(args, task, model, inputs, data_iter)
-        ptq_model(*inputs)
+        cur_loader = itertools.chain([inputs], data_iter)
+        if hasattr(task, "get_quantized_model_for_et"):
+            logger.info("calling get quantized model for executorch")
+            ptq_model = task.get_quantized_model_for_et(model, cur_loader)
+            ptq_model(*inputs)
+        else:
+            logger.error("no quantization method found.")
 
     exec_prog = task.get_model_by_name(export_format, model)
     flatbuffer = exec_prog.buffer
