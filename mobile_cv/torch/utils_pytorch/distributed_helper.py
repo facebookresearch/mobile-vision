@@ -15,7 +15,7 @@ import tempfile
 import time
 import types
 from datetime import timedelta
-from typing import Any, Callable, Dict, Optional, Tuple
+from typing import Any, Callable, Dict, Optional, Tuple, TypeVar
 
 import mobile_cv.torch.utils_pytorch.comm as comm
 import torch
@@ -25,6 +25,7 @@ import torch.multiprocessing as mp
 from mobile_cv.common.misc.py import PicklableWrapper
 
 logger = logging.getLogger(__name__)
+_RT = TypeVar("_RT")  # return type
 
 DEFAULT_TIMEOUT = timedelta(minutes=30)
 DEFAULT_UNITTEST_TIMEOUT = timedelta(minutes=1)
@@ -157,12 +158,14 @@ def _get_filename_for_rank(prefix: str, rank: int) -> str:
     return f"{prefix}.rank{rank}"
 
 
-def save_return_deco(return_save_file: Optional[str], rank: int):
-    def deco(func):
+def save_return_deco(
+    return_save_file: Optional[str], rank: int
+) -> Callable[[Callable[..., _RT]], Callable[..., _RT]]:
+    def deco(func: Callable[..., _RT]) -> Callable[..., _RT]:
         """warp a function to save its return to the filename"""
 
         @functools.wraps(func)
-        def new_func(*args, **kwargs):
+        def new_func(*args, **kwargs) -> _RT:
             ret = func(*args, **kwargs)
             if return_save_file is not None:
                 filename = _get_filename_for_rank(return_save_file, rank)
@@ -188,7 +191,7 @@ def save_return_deco(return_save_file: Optional[str], rank: int):
 
 
 def default_distributed_worker(
-    main_func: Callable,
+    main_func: Callable[..., _RT],
     args: Tuple[Any, ...],
     kwargs: Dict[str, Any],
     backend: str,
@@ -197,7 +200,7 @@ def default_distributed_worker(
     return_save_file: Optional[str] = None,
     timeout: timedelta = DEFAULT_TIMEOUT,
     shared_context: Optional[comm.BaseSharedContext] = None,
-):
+) -> _RT:
     if shared_context:
         comm.set_shared_context(
             shared_context
@@ -208,21 +211,21 @@ def default_distributed_worker(
         return deco(main_func)(*args, **kwargs)
 
 
-def non_distributed_worker(
-    main_func: Callable,
+def _non_distributed_worker(
+    main_func: Callable[..., _RT],
     args: Tuple[Any, ...],
     kwargs: Dict[str, Any],
     shared_context: Optional[comm.BaseSharedContext] = None,
-):
+) -> _RT:
     if shared_context:
         comm.set_shared_context(
             shared_context
         )  # set the global shared context from the args passed in by mp spawn
-    return {0: main_func(*args, **kwargs)}
+    return main_func(*args, **kwargs)
 
 
 def launch(
-    main_func: Callable,
+    main_func: Callable[..., _RT],
     num_processes_per_machine: int,
     num_machines: int = 1,
     machine_rank: int = 0,
@@ -236,8 +239,8 @@ def launch(
     kwargs: Dict[str, Any] = None,
     # NOTE: API of "distributed worker" is not finalized, please reach out if you want
     # to use customized "distributed worker".
-    _distributed_worker: Callable = default_distributed_worker,
-) -> Dict[int, Any]:
+    _distributed_worker: Callable[..., _RT] = default_distributed_worker,
+) -> Dict[int, _RT]:
     """Run the `main_func` using multiple processes/nodes
     main_func(*args, **kwargs)
     """
@@ -338,12 +341,12 @@ def launch(
                         for local_rank in local_ranks
                     }
     else:
-        return non_distributed_worker(main_func, args, kwargs, shared_context)
+        return {0: _non_distributed_worker(main_func, args, kwargs, shared_context)}
 
 
 def _mp_spawn_helper(
     local_rank: int,  # first position required by mp.spawn
-    distributed_worker: Callable,
+    distributed_worker: Callable[..., _RT],
     main_func: Callable,
     args: Tuple[Any, ...],
     kwargs: Dict[str, Any],
@@ -355,7 +358,7 @@ def _mp_spawn_helper(
     world_size: int,
     num_processes_per_machine: int,
     machine_rank: int,
-):
+) -> _RT:
     global_rank = machine_rank * num_processes_per_machine + local_rank
     # Write into env variables rather than passing the args explicitly
     DistributedParams.set_environ(
@@ -414,17 +417,17 @@ def launch_deco(
     launch_method: str = "multiprocessing",
     timeout: timedelta = DEFAULT_UNITTEST_TIMEOUT,
     shared_context: Optional[comm.BaseSharedContext] = None,
-):
+) -> Callable[[Callable[..., _RT]], Callable[..., Dict[int, _RT]]]:
     """
     A helper decorator to run the instance method via `launch`. This is convenient
     to converte a unittest to distributed version.
     """
 
-    def deco(func):
+    def deco(func: Callable[..., _RT]) -> Callable[..., Dict[int, _RT]]:
         # use functools.wraps to preserve information like __name__, __doc__, which are
         # very useful for unittest.
         @functools.wraps(func)
-        def _launch_func(self, *args, **kwargs):
+        def _launch_func(self, *args, **kwargs) -> Dict[int, _RT]:
             results = launch(
                 # make func pickable for the sake of multiprocessing.spawn
                 PicklableWrapper(func),
