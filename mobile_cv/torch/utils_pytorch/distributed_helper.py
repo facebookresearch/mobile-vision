@@ -254,7 +254,7 @@ def launch(
     logger.info(
         f"Launch with num_processes_per_machine: {num_processes_per_machine},"
         f" num_machines: {num_machines}, machine_rank: {machine_rank},"
-        f" dist_url: {dist_url}, backend: {backend}."
+        f" dist_url: {dist_url}, backend: {backend}, launch_method: {launch_method}."
     )
 
     if backend == "NCCL":
@@ -272,6 +272,7 @@ def launch(
     if world_size > 1 or always_spawn:
         if launch_method not in ["multiprocessing", "elastic"]:
             raise ValueError(f"Invalid launch_method: {launch_method}")
+
         if launch_method == "elastic":
             lc = pet.LaunchConfig(
                 min_nodes=num_machines,
