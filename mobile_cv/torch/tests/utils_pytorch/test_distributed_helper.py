@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # Copyright (c) Meta Platforms, Inc. and affiliates. All rights reserved.
 
+import os
+import tempfile
 import time
 import unittest
 from dataclasses import dataclass
@@ -122,3 +124,21 @@ class TestUtilsPytorchDistributedHelper(unittest.TestCase):
     def test_shared_context(self):
         # check that subprocess gets the correct shared_context
         self.assertEqual(comm.get_shared_context().value, 10)
+
+    def test_interleave_by_rank(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            filename = os.path.join(tmp_dir, "test.txt")
+            self.launch_interleave_by_rank(filename)
+            with open(filename, "r") as f:
+                self.assertEqual(
+                    f.read(),
+                    "00;01;02;03;04;05;06;07;08;09;10;11;12;13;14;15;16;17;18;19;",
+                )
+
+    @dh.launch_deco(num_processes=2)
+    def launch_interleave_by_rank(self, filename):
+        rank = comm.get_rank()
+        with dh.interleave_by_rank():
+            for i in range(10):
+                with open(filename, "a") as f:
+                    f.write(f"{rank}{i};")
