@@ -466,3 +466,18 @@ def process_group_with_timeout(timeout, backend=None):
     )
     yield pg
     torch.distributed.destroy_process_group(pg)
+
+
+@contextlib.contextmanager
+def interleave_by_rank():
+    """
+    A helper contextmanager to interleave code execution by rank.
+    """
+    rank = comm.get_rank()
+    total_size = comm.get_world_size()
+    for r in range(total_size):
+        if rank == r:
+            logger.info(f"[interleave_by_rank] rank{rank}/{total_size} starts")
+            yield
+            logger.info(f"[interleave_by_rank] rank{rank}/{total_size} ends")
+        comm.synchronize()
