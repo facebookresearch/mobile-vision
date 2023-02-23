@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 # Copyright (c) Meta Platforms, Inc. and affiliates. All rights reserved.
 
-import os
-import tempfile
 import time
 import unittest
 from dataclasses import dataclass
@@ -28,6 +26,12 @@ def _test_func(value):
     }
     ret = comm.reduce_dict(data)
     return ret
+
+
+def _do_workload_with_interleave(concurrency_limit: int, workload_sec: float) -> float:
+    with dh.interleave_by_rank(concurrency_limit=concurrency_limit):
+        time.sleep(workload_sec)
+        return time.perf_counter()
 
 
 class TestUtilsPytorchDistributedHelper(unittest.TestCase):
@@ -125,20 +129,44 @@ class TestUtilsPytorchDistributedHelper(unittest.TestCase):
         # check that subprocess gets the correct shared_context
         self.assertEqual(comm.get_shared_context().value, 10)
 
-    def test_interleave_by_rank(self):
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            filename = os.path.join(tmp_dir, "test.txt")
-            self.launch_interleave_by_rank(filename)
-            with open(filename, "r") as f:
-                self.assertEqual(
-                    f.read(),
-                    "00;01;02;03;04;05;06;07;08;09;10;11;12;13;14;15;16;17;18;19;",
-                )
+    def test_interleave_by_rank_no_concurrency(self):
+        results = dh.launch(
+            _do_workload_with_interleave,
+            num_processes_per_machine=3,
+            backend="GLOO",
+            kwargs={
+                "concurrency_limit": 1,
+                "workload_sec": 0.1,
+            },
+        )
+        self.assertGreater(results[2] - results[1], 0.1)
+        self.assertGreater(results[1] - results[0], 0.1)
 
-    @dh.launch_deco(num_processes=2)
-    def launch_interleave_by_rank(self, filename):
-        rank = comm.get_rank()
-        with dh.interleave_by_rank():
-            for i in range(10):
-                with open(filename, "a") as f:
-                    f.write(f"{rank}{i};")
+    def test_interleave_by_rank_with_concurrency(self):
+        results = dh.launch(
+            _do_workload_with_interleave,
+            num_processes_per_machine=5,
+            backend="GLOO",
+            kwargs={
+                "concurrency_limit": 2,
+                "workload_sec": 0.1,
+            },
+        )
+        epsilon = 0.1  # assume concurrent processes start within epsilon time window.
+        self.assertLess(abs(results[1] - results[0]), epsilon)
+        self.assertLess(abs(results[3] - results[2]), epsilon)
+        self.assertGreater(results[2] - results[1], 0.1)
+        self.assertGreater(results[4] - results[3], 0.1)
+
+    def test_interleave_by_rank_max_concurrency(self):
+        results = dh.launch(
+            _do_workload_with_interleave,
+            num_processes_per_machine=3,
+            backend="GLOO",
+            kwargs={
+                "concurrency_limit": 5,  # it's legal to set limit larger than nproc
+                "workload_sec": 0.1,
+            },
+        )
+        epsilon = 0.1  # assume concurrent processes start within epsilon time window.
+        self.assertLess(abs(results[2] - results[1]), epsilon)

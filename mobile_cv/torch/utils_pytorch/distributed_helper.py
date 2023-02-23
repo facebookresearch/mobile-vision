@@ -469,14 +469,21 @@ def process_group_with_timeout(timeout, backend=None):
 
 
 @contextlib.contextmanager
-def interleave_by_rank():
+def interleave_by_rank(concurrency_limit: int = 1):
     """
     A helper contextmanager to interleave code execution by rank.
+
+    Args:
+        concurrency_limit: number of concurrent execution.
     """
     rank = comm.get_rank()
     total_size = comm.get_world_size()
-    for r in range(total_size):
-        if rank == r:
+
+    if not concurrency_limit > 0:
+        raise ValueError("`concurrency_limit` must be positive")
+
+    for i in range(0, total_size, concurrency_limit):
+        if i <= rank and rank < i + concurrency_limit:
             logger.info(f"[interleave_by_rank] rank{rank}/{total_size} starts")
             yield
             logger.info(f"[interleave_by_rank] rank{rank}/{total_size} ends")
