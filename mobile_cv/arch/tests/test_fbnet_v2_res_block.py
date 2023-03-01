@@ -100,7 +100,7 @@ class TestResBlock(unittest.TestCase):
         print(model)
 
         dequants = [x.target for x in model.graph.nodes if x.op == "call_method"]
-        self.assertListEqual(dequants, ["dequantize", "dequantize"])
+        self.assertListEqual(dequants, ["dequantize", "dequantize", "dequantize"])
 
         funcs = [x.target for x in model.graph.nodes if x.op == "call_function"]
         self.assertEqual(
