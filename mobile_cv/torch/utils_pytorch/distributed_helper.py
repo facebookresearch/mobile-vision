@@ -14,6 +14,7 @@ import pickle
 import tempfile
 import time
 import types
+import uuid
 from datetime import timedelta
 from typing import Any, Callable, Dict, Optional, Tuple, TypeVar
 
@@ -131,7 +132,7 @@ def enable_dist_process_groups(
 ):
     assert backend.lower() in ["nccl", "gloo"]
     try:
-        dist.init_process_group(
+        pg = dist.init_process_group(
             backend=backend,
             init_method=init_method,
             world_size=dist_params.world_size,
@@ -149,9 +150,11 @@ def enable_dist_process_groups(
     # See: https://github.com/facebookresearch/maskrcnn-benchmark/issues/172
     comm.synchronize()
 
-    with _enable_local_process_group(comm, dist_params):
-        yield
-    dist.destroy_process_group()
+    try:
+        with _enable_local_process_group(comm, dist_params):
+            yield
+    finally:
+        dist.destroy_process_group(pg)
 
 
 def _get_filename_for_rank(prefix: str, rank: int) -> str:
@@ -249,10 +252,11 @@ def launch(
         kwargs = {}
 
     if dist_url is None:
-        dist_url = f"file:///tmp/mcvdh_dist_file_{time.time()}"
+        uid = uuid.uuid4().hex
+        dist_url = f"file:///tmp/mcvdh_dist_file_{uid}_{time.time()}"
 
     logger.info(
-        f"Launch with num_processes_per_machine: {num_processes_per_machine},"
+        f"Launch {main_func} with num_processes_per_machine: {num_processes_per_machine},"
         f" num_machines: {num_machines}, machine_rank: {machine_rank},"
         f" dist_url: {dist_url}, backend: {backend}, launch_method: {launch_method}."
     )
@@ -296,7 +300,6 @@ def launch(
                 timeout,
                 shared_context,
             )
-            return results
         else:
             prefix = f"mcvdh_{main_func.__module__}.{main_func.__name__}_return"
             with tempfile.NamedTemporaryFile(prefix=prefix, suffix=".pth") as f:
@@ -304,7 +307,7 @@ def launch(
                 if dist_url.startswith("env://"):
                     # FIXME (tsahi): This branch is not necessary, it doesn't launch
                     # anything, we should simply call distributed_worker_elastic_launch
-                    return _distributed_worker(
+                    results = _distributed_worker(
                         main_func,
                         args,
                         kwargs,
@@ -335,14 +338,17 @@ def launch(
                         ),
                         daemon=False,
                     )
-                    return {
+                    results = {
                         local_rank: torch.load(
                             _get_filename_for_rank(return_file, local_rank)
                         )
                         for local_rank in local_ranks
                     }
     else:
-        return {0: _non_distributed_worker(main_func, args, kwargs, shared_context)}
+        results = {0: _non_distributed_worker(main_func, args, kwargs, shared_context)}
+
+    logger.info(f"Launched jobs finished, dist_url: {dist_url}")
+    return results
 
 
 def _mp_spawn_helper(
@@ -405,10 +411,11 @@ def _enable_local_process_group(
             comm_._LOCAL_PROCESS_GROUP = pg
 
     comm.synchronize()
-    yield
-
-    torch.distributed.destroy_process_group(pg)
-    comm_._LOCAL_PROCESS_GROUP = None
+    try:
+        yield
+    finally:
+        torch.distributed.destroy_process_group(pg)
+        comm_._LOCAL_PROCESS_GROUP = None
 
 
 def launch_deco(
@@ -464,8 +471,12 @@ def process_group_with_timeout(timeout, backend=None):
         timeout=timeout,
         backend=backend,
     )
-    yield pg
-    torch.distributed.destroy_process_group(pg)
+    try:
+        yield pg
+    finally:
+        # NOTE: barrier is needed here because some processes may finish earlier
+        torch.distributed.monitored_barrier()
+        torch.distributed.destroy_process_group(pg)
 
 
 @contextlib.contextmanager

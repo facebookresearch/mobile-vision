@@ -33,9 +33,9 @@ def enable_ddp_env(func):
         os.environ["MASTER_ADDR"] = "localhost"
         os.environ["MASTER_PORT"] = "12355"
 
-        dist.init_process_group("gloo", rank=0, world_size=1)
+        pg = dist.init_process_group("gloo", rank=0, world_size=1)
         ret = func(*args, **kwargs)
-        dist.destroy_process_group()
+        dist.destroy_process_group(pg)
         return ret
 
     return wrapper

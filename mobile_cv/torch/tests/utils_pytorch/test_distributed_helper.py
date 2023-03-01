@@ -10,6 +10,7 @@ import mobile_cv.torch.utils_pytorch.comm as comm
 import mobile_cv.torch.utils_pytorch.distributed_helper as dh
 import torch
 from mobile_cv.common.misc.oss_utils import is_oss
+from mobile_cv.common.misc.py import PicklableWrapper
 from mobile_cv.torch.utils_pytorch.comm import BaseSharedContext
 
 
@@ -32,6 +33,23 @@ def _do_workload_with_interleave(concurrency_limit: int, workload_sec: float) ->
     with dh.interleave_by_rank(concurrency_limit=concurrency_limit):
         time.sleep(workload_sec)
         return time.perf_counter()
+
+
+def _all_gather_offset_by_200ms(self: unittest.TestCase, timeout_ms: float):
+    results = comm.all_gather(comm.get_rank())
+    self.assertEqual(results, list(range(comm.get_world_size())))
+
+    # If the `timeout_ms` is less than 200ms, calling `all_gather` will cause timeout
+    # error because there's a 200ms gap between two processes at the beginning of
+    # `all_gather`.
+    with dh.process_group_with_timeout(
+        timeout=timedelta(milliseconds=timeout_ms)
+    ) as pg:
+        if comm.get_rank() == 0:
+            time.sleep(0.2)
+        torch.distributed.monitored_barrier(group=pg)
+        results = comm.all_gather(comm.get_rank(), group=pg)
+    self.assertEqual(results, list(range(comm.get_world_size())))
 
 
 class TestUtilsPytorchDistributedHelper(unittest.TestCase):
@@ -109,20 +127,29 @@ class TestUtilsPytorchDistributedHelper(unittest.TestCase):
         local_world_size = comm.get_local_size()
         self.assertEqual(local_world_size, 2)
 
-    @dh.launch_deco(num_processes=2, timeout=timedelta(milliseconds=100))
-    def test_timeout(self):
-        results = comm.all_gather(comm.get_rank())
-        self.assertEqual(results, [0, 1])
+    def test_custom_timeout(self):
+        # with 500ms timeout, the `all_gather` should run successfully.
+        dh.launch(
+            _all_gather_offset_by_200ms,
+            num_processes_per_machine=2,
+            backend="GLOO",
+            kwargs={
+                "self": PicklableWrapper(self),
+                "timeout_ms": 500,
+            },
+        )
 
-        # the global timeout is set to 100ms, calling `all_gather` will cause timeout
-        # error because there's a 200ms gap between two processes at the beginning of
-        # `all_gather`. Here we use `process_group_with_timeout` to increate the timeout
-        # temporarily, so the `all_gather` can run successfully.
-        with dh.process_group_with_timeout(timeout=timedelta(milliseconds=1000)) as pg:
-            if comm.get_rank() == 0:
-                time.sleep(0.2)
-            comm.all_gather(comm.get_rank(), group=pg)
-        self.assertEqual(results, [0, 1])
+        # with 100ms timeout, the `all_gather` should fail.
+        with self.assertRaises(torch.multiprocessing.ProcessRaisedException):
+            dh.launch(
+                _all_gather_offset_by_200ms,
+                num_processes_per_machine=2,
+                backend="GLOO",
+                kwargs={
+                    "self": PicklableWrapper(self),
+                    "timeout_ms": 100,
+                },
+            )
 
     @dh.launch_deco(num_processes=2, shared_context=SharedContext(10))
     def test_shared_context(self):
