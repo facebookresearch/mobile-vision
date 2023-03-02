@@ -418,6 +418,7 @@ def launch_deco(
     launch_method: str = "multiprocessing",
     timeout: timedelta = DEFAULT_UNITTEST_TIMEOUT,
     shared_context: Optional[comm.BaseSharedContext] = None,
+    launcher: Callable = launch,
 ) -> Callable[[Callable[..., _RT]], Callable[..., Dict[int, _RT]]]:
     """
     A helper decorator to run the instance method via `launch`. This is convenient
@@ -429,7 +430,7 @@ def launch_deco(
         # very useful for unittest.
         @functools.wraps(func)
         def _launch_func(self, *args, **kwargs) -> Dict[int, _RT]:
-            results = launch(
+            results = launcher(
                 # make func pickable for the sake of multiprocessing.spawn
                 PicklableWrapper(func),
                 num_processes_per_machine=num_processes,
