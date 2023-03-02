@@ -27,14 +27,16 @@ def enable_dist(world_size: int = 1, rank: int = 0, uid: Optional[str] = None):
     """Enable pytorch distributed enviroment"""
     if uid is None:
         uid = uuid.uuid4().hex
-    dist.init_process_group(
+    pg = dist.init_process_group(
         "gloo",
         rank=rank,
         world_size=world_size,
         init_method=f"file:///tmp/mcv_test_ddp_init_{uid}",
     )
-    yield
-    dist.destroy_process_group()
+    try:
+        yield
+    finally:
+        dist.destroy_process_group(pg)
 
 
 def _run_process(rank: int, world_size: int, uid: str, func, func_args):
