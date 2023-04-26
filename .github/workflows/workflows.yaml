@@ -28,7 +28,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          pip install -U mock hypothesis parameterized pytest
+          pip install -U mock hypothesis parameterized pytest scipy
           pip install -e .
 
       - name: Run pytest
