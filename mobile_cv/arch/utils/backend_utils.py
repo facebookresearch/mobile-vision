@@ -14,6 +14,15 @@ def move_to_device(data, device: str):
     return diter.value
 
 
+def get_cpu_copy(data):
+    """Detach and copy data to cpu, data could be a nested dict/list"""
+    diter = iu.recursive_iterate(data, iter_types=torch.Tensor)
+    for cur in diter:
+        diter.send(cur.detach().cpu())
+
+    return diter.value
+
+
 class GPUWrapper(torch.nn.Module):
     """A simple wrapper to move the module to run on GPU"""
 
