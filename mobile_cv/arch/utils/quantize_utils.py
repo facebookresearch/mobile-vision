@@ -359,7 +359,7 @@ class QuantizableModule(nn.Module):
 
 class QuantWrapper(QuantizableModule):
     def __init__(self, module, **kwargs):
-        qconfig = module.qconfig if hasattr(module, "qconfig") else None
+        qconfig = getattr(module, "qconfig", None)
         super().__init__(eager_mode=True, qconfig=qconfig, **kwargs)
         self.module = module
 
