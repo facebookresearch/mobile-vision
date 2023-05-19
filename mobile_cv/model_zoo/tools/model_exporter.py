@@ -179,6 +179,13 @@ class TraceWrapperP3(torch.nn.Module):
         return self.model(x, y, z)
 
 
+def _get_model_extra_files(model):
+    if hasattr(model, "extra_files"):
+        return model.extra_files
+    else:
+        return None
+
+
 def _get_traced_model_with_attrs(traced_model, num_inputs, model_attrs):
     """For a module that has already been traced, adding additional attributes on
     top of it and script it again will not work. This workaround add a wrapper to
@@ -240,6 +247,7 @@ def trace_and_save_torchscript(
     model_attrs: Dict = None,
     save_for_lite_interpreter: bool = True,
     save_bundle_input: bool = False,
+    model_extra_files: Dict = None,
 ):
     logger.info("Tracing and saving TorchScript to {} ...".format(output_path))
 
@@ -263,7 +271,7 @@ def trace_and_save_torchscript(
 
     model_file = os.path.join(output_path, "model.jit")
     with path_manager.open(model_file, "wb") as fp:
-        torch.jit.save(script_model, fp)
+        torch.jit.save(script_model, fp, _extra_files=model_extra_files)
 
     link_model_file = os.path.join(output_path, "model.pt")
     path_manager.symlink(model_file, link_model_file)
@@ -280,7 +288,14 @@ def trace_and_save_torchscript(
     if save_for_lite_interpreter:
         lite_model_file = os.path.join(output_path, "model.ptl")
         with path_manager.open(lite_model_file, "wb") as fp:
-            fp.write(script_model._save_to_buffer_for_lite_interpreter())
+            if model_extra_files:
+                fp.write(
+                    script_model._save_to_buffer_for_lite_interpreter(
+                        _extra_files=model_extra_files
+                    )
+                )
+            else:
+                fp.write(script_model._save_to_buffer_for_lite_interpreter())
 
     return model_file
 
@@ -294,6 +309,9 @@ def export_to_torchscript(args, task, model, inputs, output_base_dir, **kwargs):
     with torch.no_grad():
         fused_model = fuse_utils.fuse_model(model, inplace=False)
 
+    # get model_extra_files from model if it exists
+    model_extra_files = _get_model_extra_files(model)
+
     print("fused model {}".format(fused_model))
     torch_script_path = trace_and_save_torchscript(
         fused_model,
@@ -305,6 +323,7 @@ def export_to_torchscript(args, task, model, inputs, output_base_dir, **kwargs):
         model_attrs=model_attrs,
         save_for_lite_interpreter=args.save_for_lite_interpreter,
         save_bundle_input=args.save_bundle_input,
+        model_extra_files=model_extra_files,
     )
     return torch_script_path
 
@@ -318,6 +337,9 @@ def export_to_torchscript_int8(
     logger.info(ptq_model)
     ptq_model(*inputs)
 
+    # get model_extra_files from ptq_model if it exists
+    model_extra_files = _get_model_extra_files(ptq_model)
+
     ptq_folder = os.path.join(output_base_dir, "torchscript_int8")
     ptq_torchscript_path = trace_and_save_torchscript(
         ptq_model,
@@ -329,6 +351,7 @@ def export_to_torchscript_int8(
         model_attrs=model_attrs,
         save_for_lite_interpreter=args.save_for_lite_interpreter,
         save_bundle_input=args.save_bundle_input,
+        model_extra_files=model_extra_files,
     )
 
     return ptq_torchscript_path
@@ -360,6 +383,9 @@ def export_to_torchscript_dynamic(
     if model_attrs is not None and "data" in model_attrs:
         inputs = model_attrs["data"]
 
+    # get model_extra_files from model if it exists
+    model_extra_files = _get_model_extra_files(model)
+
     print(f"Converting to {model_name}...")
     output_dir = os.path.join(output_base_dir, export_format)
     torch_script_path = trace_and_save_torchscript(
@@ -372,6 +398,7 @@ def export_to_torchscript_dynamic(
         model_attrs=model_attrs,
         save_for_lite_interpreter=args.save_for_lite_interpreter,
         save_bundle_input=args.save_bundle_input,
+        model_extra_files=model_extra_files,
     )
     return torch_script_path
 
