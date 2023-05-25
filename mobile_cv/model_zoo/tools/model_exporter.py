@@ -477,8 +477,11 @@ def main(
         first_batch = []
         logger.warning("No data available from the data loader")
 
-    with torch.no_grad():
-        flops_utils.print_model_flops(model, first_batch)
+    try:
+        with torch.no_grad():
+            flops_utils.print_model_flops(model, first_batch)
+    except Exception:
+        logger.warning("Failed to print model flops")
 
     ret = {}
     for ef in export_formats:
