@@ -26,6 +26,7 @@ import torch
 
 # @manual=//mobile-vision/mobile_cv/mobile_cv/common:utils_io
 from mobile_cv.common import utils_io
+from mobile_cv.common.misc.file_utils import recompress_export
 from mobile_cv.model_zoo.tools.utils import get_model_attributes, get_ptq_model
 from torch.utils.bundled_inputs import augment_model_with_bundled_inputs
 from torch.utils.mobile_optimizer import optimize_for_mobile
@@ -296,6 +297,8 @@ def trace_and_save_torchscript(
                 )
             else:
                 fp.write(script_model._save_to_buffer_for_lite_interpreter())
+        lite_compressed_file = os.path.join(output_path, "model_compressed.ptl")
+        recompress_export(lite_model_file, lite_compressed_file)
 
     return model_file
 
