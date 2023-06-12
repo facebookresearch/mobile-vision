@@ -24,7 +24,6 @@ import mobile_cv.lut.lib.pt.flops_utils as flops_utils
 import mobile_cv.model_zoo.tasks.task_factory as task_factory
 import torch
 
-# @manual=//mobile-vision/mobile_cv/mobile_cv/common:utils_io
 from mobile_cv.common import utils_io
 from mobile_cv.common.misc.file_utils import recompress_export
 from mobile_cv.model_zoo.tools.utils import get_model_attributes, get_ptq_model
