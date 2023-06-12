@@ -252,6 +252,7 @@ def launch(
         kwargs = {}
 
     if dist_url is None:
+        assert num_machines == 1, "Must provide dist_url for multi-node"
         uid = uuid.uuid4().hex
         dist_url = f"file:///tmp/mcvdh_dist_file_{uid}_{time.time()}"
 
