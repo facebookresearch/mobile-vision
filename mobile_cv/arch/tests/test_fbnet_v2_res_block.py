@@ -11,7 +11,7 @@ import torch.nn as nn
 # import mobile_cv.lut.lib.pt.flops_utils as flops_utils
 
 # from mobile_cv.arch.fbnet_v2.fbnet_builder import FBNetBuilder
-# from mobile_cv.arch.fbnet_v2.fbnet_hr import FBNetHRBuilder
+# from mobile_cv.arch.fbnet_v2.fb.fbnet_hr import FBNetHRBuilder
 
 
 def _has_module(model, module_type):
