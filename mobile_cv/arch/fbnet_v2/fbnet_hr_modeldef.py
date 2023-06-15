@@ -3,7 +3,7 @@
 
 """
 This file is for backward compatiblity.
-Use mobile_cv.arch.builder.fbnet_hr_modeldef instead.
+Use mobile_cv.arch.builder.fb.fbnet_hr_modeldef instead.
 """
 
-from mobile_cv.arch.builder.fbnet_hr_modeldef import *  # noqa
+# @fb-only: from mobile_cv.arch.builder.fb.fbnet_hr_modeldef import *  # noqa  
