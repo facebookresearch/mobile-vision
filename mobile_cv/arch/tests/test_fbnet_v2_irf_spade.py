@@ -9,7 +9,7 @@ import mobile_cv.arch.fbnet_v2.spade as sp
 import mobile_cv.arch.utils.fuse_utils as fuse_utils
 import torch
 
-from .helper import find_modules, run_and_compare
+from mobile_cv.arch.tests.helper import find_modules, run_and_compare
 
 
 def _build_model(arch_def, dim_in):

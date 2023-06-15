@@ -8,7 +8,7 @@ FBNet model inverse residual building block
 import mobile_cv.arch.utils.helper as hp
 import torch.nn as nn
 
-from . import basic_blocks as bb
+from mobile_cv.arch.fbnet_v2 import basic_blocks as bb
 
 
 class IRFBlock(nn.Module):

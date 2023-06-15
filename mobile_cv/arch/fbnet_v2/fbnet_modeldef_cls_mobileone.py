@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
-from .fbnet_modeldef_cls import MODEL_ARCH
+from mobile_cv.arch.fbnet_v2.fbnet_modeldef_cls import MODEL_ARCH
 
 
 BASIC_ARGS = {}

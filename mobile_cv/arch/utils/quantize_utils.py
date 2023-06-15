@@ -12,14 +12,14 @@ import mobile_cv.common.misc.iter_utils as iu
 import torch
 import torch.nn as nn
 from mobile_cv.arch.layers import NaiveSyncBatchNorm
+
+from mobile_cv.arch.utils import fuse_utils
 from torch.ao.quantization.backend_config import (
     get_fbgemm_backend_config,
     get_native_backend_config,
     get_qnnpack_backend_config,
 )
 from torch.ao.quantization.stubs import DeQuantStub, QuantStub
-
-from . import fuse_utils
 
 
 def get_backend_qconfig(backend):

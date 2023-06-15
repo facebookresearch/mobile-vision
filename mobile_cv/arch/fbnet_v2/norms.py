@@ -5,9 +5,9 @@ from typing import Optional, Tuple
 
 import torch
 import torch.nn as nn
-from torch.nn.parameter import Parameter
 
-from . import basic_blocks as bb
+from mobile_cv.arch.fbnet_v2 import basic_blocks as bb
+from torch.nn.parameter import Parameter
 
 
 @bb.BN_REGISTRY.register("ada_instance_layer")
