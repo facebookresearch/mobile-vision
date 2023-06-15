@@ -6,7 +6,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 from common.utils_pytorch.model_utils import find_module_key
-from mobile_cv.arch.fbnet.fbnet_building_blocks import ConvBNRelu, QuantConvBNRelu
+from mobile_cv.arch.fb.fbnet.fbnet_building_blocks import ConvBNRelu, QuantConvBNRelu
 from mobile_cv.arch.fbnet_v2.basic_blocks import ConvBNRelu as ConvBNReluBasic
 from mobile_cv.arch.layers import Conv2d
 from mobile_cv.common.misc.oss_utils import fb_overwritable
