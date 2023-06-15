@@ -9,7 +9,7 @@ import mobile_cv.arch.utils.fuse_utils as fuse_utils
 import mobile_cv.lut.lib.pt.flops_utils as flops_utils
 import torch
 
-from .helper import find_modules, run_and_compare
+from mobile_cv.arch.tests.helper import find_modules, run_and_compare
 
 
 class TestSpade(unittest.TestCase):

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
-from .batch_norm import (
+from mobile_cv.arch.layers.batch_norm import (
     FrozenBatchNorm2d,
     NaiveSyncBatchNorm,
     NaiveSyncBatchNorm1d,
@@ -10,7 +10,7 @@ from .batch_norm import (
 )
 
 # isort/black has issues in processing those import
-from .misc import (  # isort:skip
+from mobile_cv.arch.layers.misc import (  # isort:skip
     AvgPool2d,
     BatchNorm2d,
     Conv2d,
@@ -19,7 +19,7 @@ from .misc import (  # isort:skip
     cat,
     interpolate,
 )
-from .shape_spec import ShapeSpec
+from mobile_cv.arch.layers.shape_spec import ShapeSpec
 
 
 __all__ = [
