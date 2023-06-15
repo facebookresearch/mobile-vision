@@ -2,15 +2,15 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
 import torch
-from torch.ao.quantization.fake_quantize import FakeQuantize
-from torch.ao.quantization.observer import MinMaxObserver
-from torch.ao.quantization.qconfig import QConfig
 
-from .observer import (
+from mobile_cv.arch.quantization.observer import (
     FixedMinMaxObserver,
     UpdatableSymmetricMovingAverageMinMaxObserver,
     UpdateableReLUMovingAverageMinMaxObserver,
 )
+from torch.ao.quantization.fake_quantize import FakeQuantize
+from torch.ao.quantization.observer import MinMaxObserver
+from torch.ao.quantization.qconfig import QConfig
 
 
 # used in weights
