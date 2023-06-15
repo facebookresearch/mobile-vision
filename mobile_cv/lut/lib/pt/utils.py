@@ -3,7 +3,7 @@
 
 import torch
 
-from . import pt_converter
+from mobile_cv.lut.lib.pt import pt_converter
 
 
 class ModuleHook(object):

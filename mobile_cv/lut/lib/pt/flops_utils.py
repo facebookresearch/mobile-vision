@@ -7,8 +7,8 @@ from contextlib import contextmanager
 
 import torch
 
-from .. import lut_helper
-from . import pt_converter, utils
+from mobile_cv.lut.lib import lut_helper
+from mobile_cv.lut.lib.pt import pt_converter, utils
 
 
 class FlopsEstimation(object):
