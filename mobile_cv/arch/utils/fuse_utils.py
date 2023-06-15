@@ -22,20 +22,22 @@ from mobile_cv.arch.layers.batch_norm import (
 
 TORCH_VERSION: Tuple[int, ...] = tuple(int(x) for x in torch.__version__.split(".")[:2])
 if TORCH_VERSION > (1, 10):
-    from torch.ao.quantization import fuse_linear_bn, fuse_modules, fuse_modules_qat
+    from torch.ao.quantization import fuse_modules, fuse_modules_qat
     from torch.ao.quantization.fuse_modules import (
         fuse_conv_bn,
         fuse_conv_bn_relu,
         fuse_known_modules,
     )
+    from torch.ao.quantization.fuser_method_mappings import fuse_linear_bn
     from torch.ao.quantization.quantize_fx import _fuse_fx
 else:
-    from torch.quantization import fuse_linear_bn, fuse_modules
+    from torch.quantization import fuse_modules
     from torch.quantization.fuse_modules import (
         fuse_conv_bn,
         fuse_conv_bn_relu,
         fuse_known_modules,
     )
+    from torch.quantization.fuser_method_mappings import fuse_linear_bn
     from torch.quantization.quantize_fx import _fuse_fx
 
 
