@@ -17,7 +17,7 @@ from mobile_cv.arch.layers.batch_norm import (
     NaiveSyncBatchNorm3d,
 )
 
-from . import helper
+from mobile_cv.arch.tests import helper
 
 
 # needed for the unit test test_fuse_model_fx_with_assert

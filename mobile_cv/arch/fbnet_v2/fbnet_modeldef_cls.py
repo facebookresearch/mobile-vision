@@ -3,8 +3,8 @@
 
 import mobile_cv.common.misc.registry as registry
 
-from . import modeldef_utils as mdu
-from .modeldef_utils import e1, e6
+from mobile_cv.arch.fbnet_v2 import modeldef_utils as mdu
+from mobile_cv.arch.fbnet_v2.modeldef_utils import e1, e6
 
 
 MODEL_ARCH = registry.Registry("cls_arch_factory")

@@ -16,6 +16,8 @@ import mobile_cv.common.misc.registry as registry
 import torch
 import torch.fx
 import torch.nn as nn
+
+from mobile_cv.arch.fbnet_v2.blur_pool import BlurPool2d as BlurPool
 from mobile_cv.arch.layers import (
     FrozenBatchNorm2d,
     GroupNorm,
@@ -25,8 +27,6 @@ from mobile_cv.arch.layers import (
     SyncBatchNormWrapper,
 )
 from torch.nn.quantized.modules import FloatFunctional
-
-from .blur_pool import BlurPool2d as BlurPool
 
 # needed for SE module with fx tracing
 torch.fx.wrap("len")

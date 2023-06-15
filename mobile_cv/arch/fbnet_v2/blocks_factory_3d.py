@@ -7,7 +7,7 @@ FBNet model building blocks factory for 3d convs
 
 import mobile_cv.arch.utils.helper as hp
 
-from . import basic_blocks as bb, blocks_factory
+from mobile_cv.arch.fbnet_v2 import basic_blocks as bb, blocks_factory
 
 
 _PRIMITIVES = {

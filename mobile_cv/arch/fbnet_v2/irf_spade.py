@@ -5,7 +5,7 @@ import copy
 
 import mobile_cv.arch.utils.helper as hp
 
-from . import blocks_factory, irf_block
+from mobile_cv.arch.fbnet_v2 import blocks_factory, irf_block
 
 
 IRF_SPADE_DEFAULT_ARGS = {"seg_return_type": "input"}
