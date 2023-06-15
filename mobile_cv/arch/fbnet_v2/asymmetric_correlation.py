@@ -5,7 +5,7 @@ import math
 
 import torch
 import torch.nn as nn
-from torch.nn.quantized import FloatFunctional
+from torch.ao.nn.quantized.modules.functional_modules import FloatFunctional
 
 
 class NaiveAsymmetricCorrelationBlock(nn.Module):
