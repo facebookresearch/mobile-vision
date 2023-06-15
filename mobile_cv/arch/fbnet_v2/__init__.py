@@ -18,6 +18,8 @@ from mobile_cv.arch.fbnet_v2 import (  # noqa
     gb_block,
     irf_3d_block,
     irf_spade,
+    mobileone_block,
     norms,
     spade,
 )
+# @fb-only: from mobile_cv.arch.fbnet_v2 import fb  # isort:skip  # noqa 
