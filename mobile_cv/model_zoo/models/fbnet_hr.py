@@ -20,8 +20,8 @@ from typing import Dict, Tuple
 
 import mobile_cv.arch.fbnet_v2.fbnet_hr_modeldef as modeldef
 import torch.nn as nn
+from mobile_cv.arch.fbnet_v2.fb.fbnet_hr import FBNetHRBuilder
 from mobile_cv.arch.fbnet_v2.fbnet_builder import FBNetBuilder
-from mobile_cv.arch.fbnet_v2.fbnet_hr import FBNetHRBuilder
 
 
 def _create_builder(arch_name: str) -> Tuple[FBNetHRBuilder, Dict]:
