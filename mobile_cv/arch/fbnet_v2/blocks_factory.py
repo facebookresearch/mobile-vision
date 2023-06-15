@@ -7,15 +7,15 @@ FBNet model building blocks factory
 
 import mobile_cv.arch.utils.helper as hp
 import mobile_cv.common.misc.registry as registry
-from torch import nn
 
-from . import (  # noqa
+from mobile_cv.arch.fbnet_v2 import (  # noqa
     basic_blocks as bb,
     irf_block,
     mobileone_block,
     res_block,
     sg_block,
 )
+from torch import nn
 
 
 PRIMITIVES = registry.Registry("blocks_factory")
