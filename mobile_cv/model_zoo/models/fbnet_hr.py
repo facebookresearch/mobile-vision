@@ -10,7 +10,7 @@ Example code to create the model:
     model.eval()
 
 All suported architectures could be found in:
-    mobile_cv/arch/fbnet_v2/fbnet_hr_modeldef.py
+    mobile_cv/arch/builder/fb/fbnet_hr_modeldef.py
 
 Architectures with pretrained weights could be found in:
     mobile_cv/model_zoo/models/model_info/fbnet_hr/*.json
@@ -18,7 +18,7 @@ Architectures with pretrained weights could be found in:
 
 from typing import Dict, Tuple
 
-import mobile_cv.arch.fbnet_v2.fbnet_hr_modeldef as modeldef
+import mobile_cv.arch.builder.fb.fbnet_hr_modeldef as modeldef
 import torch.nn as nn
 from mobile_cv.arch.fbnet_v2.fb.fbnet_hr import FBNetHRBuilder
 from mobile_cv.arch.fbnet_v2.fbnet_builder import FBNetBuilder
