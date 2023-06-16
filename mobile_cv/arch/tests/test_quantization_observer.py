@@ -13,10 +13,10 @@ from mobile_cv.arch.quantization.observer import (
     update_stat,
     UpdateableReLUMovingAverageMinMaxObserver,
 )
-from torch.ao.quantization import QuantStub
 from torch.ao.quantization.fake_quantize import FakeQuantize
 from torch.ao.quantization.observer import MinMaxObserver
 from torch.ao.quantization.qconfig import QConfig
+from torch.ao.quantization.stubs import QuantStub
 
 
 def _reload_state_dict(state_dict):
