@@ -5,6 +5,9 @@
 Common additional libraries used by tools
 """
 
+from mobile_cv.common.misc.oss_utils import fb_overwritable
 
+
+@fb_overwritable()
 def load_libraries():
     pass
