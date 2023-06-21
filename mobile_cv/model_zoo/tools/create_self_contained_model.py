@@ -17,8 +17,6 @@ import torch.utils.bundled_inputs
 import torchvision  # noqa
 
 from mobile_cv.common.utils_io import get_path_manager
-
-# @manual=//mobile-vision/mobile_cv/mobile_cv/model_zoo/tools:tools_common_libs
 from mobile_cv.model_zoo.tools.common_libs import load_libraries
 
 path_manager = get_path_manager()
