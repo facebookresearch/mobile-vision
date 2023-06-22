@@ -40,7 +40,7 @@ class TestMisc(unittest.TestCase):
                 f.write("foo = 42\n")
 
             sys.path.append(test_dir)
-            from test_package.lib.a import bar
+            from test_package.lib.a import bar  # @manual
 
             self.assertEqual(bar, 42)
 
