@@ -217,3 +217,29 @@ def get_match_keys_bipartite(fp32_items: List[Item], qat_items: List[Item]):
         # print(f"Best matching cost: {cost_sum}")
 
     return ret
+
+
+def get_list_mapping(list1: List[str], list2: List[str]) -> Dict[str, str]:
+    """Get the best mapping between 2 lists of strings"""
+    ret = []
+
+    dim1 = len(list1)
+    dim2 = len(list2)
+
+    cost = np.zeros((dim1, dim2))
+    for ii in range(dim1):
+        for jj in range(dim2):
+            cost[ii, jj] = levenshtein(list1[ii], list2[jj])
+
+    from scipy.optimize import linear_sum_assignment  # @manual
+
+    # bipartite matching with minimal cost
+    row_ind, col_ind = linear_sum_assignment(cost)
+    ret = {list1[ri]: list2[ci] for ri, ci in zip(row_ind, col_ind)}
+    cost_sum = cost[row_ind, col_ind].sum()
+    if cost_sum > 0:
+        for list1_key, list2_key in ret.items():
+            if list1_key != list2_key:
+                print(f"{list1_key} -> {list2_key}")
+
+    return ret
