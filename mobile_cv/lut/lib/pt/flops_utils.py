@@ -195,17 +195,22 @@ def print_model_flops(
     """
     assert isinstance(inputs, (tuple, list)), f"Invalid input types {inputs}"
     fest = FlopsEstimation(model)
-    with fest.enable():
-        if forward_func_name is None:
-            output = model(*inputs)
-        else:
-            func = getattr(model, forward_func_name)
-            output = func(*inputs)
-        fest.add_flops_info()
-        nparams, nflops = fest.get_flops()
-        if print_per_layer_flops:
-            print(model)
-        print(f"nparams: {nparams}, nflops {nflops}")
+    try:
+        with fest.enable():
+            if forward_func_name is None:
+                output = model(*inputs)
+            else:
+                func = getattr(model, forward_func_name)
+                output = func(*inputs)
+            fest.add_flops_info()
+            nparams, nflops = fest.get_flops()
+            if print_per_layer_flops:
+                print(model)
+            print(f"nparams: {nparams}, nflops {nflops}")
+    except Exception as e:
+        # clean up hooks when flop estimation fails, avoid overriding correct error messages
+        fest._hook.remove_hook()
+        raise e
     return output
 
 
