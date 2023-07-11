@@ -337,7 +337,6 @@ def export_to_torchscript_int8(
     ptq_model, model_attrs = get_ptq_model(args, task, model, inputs, data_iter)
 
     logger.info(ptq_model)
-    ptq_model(*inputs)
 
     # get model_extra_files from ptq_model if it exists
     model_extra_files = _get_model_extra_files(ptq_model)
