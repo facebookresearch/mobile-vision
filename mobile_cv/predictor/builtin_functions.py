@@ -28,3 +28,9 @@ class DebatchPostprocess:
 class NaiveRunFunc:
     def __call__(self, model_or_models, inputs):
         return model_or_models(inputs)
+
+
+class RunFuncWithListInputs:
+    def __call__(self, model_or_models, inputs):
+        assert isinstance(inputs, (list, tuple)), "Inputs should be a list/tuple"
+        return model_or_models(*inputs)
