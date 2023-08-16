@@ -126,10 +126,15 @@ def parse_args(args_list=None):
 def _set_attrs_to_model(model, attrs):
     assert isinstance(attrs, dict)
     for k, w in attrs.items():
-        if hasattr(model, k) and getattr(model, k) != w:
-            logger.warning(
-                f"{k} has already existed inside the model, the value {getattr(model, k)} is override with {w}"
-            )
+        if hasattr(model, k):
+            model_attr = getattr(model, k)
+
+            # !=w comparison doesn't work for tensors, so only
+            # do this check for non-tensor attributes
+            if not isinstance(model_attr, torch.Tensor) and model_attr != w:
+                logger.warning(
+                    f"{k} has already existed inside the model, the value {getattr(model, k)} is override with {w}"
+                )
         setattr(model, k, w)
 
 
