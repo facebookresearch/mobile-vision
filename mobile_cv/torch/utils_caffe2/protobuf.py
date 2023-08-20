@@ -16,7 +16,7 @@ import numpy as np
 from caffe2.proto import caffe2_pb2
 from caffe2.python import core, workspace
 
-from .ws_utils import fetch_any_blob, ScopedWS
+from mobile_cv.torch.utils_caffe2.ws_utils import fetch_any_blob, ScopedWS
 
 
 logger = logging.getLogger(__name__)

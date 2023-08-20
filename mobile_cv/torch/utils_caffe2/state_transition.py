@@ -11,7 +11,7 @@ from typing import Callable, Dict, Tuple
 from caffe2.proto import caffe2_pb2
 from caffe2.python import core
 
-from .protobuf import get_pb_arg_vals
+from mobile_cv.torch.utils_caffe2.protobuf import get_pb_arg_vals
 
 
 def _get_order_arg_from_op(op, default):

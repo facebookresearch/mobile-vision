@@ -3,10 +3,10 @@
 import uuid
 from contextlib import contextmanager
 from functools import wraps
+from multiprocessing import Pool
 from typing import Optional
 
 from torch import distributed as dist
-from torch.multiprocessing import Pool
 
 
 def run_func_dist(world_size: int, func, func_args):
