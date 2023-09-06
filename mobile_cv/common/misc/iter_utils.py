@@ -7,7 +7,7 @@ from functools import wraps
 from typing import Any, Callable, List, Optional, Tuple, Union
 
 
-class ValueKeepingGenerator(object):
+class ValueKeepingGenerator:
     def __init__(self, g):
         self.gen = g
         self.value = None
@@ -233,7 +233,7 @@ def create_pair(lhs, rhs):
 
 
 @dataclass
-class Pair(object):
+class Pair:
     lhs: Any
     rhs: Any
 
