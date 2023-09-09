@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
+from typing import TypeVar
+
 import torch
 from mobile_cv.common.misc import iter_utils as iu
 
+T = TypeVar("T")
 
-def move_to_device(data, device: str):
+
+def move_to_device(data: T, device: str) -> T:
     """Move data to the given device, data could be a nested dict/list"""
     diter = iu.recursive_iterate(data, iter_types=torch.Tensor)
     for cur in diter:
@@ -14,7 +18,7 @@ def move_to_device(data, device: str):
     return diter.value
 
 
-def get_cpu_copy(data):
+def get_cpu_copy(data: T) -> T:
     """Detach and copy data to cpu, data could be a nested dict/list"""
     diter = iu.recursive_iterate(data, iter_types=torch.Tensor)
     for cur in diter:
@@ -26,12 +30,12 @@ def get_cpu_copy(data):
 class GPUWrapper(torch.nn.Module):
     """A simple wrapper to move the module to run on GPU"""
 
-    def __init__(self, module: torch.nn.Module):
+    def __init__(self, module: torch.nn.Module) -> None:
         super().__init__()
         self.module = module.cuda()
         self.training = module.training
 
-    def forward(self, data: torch.Tensor):
+    def forward(self, data: torch.Tensor) -> torch.Tensor:
         data = data.cuda()
         ret = self.module(data)
         ret = ret.cpu()
