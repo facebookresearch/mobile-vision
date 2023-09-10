@@ -20,6 +20,7 @@ def save_as_image_grids(
     grid_padding_rows: int = 15,
     grid_padding_cols: int = 10,
     font_size: int = 10,
+    max_image_size: Optional[int] = None,
 ) -> List[str]:
     """
     Draw and save image grids, preserve the image sizes.
@@ -39,6 +40,7 @@ def save_as_image_grids(
     grid_padding_rows: Number of pixels between each row in the grid
     grid_padding_cols: Number of pixels between each column in the grid
     font_size: Size of font
+    max_image_size: maximum image size to fit into the grid
     """
     if not path_manager.exists(output_dir):
         path_manager.mkdirs(output_dir)
@@ -73,6 +75,7 @@ def draw_image_grid_by_rows(
     grid_padding_rows: int = 15,
     grid_padding_cols: int = 10,
     font_size: int = 10,
+    max_image_size: Optional[int] = None,
 ) -> Image.Image:
     """
     Draw a grid of images into a single image, preserve the image sizes.
@@ -133,6 +136,7 @@ def draw_image_grid_by_rows(
         grid_padding_rows=grid_padding_rows,
         grid_padding_cols=grid_padding_cols,
         font_size=font_size,
+        max_image_size=max_image_size,
     )
 
 
@@ -146,6 +150,7 @@ def draw_image_grid(
     grid_padding_rows: int = 15,
     grid_padding_cols: int = 10,
     font_size: int = 10,
+    max_image_size: Optional[int] = None,
 ) -> Image.Image:
     """
     Draw a grid of images into a single image, preserve the image sizes.
@@ -166,13 +171,26 @@ def draw_image_grid(
     # Load the images from file paths
     images = []
     for ip in image_paths:
-        with path_manager.open(ip, "rb") as fp:
-            images.append(Image.open(fp))
-            images[-1].load()
+        if ip is None:
+            empty_size = max_image_size or 25
+            cur = Image.new(mode="RGB", size=(empty_size, empty_size), color="white")
+        else:
+            with path_manager.open(ip, "rb") as fp:
+                cur = Image.open(fp)
+                cur.load()
+            if max_image_size is not None:
+                cur.thumbnail((max_image_size, max_image_size), Image.LANCZOS)
+        images.append(cur)
+
+    # Get the dimensions of the images to create the grid
+    width_per_column, height_per_row = _get_grid_dimensions(images, columns)
 
     # Calculate grid dimensions
-    grid_width = columns * (max(image.width for image in images) + grid_padding_cols)
-    grid_height = rows * (max(image.height for image in images) + grid_padding_rows * 3)
+    # only pad between columns
+    grid_width = sum(width_per_column) + grid_padding_cols * (columns - 1)
+    # each row always have grid_padding_rows * 3 padding (2 for title and image
+    # title at the top, one for image label at the bottom)
+    grid_height = sum(height_per_row) + (grid_padding_rows * 3) * rows
 
     # Create a blank canvas for the grid
     grid_image = Image.new("RGB", (grid_width, grid_height), color="white")
@@ -192,7 +210,7 @@ def draw_image_grid(
     for row in range(rows):
         # Calculate starting position for the current row
         start_x = 0
-        start_y = row * (max(image.height for image in images) + grid_padding_rows * 3)
+        start_y = sum(height_per_row[:row]) + row * (grid_padding_rows * 3)
 
         # Draw the title for the current row
         if row_titles is not None:
@@ -213,19 +231,20 @@ def draw_image_grid(
                 image_titles[image_index] if image_titles is not None else None
             )
 
-            image_x = start_x + col * (image.width + grid_padding_cols)
+            image_x = start_x + sum(width_per_column[:col]) + grid_padding_cols * col
             image_y = start_y + grid_padding_rows * 2
 
             # Paste the image onto the grid
-            grid_image.paste(image, (image_x, image_y))
+            if image is not None:
+                grid_image.paste(image, (image_x, image_y))
 
             # Draw the label below the image
             if label is not None:
                 label_width, label_height = label_font.getsize(label)
                 label_x = (
-                    image_x + (image.width - label_width) // 2
+                    image_x + (width_per_column[col] - label_width) // 2
                 )  # Center horizontally
-                label_y = image_y + image.height
+                label_y = image_y + height_per_row[row]
 
                 draw.text((label_x, label_y), label, font=label_font, fill="black")
 
@@ -233,7 +252,7 @@ def draw_image_grid(
             if image_title is not None:
                 image_title_width, image_title_height = title_font.getsize(image_title)
                 image_title_x = (
-                    image_x + (image.width - image_title_width) // 2
+                    image_x + (width_per_column[col] - image_title_width) // 2
                 )  # Center horizontally
                 image_title_y = start_y + grid_padding_rows
 
@@ -245,3 +264,23 @@ def draw_image_grid(
                 )
 
     return grid_image
+
+
+def _get_grid_dimensions(images: List[Image.Image], num_columns: int):
+    assert (
+        len(images) % num_columns == 0
+    ), f"Number of images {len(images)} is not divisible by {num_columns}"
+    num_rows = len(images) // num_columns
+
+    ret_width_per_column = [0.0] * num_columns
+    ret_height_per_row = [0.0] * num_rows
+
+    for idx, image in enumerate(images):
+        ri, rj = divmod(idx, num_columns)
+        width, height = image.size
+        if width > ret_width_per_column[rj]:
+            ret_width_per_column[rj] = width
+        if height > ret_height_per_row[ri]:
+            ret_height_per_row[ri] = height
+
+    return ret_width_per_column, ret_height_per_row
