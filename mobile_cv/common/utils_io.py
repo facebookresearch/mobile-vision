@@ -8,9 +8,9 @@ from mobile_cv.common.misc.oss_utils import fb_overwritable
 
 
 @lru_cache()
-def get_path_manager() -> PathManager:
+def get_path_manager(**kwargs) -> PathManager:
     # FIXME: @fb_overwritable can't be stacked with @lru_cache
-    return _get_path_manager()
+    return _get_path_manager(**kwargs)
 
 
 @fb_overwritable()
