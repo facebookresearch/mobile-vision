@@ -219,15 +219,21 @@ def _recursive_iterate(
     return ret  # noqa
 
 
+class PairMisMatchError(Exception):
+    pass
+
+
 def create_pair(lhs, rhs):
     """Create a pair of objects, handles list/dict automatically
     Could be used with recursive_iterate to match two dicts etc.
     """
     if is_seq(lhs):
-        assert is_seq(rhs)
+        if not is_seq(rhs):
+            raise PairMisMatchError()
         return PairedSeq(lhs, rhs)
     elif is_map(lhs):
-        assert is_map(rhs)
+        if not is_map(rhs):
+            raise PairMisMatchError()
         return PairedDict(lhs, rhs)
     return Pair(lhs, rhs)
 
@@ -245,12 +251,14 @@ class PairedSeq(cabc.Sequence):
     def __init__(self, lhs, rhs):
         assert is_seq(lhs)
         assert is_seq(rhs)
-        assert len(lhs) == len(rhs)
+        if not len(lhs) == len(rhs):
+            raise PairMisMatchError()
         self.lhs = lhs
         self.rhs = rhs
 
     def __len__(self):
-        assert len(self.lhs) == len(self.rhs)
+        if not len(self.lhs) == len(self.rhs):
+            raise PairMisMatchError()
         return len(self.lhs)
 
     def __getitem__(self, idx):
@@ -265,7 +273,8 @@ class PairedDict(cabc.Mapping):
         self.rhs = rhs
 
     def __len__(self):
-        assert len(self.lhs) == len(self.rhs)
+        if not len(self.lhs) == len(self.rhs):
+            raise PairMisMatchError()
         return len(self.lhs)
 
     def __getitem__(self, key):
