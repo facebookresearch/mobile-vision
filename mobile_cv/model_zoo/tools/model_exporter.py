@@ -92,7 +92,15 @@ def parse_args(args_list=None):
         type=str,
         default="trace",
         choices=["trace", "script"],
-        help="Use trace or script to get the torchscript model",
+        help="Use trace or script to get the torchscript model."
+        + "Ignored when trace_type_per_export is provided",
+    )
+    parser.add_argument(
+        "--trace_type_per_export",
+        type=str,
+        nargs="+",
+        default=[],
+        help="choice of trace or script for each export_type",
     )
     parser.add_argument(
         "--opt_for_mobile",
@@ -120,6 +128,11 @@ def parse_args(args_list=None):
     assert len(ExportFactory.keys()) > 0
 
     ret = parser.parse_args(args_list)
+    if len(ret.trace_type_per_export) > 0:
+        assert len(ret.trace_type_per_export) == len(
+            ret.export_types
+        ), "trace_type_per_export should be provided for each export_type"
+
     return ret
 
 
@@ -303,7 +316,9 @@ def trace_and_save_torchscript(
 
 
 @ExportFactory.register("torchscript")
-def export_to_torchscript(args, task, model, inputs, output_base_dir, **kwargs):
+def export_to_torchscript(
+    args, task, model, inputs, output_base_dir, trace_type, **kwargs
+):
     model_attrs = get_model_attributes(model)
 
     output_dir = os.path.join(output_base_dir, "torchscript")
@@ -320,7 +335,7 @@ def export_to_torchscript(args, task, model, inputs, output_base_dir, **kwargs):
         inputs,
         output_dir,
         use_get_traceable=bool(args.use_get_traceable),
-        trace_type=args.trace_type,
+        trace_type=trace_type,
         opt_for_mobile=args.opt_for_mobile,
         model_attrs=model_attrs,
         save_for_lite_interpreter=args.save_for_lite_interpreter,
@@ -332,7 +347,7 @@ def export_to_torchscript(args, task, model, inputs, output_base_dir, **kwargs):
 
 @ExportFactory.register("torchscript_int8")
 def export_to_torchscript_int8(
-    args, task, model, inputs, output_base_dir, *, data_iter, **kwargs
+    args, task, model, inputs, output_base_dir, trace_type, *, data_iter, **kwargs
 ):
     ptq_model, model_attrs = get_ptq_model(args, task, model, inputs, data_iter)
 
@@ -347,7 +362,7 @@ def export_to_torchscript_int8(
         inputs,
         ptq_folder,
         use_get_traceable=bool(args.use_get_traceable),
-        trace_type=args.trace_type,
+        trace_type=trace_type,
         opt_for_mobile=args.opt_for_mobile,
         model_attrs=model_attrs,
         save_for_lite_interpreter=args.save_for_lite_interpreter,
@@ -365,6 +380,7 @@ def export_to_torchscript_dynamic(
     model,
     inputs,
     output_base_dir,
+    trace_type,
     *,
     export_format=None,
     **kwargs,
@@ -394,7 +410,7 @@ def export_to_torchscript_dynamic(
         inputs,
         output_dir,
         use_get_traceable=bool(args.use_get_traceable),
-        trace_type=args.trace_type,
+        trace_type=trace_type,
         opt_for_mobile=args.opt_for_mobile,
         model_attrs=model_attrs,
         save_for_lite_interpreter=args.save_for_lite_interpreter,
@@ -485,7 +501,10 @@ def main(
         logger.warning("Failed to print model flops")
 
     ret = {}
-    for ef in export_formats:
+    trace_type_per_export = args.trace_type_per_export
+    if len(trace_type_per_export) == 0:
+        trace_type_per_export = [args.trace_type] * len(export_formats)
+    for ef, trace_type in zip(export_formats, trace_type_per_export):
         assert ef not in ret, f"Export format {ef} has already existed."
         try:
             if ef in ExportFactory:
@@ -500,6 +519,7 @@ def main(
                 model,
                 first_batch,
                 output_dir,
+                trace_type=trace_type,
                 # NOTE: output model maybe difference if data_loader is used multiple times
                 data_iter=data_iter,
                 export_format=ef,
