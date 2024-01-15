@@ -7,6 +7,7 @@ General model exporter, support torchscript and torchscript int8
 
 import argparse
 import copy
+import glob
 import importlib
 import itertools
 import json
@@ -23,13 +24,13 @@ import mobile_cv.common.misc.registry as registry
 import mobile_cv.lut.lib.pt.flops_utils as flops_utils
 import mobile_cv.model_zoo.tasks.task_factory as task_factory
 import torch
+from detectron2.export import dump_torchscript_IR
 
 from mobile_cv.common import utils_io
 from mobile_cv.common.misc.file_utils import recompress_export
 from mobile_cv.model_zoo.tools.utils import get_model_attributes, get_ptq_model
 from torch.utils.bundled_inputs import augment_model_with_bundled_inputs
 from torch.utils.mobile_optimizer import optimize_for_mobile
-
 
 path_manager = utils_io.get_path_manager()
 logger = logging.getLogger("model_zoo_tools.export")
@@ -268,26 +269,47 @@ def trace_and_save_torchscript(
         if use_get_traceable:
             model = ju.get_traceable_model(model)
 
-    script_model = get_script_model_with_attrs(
-        model, trace_type, model_inputs=inputs, model_attrs=model_attrs
-    )
+    models = {}
+    for model_name in ["model", "model_bundled_inputs"]:
+        if "bundled_inputs" in model_name and not save_bundle_input:
+            continue
+        script_model = get_script_model_with_attrs(
+            model if trace_type == "trace" else copy.deepcopy(model),
+            trace_type,
+            model_inputs=inputs,
+            model_attrs=model_attrs,
+        )
+        if opt_for_mobile:
+            logger.info("Running optimize_for_mobile...")
+            script_model = optimize_for_mobile(script_model)
 
-    if opt_for_mobile:
-        logger.info("Running optimize_for_mobile...")
-        script_model = optimize_for_mobile(script_model)
+        if "bundled_inputs" in model_name:
+            augment_model_with_bundled_inputs(
+                script_model, [inputs], skip_size_check=True
+            )
+
+        models[model_name] = script_model
 
     if not path_manager.isdir(output_path):
         path_manager.mkdirs(output_path)
 
-    if save_bundle_input:
-        augment_model_with_bundled_inputs(script_model, [inputs], skip_size_check=True)
+    for model_name, script_model in models.items():
+        if "bundled_inputs" in model_name and not save_bundle_input:
+            continue
+        model_file = os.path.join(output_path, f"{model_name}.jit")
+        logger.info(f"Saving {model_name} to {model_file}")
+        with path_manager.open(model_file, "wb") as fp:
+            torch.jit.save(script_model, fp, _extra_files=model_extra_files)
 
-    model_file = os.path.join(output_path, "model.jit")
-    with path_manager.open(model_file, "wb") as fp:
-        torch.jit.save(script_model, fp, _extra_files=model_extra_files)
+    try:
+        dump_torchscript_IR(
+            models["model"], os.path.join(output_path, "torchscript_IR")
+        )
+    except Exception:
+        logger.warning("fail to dump torchscript IR")
 
     link_model_file = os.path.join(output_path, "model.pt")
-    path_manager.symlink(model_file, link_model_file)
+    path_manager.symlink(os.path.join(output_path, "model.jit"), link_model_file)
 
     data_file = os.path.join(output_path, "data.pth")
     with path_manager.open(data_file, "wb") as fp:
@@ -299,18 +321,24 @@ def trace_and_save_torchscript(
             torch.save(model_attrs, fp)
 
     if save_for_lite_interpreter:
-        lite_model_file = os.path.join(output_path, "model.ptl")
-        with path_manager.open(lite_model_file, "wb") as fp:
-            if model_extra_files:
-                fp.write(
-                    script_model._save_to_buffer_for_lite_interpreter(
-                        _extra_files=model_extra_files
+        for model_name, script_model in models.items():
+            if "bundled_inputs" in model_name and not save_bundle_input:
+                continue
+            lite_model_file = os.path.join(output_path, f"{model_name}.ptl")
+            logger.info(f"Saving {model_name} to {lite_model_file}")
+            with path_manager.open(lite_model_file, "wb") as fp:
+                if model_extra_files:
+                    fp.write(
+                        script_model._save_to_buffer_for_lite_interpreter(
+                            _extra_files=model_extra_files
+                        )
                     )
-                )
-            else:
-                fp.write(script_model._save_to_buffer_for_lite_interpreter())
-        lite_compressed_file = os.path.join(output_path, "model_compressed.ptl")
-        recompress_export(lite_model_file, lite_compressed_file)
+                else:
+                    fp.write(script_model._save_to_buffer_for_lite_interpreter())
+            lite_compressed_file = os.path.join(
+                output_path, f"{model_name}_compressed.ptl"
+            )
+            recompress_export(lite_model_file, lite_compressed_file)
 
     return model_file
 
@@ -351,7 +379,7 @@ def export_to_torchscript_int8(
 ):
     ptq_model, model_attrs = get_ptq_model(args, task, model, inputs, data_iter)
 
-    logger.info(ptq_model)
+    logger.info(f"ptq_model {ptq_model}")
 
     # get model_extra_files from ptq_model if it exists
     model_extra_files = _get_model_extra_files(ptq_model)
@@ -383,6 +411,7 @@ def export_to_torchscript_dynamic(
     trace_type,
     *,
     export_format=None,
+    model_graph_svg_folder="/tmp",
     **kwargs,
 ):
     """Task returns the model based on the given export_format
@@ -403,8 +432,20 @@ def export_to_torchscript_dynamic(
     # get model_extra_files from model if it exists
     model_extra_files = _get_model_extra_files(model)
 
-    print(f"Converting to {model_name}...")
+    logger.info(f"Converting to {model_name}...")
+
     output_dir = os.path.join(output_base_dir, export_format)
+    if not path_manager.isdir(output_dir):
+        path_manager.mkdirs(output_dir)
+
+    # After generating BoltNN model, we also save model graph visualization SVG file in /tmp folder. We copy them into manifold folder **output_dir**
+    if os.path.exists(model_graph_svg_folder):
+        vis_files = glob.glob(f"{model_graph_svg_folder}/*.dot.svg")
+        for vis_file in vis_files:
+            basename = os.path.basename(vis_file)
+            remote_file = os.path.join(output_dir, basename)
+            path_manager.copy_from_local(vis_file, remote_file, overwrite=True)
+
     torch_script_path = trace_and_save_torchscript(
         model,
         inputs,
