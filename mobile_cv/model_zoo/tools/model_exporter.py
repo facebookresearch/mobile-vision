@@ -33,7 +33,14 @@ from torch.utils.bundled_inputs import augment_model_with_bundled_inputs
 from torch.utils.mobile_optimizer import optimize_for_mobile
 
 path_manager = utils_io.get_path_manager()
+
+logging.basicConfig(
+    format="%(asctime)s,%(msecs)03d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s",
+    datefmt="%Y-%m-%d:%H:%M:%S",
+    level=logging.INFO,
+)
 logger = logging.getLogger("model_zoo_tools.export")
+logger.setLevel(logging.INFO)
 
 
 ExportFactory = registry.Registry("ExportFactory")
