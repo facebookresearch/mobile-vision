@@ -281,7 +281,7 @@ def trace_and_save_torchscript(
         if "bundled_inputs" in model_name and not save_bundle_input:
             continue
         script_model = get_script_model_with_attrs(
-            model if trace_type == "trace" else copy.deepcopy(model),
+            model,
             trace_type,
             model_inputs=inputs,
             model_attrs=model_attrs,
