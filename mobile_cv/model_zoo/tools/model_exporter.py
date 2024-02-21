@@ -280,8 +280,14 @@ def trace_and_save_torchscript(
     for model_name in ["model", "model_bundled_inputs"]:
         if "bundled_inputs" in model_name and not save_bundle_input:
             continue
+        if trace_type == "script" and "bundled_inputs" in model_name:
+            # augment_model_with_bundled_inputs() will make in-place changes to the input argument *model*: it adds IValue of types not supported by torch interpreter, which will fail torch.jit.save() below, such as IValue of type Storage
+            model_local = copy.deepcopy(model)
+        else:
+            model_local = model
+
         script_model = get_script_model_with_attrs(
-            model,
+            model_local,
             trace_type,
             model_inputs=inputs,
             model_attrs=model_attrs,
