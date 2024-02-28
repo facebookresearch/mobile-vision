@@ -244,7 +244,16 @@ class HSigmoid(nn.Module):
         return self.mul_scalar(self.relu(self.add_scalar(x)))
 
 
-HSwish = torch.nn.Hardswish
+class HSwish(nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.mul = TorchMultiply()
+        self.relu = nn.ReLU6(inplace=True)
+        self.add_scalar = TorchAddScalar(3.0)
+        self.mul_scalar = TorchMulScalar(1.0 / 6.0)
+
+    def forward(self, x: torch.Tensor):
+        return self.mul(x, self.mul_scalar(self.relu(self.add_scalar(x))))
 
 
 class Swish(nn.Module):
