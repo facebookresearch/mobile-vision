@@ -131,9 +131,9 @@ def create_sub_graph(
     for node in sub_nodes:
         node_map[node] = graph.node_copy(
             node,
-            lambda n: node_map_input[n.name]
-            if n.name in node_map_input
-            else node_map[n],
+            lambda n: (
+                node_map_input[n.name] if n.name in node_map_input else node_map[n]
+            ),
         )
 
     # create output

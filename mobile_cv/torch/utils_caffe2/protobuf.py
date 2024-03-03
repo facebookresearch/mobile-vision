@@ -213,6 +213,7 @@ def get_params_from_init_net(
         params: dict from blob name to numpy array
         device_options: dict from blob name to the device option of its creating op
     """
+
     # NOTE: this assumes that the params is determined by producer op with the
     # only exception be CopyGPUToCPU which is CUDA op but returns CPU tensor.
     def _get_device_option(producer_op):

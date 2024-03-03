@@ -74,9 +74,9 @@ class IRFBlock(nn.Module):
                 in_channels=in_channels,
                 out_channels=mid_channels,
                 conv_args={
-                    "kernel_size": pw_args.pop("kernel_size", 1)
-                    if pw_args is not None
-                    else 1,
+                    "kernel_size": (
+                        pw_args.pop("kernel_size", 1) if pw_args is not None else 1
+                    ),
                     "stride": pw_args.pop("stride", 1) if pw_args is not None else 1,
                     "padding": pw_args.pop("padding", 0) if pw_args is not None else 0,
                     "bias": bias,
@@ -110,9 +110,11 @@ class IRFBlock(nn.Module):
                     "bias": bias,
                     **hp.merge_unify_args(conv_args, dw_args),
                 },
-                bn_args=hp.merge_unify_args(bn_args, dw_bn_args)
-                if not dw_skip_bnrelu
-                else None,
+                bn_args=(
+                    hp.merge_unify_args(bn_args, dw_bn_args)
+                    if not dw_skip_bnrelu
+                    else None
+                ),
                 relu_args=relu_args if not dw_skip_bnrelu else None,
             )
             if not skip_dw
@@ -144,27 +146,29 @@ class IRFBlock(nn.Module):
                 in_channels=mid_channels,
                 out_channels=out_channels,
                 conv_args={
-                    "kernel_size": pwl_args.pop("kernel_size", 1)
-                    if pwl_args is not None
-                    else 1,
+                    "kernel_size": (
+                        pwl_args.pop("kernel_size", 1) if pwl_args is not None else 1
+                    ),
                     "stride": pwl_args.pop("stride", 1) if pwl_args is not None else 1,
-                    "padding": pwl_args.pop("padding", 0)
-                    if pwl_args is not None
-                    else 0,
+                    "padding": (
+                        pwl_args.pop("padding", 0) if pwl_args is not None else 0
+                    ),
                     "bias": bias,
                     "groups": pwl_groups,
                     **hp.merge_unify_args(conv_args, pwl_args),
                 },
-                bn_args={
-                    **hp.merge_unify_args(bn_args, pwl_bn_args),
-                    **{
-                        "zero_gamma": (
-                            zero_last_bn_gamma if res_conn is not None else False
-                        )
-                    },
-                }
-                if not skip_pwl_bn
-                else None,
+                bn_args=(
+                    {
+                        **hp.merge_unify_args(bn_args, pwl_bn_args),
+                        **{
+                            "zero_gamma": (
+                                zero_last_bn_gamma if res_conn is not None else False
+                            )
+                        },
+                    }
+                    if not skip_pwl_bn
+                    else None
+                ),
                 relu_args=None,
             )
             if not skip_pwl

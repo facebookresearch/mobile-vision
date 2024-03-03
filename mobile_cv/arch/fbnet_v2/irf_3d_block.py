@@ -271,9 +271,9 @@ class IRF3dBlock(nn.Module):
                 in_channels=in_channels,
                 out_channels=mid_channels,
                 conv_args={
-                    "kernel_size": pw_args.pop("kernel_size", 1)
-                    if pw_args is not None
-                    else 1,
+                    "kernel_size": (
+                        pw_args.pop("kernel_size", 1) if pw_args is not None else 1
+                    ),
                     "stride": pw_args.pop("stride", 1) if pw_args is not None else 1,
                     "padding": pw_args.pop("padding", 0) if pw_args is not None else 0,
                     "bias": bias,
