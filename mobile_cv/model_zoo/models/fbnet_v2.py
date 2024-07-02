@@ -213,6 +213,108 @@ class FBNetBackbone(nn.Module):
         return y
 
 
+class MetaNetBackbone(nn.Module):
+    def __init__(
+        self,
+        arch_name,
+        dim_in=3,
+        stage_indices=None,
+        overwrite_options: Optional[List[Dict[str, int]]] = None,
+    ):
+        """
+        Args:
+        overwrite_options: List of overwrites to be applied to the
+            architecture. Each overwrite is a dictionary with keys
+            "STAGE", "BLOCK", "VALUE" specifying the number of output
+            channels ("VALUE") to set the corresponding block index
+            "BLOCK" in stage index "STAGE".
+        """
+        super().__init__()
+
+        builder, arch_def = _create_builder(arch_name)
+        self.arch_def = arch_def
+        self.arch_def = self.apply_overwrite_options(
+            arch_def=self.arch_def, overwrite_options=overwrite_options
+        )
+
+        self.stages = builder.build_blocks(
+            self.arch_def["blocks"], dim_in=dim_in, stage_indices=stage_indices
+        )
+        self.out_channels = builder.last_depth
+
+    @staticmethod
+    def apply_overwrite_options(
+        arch_def: Dict[str, Any],
+        overwrite_options: Optional[List[Dict[str, int]]] = None,
+    ) -> Dict[str, Any]:
+        """
+        Modify the input architecture out-of-place using the passed in
+        overwrites
+        """
+
+        if overwrite_options is None:
+            return arch_def
+
+        arch_def = copy.deepcopy(arch_def)
+
+        # Check if we are modulating the number of blocks
+        num_blocks_overwrites = {}
+        for overwrite in overwrite_options:
+            stage, block, value, overwrite_type = (
+                overwrite["STAGE"],
+                overwrite["BLOCK"],
+                overwrite["VALUE"],
+                overwrite["TYPE"],
+            )
+
+            if overwrite_type == "NUM_BLOCKS_IN_STAGE":
+                assert (
+                    stage not in num_blocks_overwrites
+                ), f"multiple number of blocks overwrites for stage {stage}"
+
+                num_blocks_overwrites[stage] = value
+
+        for stage in num_blocks_overwrites.keys():
+            num_blocks = num_blocks_overwrites[stage]
+
+            for ind, entry in enumerate(arch_def["blocks"]):
+                if arch_def["blocks"][ind] is None:
+                    continue
+
+                if entry["stage_idx"] == stage and entry["block_idx"] >= num_blocks:
+                    arch_def["blocks"][ind] = None
+
+        # Delete all elements from arch_def which are None
+        while True:
+            if any(a is None for a in arch_def["blocks"]):
+                arch_def["blocks"].remove(None)
+            else:
+                break
+
+        for overwrite in overwrite_options:
+            stage, block, value, overwrite_type = (
+                overwrite["STAGE"],
+                overwrite["BLOCK"],
+                overwrite["VALUE"],
+                overwrite["TYPE"],
+            )
+
+            # Find the block with the proper stage / block index
+            for entry in arch_def["blocks"]:
+                if entry["stage_idx"] == stage and entry["block_idx"] == block:
+                    if overwrite_type == "OUT_CHANNELS":
+                        entry["block_cfg"]["out_channels"] = value
+                    elif overwrite_type == "KERNEL_SIZE":
+                        entry["block_cfg"]["kernel_size"] = value
+                    elif overwrite_type == "EXPANSION":
+                        entry["block_cfg"]["expansion"] = value
+        return arch_def
+
+    def forward(self, x):
+        y = self.stages(x)
+        return y
+
+
 class FBNet(nn.Module):
     def __init__(
         self,
