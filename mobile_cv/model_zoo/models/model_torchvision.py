@@ -7,11 +7,11 @@ Models from torchvision, providing the same interface for loading in model zoo
 
 
 import torchvision
-from mobile_cv.model_zoo.models.hub_utils import pretrained_download
-from pkg_resources import parse_version
 
 # to register for model_zoo
-from . import model_zoo_factory  # noqa
+from mobile_cv.model_zoo.models import model_zoo_factory  # noqa
+from mobile_cv.model_zoo.models.hub_utils import pretrained_download
+from pkg_resources import parse_version
 
 
 _tv_version = parse_version(torchvision.__version__)

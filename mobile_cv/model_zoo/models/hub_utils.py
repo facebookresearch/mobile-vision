@@ -9,6 +9,7 @@ from types import TracebackType
 from typing import Optional, Type
 
 import torch
+from mobile_cv.common.misc.oss_utils import fb_overwritable
 
 
 logger = logging.getLogger(__name__)
@@ -89,6 +90,7 @@ class DictModifier(object):
             del self.dict_to_modify[x]
 
 
+@fb_overwritable()
 def pretrained_download(builder):
     """Convenience function to download pretrained weights from https"""
 
