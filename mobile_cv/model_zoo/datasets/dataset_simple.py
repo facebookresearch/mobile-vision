@@ -8,7 +8,7 @@ Simple dummy datasets
 import torch
 
 # to register for model_zoo
-from . import dataset_factory  # noqa
+from mobile_cv.model_zoo.datasets import dataset_factory  # noqa
 
 
 @dataset_factory.DATASET_FACTORY.register("tensor_shape")

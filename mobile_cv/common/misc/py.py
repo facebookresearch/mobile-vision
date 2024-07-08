@@ -3,6 +3,7 @@
 
 """ python utils """
 
+import glob
 import logging
 import os
 import pdb
@@ -58,6 +59,29 @@ def dynamic_import(obj_full_name):
         module = importlib.import_module(module_name)
         ret = getattr(module, obj_name)
     return ret
+
+
+def import_matching_modules(package_name, module_pathname):
+    """
+    Import all matching modules from a package. This is mainly used for populating
+    registries without explicitly importing them.
+
+    Args:
+        package_name: name of the package.
+        module_pathname: a string used by glob to match all modules in the package.
+    """
+
+    import importlib
+
+    package_dir = os.path.dirname(importlib.import_module(package_name).__file__)
+    modules = glob.glob(os.path.join(package_dir, module_pathname + ".py"))
+    for module_name in [
+        os.path.basename(f)[:-3]
+        for f in modules
+        if os.path.isfile(f) and not f.endswith("__init__.py")
+    ]:
+        print(f"Importing {module_name} from {package_name} ...")
+        importlib.import_module(package_name + "." + module_name)
 
 
 class FolderLock:
