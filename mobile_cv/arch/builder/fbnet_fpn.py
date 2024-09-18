@@ -137,8 +137,7 @@ class FBNetFPNBuilder:
         self.num_stages = self.num_resolutions * self.num_stages_per_resolution - 1
         assert (
             # num_stages == num_resolutions * num_stages_per_resolution - 1
-            len(arch_def["stages"])
-            >= self.num_stages
+            len(arch_def["stages"]) >= self.num_stages
         ), (
             f"FBNet FPN requires 4 stages per spatial resolution and in "
             f"total {self.num_resolutions - 1} stages for cross-resolution connections"

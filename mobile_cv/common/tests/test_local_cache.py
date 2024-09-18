@@ -42,7 +42,6 @@ def func_unique(cache_dir, index, total_processes, iter, shards):
 
 
 def test_cache(self, test_func, num_procs, iter, shards=1, **kwargs):
-
     with tempfile.TemporaryDirectory() as tmpdir:
         if num_procs == 0:
             test_func(
