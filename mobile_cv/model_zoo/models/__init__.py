@@ -7,4 +7,4 @@ from mobile_cv.common.misc.py import import_matching_modules
 import_matching_modules("mobile_cv.model_zoo.models", "fbnet_v2")
 import_matching_modules("mobile_cv.model_zoo.models", "model_jit")
 import_matching_modules("mobile_cv.model_zoo.models", "model_torchvision")
-# @fb-only: import_matching_modules("mobile_cv.model_zoo.models.fb", "*") 
+# @fb-only[end= ]: import_matching_modules("mobile_cv.model_zoo.models.fb", "*")
