@@ -22,4 +22,4 @@ from mobile_cv.arch.fbnet_v2 import (  # noqa
     norms,
     spade,
 )
-# @fb-only: from mobile_cv.arch.fbnet_v2 import fb  # isort:skip  # noqa 
+# @fb-only[end= ]: from mobile_cv.arch.fbnet_v2 import fb  # isort:skip  # noqa
