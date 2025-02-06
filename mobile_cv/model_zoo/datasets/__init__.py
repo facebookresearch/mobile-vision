@@ -5,4 +5,4 @@ from mobile_cv.common.misc.py import import_matching_modules
 
 # to register datasets
 import_matching_modules("mobile_cv.model_zoo.datasets", "dataset_simple")
-# @fb-only[end= ]: import_matching_modules("mobile_cv.model_zoo.datasets.fb", "*")
+# @fb-only: import_matching_modules("mobile_cv.model_zoo.datasets.fb", "*") 
