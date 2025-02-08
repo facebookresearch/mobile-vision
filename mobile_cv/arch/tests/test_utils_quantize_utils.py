@@ -208,7 +208,6 @@ class TestUtilsQuantizeUtils(unittest.TestCase):
         self.assertEqual(output2["m3"], 4.0)
 
     def test_utils_quantize_utils_quantizable_module(self):
-
         with mock.patch("mobile_cv.arch.utils.quantize_utils.QuantStub.forward") as qs:
             with mock.patch(
                 "mobile_cv.arch.utils.quantize_utils.DeQuantStub.forward"
@@ -290,7 +289,6 @@ class TestUtilsQuantizeUtils(unittest.TestCase):
         self.assertEqual(len(outputs1), 2)
 
     def test_quant_warpper_with_kwargs(self):
-
         model = TestModule()
         input1 = torch.ones((1,))
         input2 = torch.ones((1,))
