@@ -62,7 +62,7 @@ class DownloadStat(Enum):
         return ret
 
 
-class CacheCounter(object):
+class CacheCounter:
     def __init__(
         self,
         name,
