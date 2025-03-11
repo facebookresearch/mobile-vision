@@ -318,8 +318,8 @@ def trace_and_save_torchscript(
         dump_torchscript_IR(
             models["model"], os.path.join(output_path, "torchscript_IR")
         )
-    except Exception:
-        logger.warning("fail to dump torchscript IR")
+    except Exception as e:
+        logger.exception(f"fail to dump torchscript IR due to {e}")
 
     link_model_file = os.path.join(output_path, "model.pt")
     path_manager.symlink(os.path.join(output_path, "model.jit"), link_model_file)
