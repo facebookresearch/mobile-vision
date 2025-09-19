@@ -149,6 +149,7 @@ def convert_MultiheadAttention(m, input_shapes):
         m.num_heads,
         kdim=m.kdim,
         vdim=m.vdim,
+        batch_first=m.batch_first,
     )
     ret = lut_schema.OpInfo(op, input_shapes)
     return ret

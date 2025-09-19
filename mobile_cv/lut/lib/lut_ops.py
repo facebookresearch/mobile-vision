@@ -495,6 +495,7 @@ class MultiheadAttention(OpProperty):
         num_heads=-1,
         kdim=None,
         vdim=None,
+        batch_first=False,
     ):
         kdim = embed_dim if kdim is None else kdim
         vdim = embed_dim if vdim is None else vdim
@@ -504,6 +505,7 @@ class MultiheadAttention(OpProperty):
             "kdim": kdim,
             "vdim": vdim,
             "_qkv_same_embed_dim": (embed_dim == kdim and kdim == vdim),
+            "batch_first": batch_first,
         }
         super().__init__(info)
 
@@ -538,11 +540,18 @@ class MultiheadAttention(OpProperty):
 
     def get_flops(self, input_shape):
         qs, ks, vs = input_shape
-        L, N, E = qs
-        S, K = ks[0], ks[2]
-        V = vs[2]
-        assert N == ks[1] and N == vs[1]
-        assert S == vs[0]
+        if not self.batch_first:
+            L, N, E = qs
+            S, K = ks[0], ks[2]
+            V = vs[2]
+            assert N == ks[1] and N == vs[1]
+            assert S == vs[0]
+        else:
+            N, L, E = qs
+            S, K = ks[1], ks[2]
+            V = vs[2]
+            assert N == ks[0] and N == vs[0]
+            assert S == vs[1]
 
         flops = N * (
             L * E * E
