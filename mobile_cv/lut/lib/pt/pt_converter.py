@@ -5,7 +5,6 @@ import typing
 
 import torch
 from mobile_cv.common.misc.registry import Registry
-
 from mobile_cv.lut.lib import lut_ops, lut_schema
 
 

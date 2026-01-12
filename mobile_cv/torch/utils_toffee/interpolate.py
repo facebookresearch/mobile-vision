@@ -3,7 +3,6 @@
 
 import functools
 import logging
-
 from unittest import mock
 
 import numpy as np

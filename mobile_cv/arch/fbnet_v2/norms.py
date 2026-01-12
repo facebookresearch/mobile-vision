@@ -5,7 +5,6 @@ from typing import Optional, Tuple
 
 import torch
 import torch.nn as nn
-
 from mobile_cv.arch.fbnet_v2 import basic_blocks as bb
 from torch.nn.parameter import Parameter
 

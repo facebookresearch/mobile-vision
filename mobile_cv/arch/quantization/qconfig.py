@@ -2,7 +2,6 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
 import torch
-
 from mobile_cv.arch.quantization.observer import (
     FixedMinMaxObserver,
     UpdatableSymmetricMovingAverageMinMaxObserver,

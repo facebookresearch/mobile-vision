@@ -9,7 +9,6 @@ import torch
 import torch.fx
 import torch.nn as nn
 import torch.nn.functional as F
-
 from mobile_cv.arch.fbnet_v2 import basic_blocks as bb, blocks_factory
 
 

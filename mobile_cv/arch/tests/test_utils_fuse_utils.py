@@ -16,7 +16,6 @@ from mobile_cv.arch.layers.batch_norm import (
     NaiveSyncBatchNorm1d,
     NaiveSyncBatchNorm3d,
 )
-
 from mobile_cv.arch.tests import helper
 
 

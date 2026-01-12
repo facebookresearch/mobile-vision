@@ -3,7 +3,6 @@ import os
 from typing import Any, Dict, List, Optional
 
 from mobile_cv.common.misc.oss_utils import fb_overwritable
-
 from PIL import Image, ImageDraw, ImageFont
 
 

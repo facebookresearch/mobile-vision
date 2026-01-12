@@ -16,7 +16,6 @@ import mobile_cv.common.misc.registry as registry
 import torch
 import torch.fx
 import torch.nn as nn
-
 from mobile_cv.arch.fbnet_v2.blur_pool import BlurPool2d as BlurPool
 from mobile_cv.arch.layers import (
     FrozenBatchNorm2d,

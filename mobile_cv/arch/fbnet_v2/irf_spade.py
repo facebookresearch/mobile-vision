@@ -4,7 +4,6 @@
 import copy
 
 import mobile_cv.arch.utils.helper as hp
-
 from mobile_cv.arch.fbnet_v2 import blocks_factory, irf_block
 
 

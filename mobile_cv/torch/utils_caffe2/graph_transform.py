@@ -13,7 +13,6 @@ from typing import Dict, List, Tuple
 
 from caffe2.proto import caffe2_pb2
 from caffe2.python import core
-
 from mobile_cv.torch.utils_caffe2.protobuf import get_consumer_map, get_producer_map
 
 

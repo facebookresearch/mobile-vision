@@ -5,7 +5,6 @@ import copy
 import unittest
 
 import torch
-
 from mobile_cv.torch.utils_pytorch.model_record_hook import (
     add_model_record_hook,
     compare_hook_items,

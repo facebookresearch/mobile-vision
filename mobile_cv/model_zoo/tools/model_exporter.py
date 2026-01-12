@@ -19,13 +19,11 @@ from typing import Dict
 
 import mobile_cv.arch.utils.fuse_utils as fuse_utils
 import mobile_cv.arch.utils.jit_utils as ju
-
 import mobile_cv.common.misc.registry as registry
 import mobile_cv.lut.lib.pt.flops_utils as flops_utils
 import mobile_cv.model_zoo.tasks.task_factory as task_factory
 import torch
 from detectron2.export import dump_torchscript_IR
-
 from mobile_cv.common import utils_io
 from mobile_cv.common.misc.file_utils import recompress_export
 from mobile_cv.model_zoo.tools.utils import get_model_attributes, get_ptq_model

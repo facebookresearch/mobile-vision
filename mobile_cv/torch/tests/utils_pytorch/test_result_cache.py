@@ -7,7 +7,6 @@ import unittest
 
 from mobile_cv.common.utils_io import get_path_manager
 from mobile_cv.torch.utils_pytorch import comm, distributed_helper as dh
-
 from mobile_cv.torch.utils_pytorch.result_cache import ResultCache
 
 

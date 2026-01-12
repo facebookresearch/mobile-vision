@@ -5,7 +5,6 @@ import tempfile
 import unittest
 
 import torch
-
 from mobile_cv.torch.utils_pytorch import debug_utils as du
 
 

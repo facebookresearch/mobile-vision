@@ -3,7 +3,6 @@
 
 from mobile_cv.model_zoo.datasets import dataset_factory
 from mobile_cv.model_zoo.models import model_zoo_factory
-
 from mobile_cv.model_zoo.tasks import task_factory
 from mobile_cv.model_zoo.tasks.task_common import TaskCommon
 

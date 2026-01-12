@@ -2,7 +2,6 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
 import torch
-
 from mobile_cv.lut.lib.pt import pt_converter
 
 

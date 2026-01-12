@@ -2,7 +2,6 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
 import mobile_cv.common.misc.registry as registry
-
 from mobile_cv.arch.fbnet_v2 import modeldef_utils as mdu
 from mobile_cv.arch.fbnet_v2.modeldef_utils import e1, e6
 

@@ -10,7 +10,6 @@ from typing import Callable, Dict, Tuple
 
 from caffe2.proto import caffe2_pb2
 from caffe2.python import core
-
 from mobile_cv.torch.utils_caffe2.protobuf import get_pb_arg_vals
 
 

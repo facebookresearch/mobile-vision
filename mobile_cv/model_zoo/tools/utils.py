@@ -2,7 +2,6 @@
 # Copyright (c) Meta Platforms, Inc. and affiliates. All rights reserved.
 
 import argparse
-
 import itertools
 import json
 import logging
@@ -11,10 +10,8 @@ import shutil
 from typing import Any, Dict, Iterable, Optional, Tuple
 
 import mobile_cv.arch.utils.fuse_utils as fuse_utils
-
 import torch
 from mobile_cv.arch.utils import quantize_utils
-
 from mobile_cv.model_zoo.tasks.task_base import TaskBase
 
 logger = logging.getLogger(__name__)

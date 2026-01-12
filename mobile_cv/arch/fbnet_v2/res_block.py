@@ -6,7 +6,6 @@ from typing import Optional
 
 import mobile_cv.arch.utils.helper as hp
 import torch.nn as nn
-
 from mobile_cv.arch.fbnet_v2.basic_blocks import (
     build_relu,
     build_residual_connect,

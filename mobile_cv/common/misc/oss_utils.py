@@ -2,7 +2,6 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
 import inspect
-
 from typing import Any
 
 from mobile_cv.common.misc.py import dynamic_import

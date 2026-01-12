@@ -5,7 +5,6 @@ from dataclasses import dataclass, field
 from typing import Dict, List, NamedTuple, Tuple
 
 import numpy as np
-
 import torch
 
 
