@@ -5,7 +5,6 @@ import copy
 
 
 class FBNetV2ModelArch(object):
-
     _MODEL_ARCH = {}
 
     @staticmethod

@@ -105,8 +105,8 @@ class Caffe2Wrapper(nn.Module):
         return output_devices
 
     def forward(self, inputs):
-        assert len(inputs) == len(
-            self._input_blobs
+        assert (
+            len(inputs) == len(self._input_blobs)
         ), "Number of input tensors ({}) doesn't match the required input blobs: {}".format(
             len(inputs), self._input_blobs
         )

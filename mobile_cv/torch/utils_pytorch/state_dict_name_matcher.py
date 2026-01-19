@@ -17,8 +17,8 @@ def get_state_dict_name_mapping(
     """
     m1_state_dict_shapes = {k: v.shape for k, v in model1_state_dict.items()}
     m2_state_dict_shapes = {k: v.shape for k, v in model2_state_dict.items()}
-    assert len(m1_state_dict_shapes) == len(
-        m2_state_dict_shapes
+    assert (
+        len(m1_state_dict_shapes) == len(m2_state_dict_shapes)
     ), f"m1_state_dict_shapes: {m1_state_dict_shapes}, \n m2_state_dict_shapes {m2_state_dict_shapes}"
 
     ret = get_matching(m1_state_dict_shapes, m2_state_dict_shapes)

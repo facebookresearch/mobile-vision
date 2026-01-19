@@ -5,7 +5,6 @@
 Models from torchvision, providing the same interface for loading in model zoo
 """
 
-
 import torchvision
 
 # to register for model_zoo

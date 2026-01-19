@@ -554,12 +554,7 @@ class MultiheadAttention(OpProperty):
             assert S == vs[1]
 
         flops = N * (
-            L * E * E
-            + S * K * E
-            + S * V * E
-            + L * E * S
-            + L * S * E
-            + L * E * E
+            L * E * E + S * K * E + S * V * E + L * E * S + L * S * E + L * E * E
             # -------    ---------   ---------   ---------   ---------   ---------
             # Q_proj    K_proj      V_proj      Q * K       (QK) * V    out_proj
         )
