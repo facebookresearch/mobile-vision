@@ -10,7 +10,7 @@ from contextlib import contextmanager
 import diskcache
 
 
-class Timer(object):
+class Timer:
     def __init__(self):
         self.reset()
 
@@ -42,7 +42,7 @@ class Timer(object):
         self.diff = 0.0
 
 
-class TimerDict(object):
+class TimerDict:
     def __init__(self):
         self.timers = {}
 
@@ -67,7 +67,7 @@ class TimerDict(object):
             print(f"{name}: {item.average_time} ({item.total_time}, {item.calls})")
 
 
-class LocalCache(object):
+class LocalCache:
     @classmethod
     def Create(cls, prefix, num_shards, use_timer=False):
         tmp_dir = tempfile.gettempdir()
