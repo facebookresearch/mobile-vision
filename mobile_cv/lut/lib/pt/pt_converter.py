@@ -143,6 +143,14 @@ def convert_MatMul(m, input_shapes):
 
 @PT_CONVERTER.register("MultiheadAttention")
 def convert_MultiheadAttention(m, input_shapes):
+    # Only use query, key, value shapes if there are more.
+    # The MultiheadAttention from vizard https://fburl.com/code/ctsjiy89
+    # has up to 5 inputs, which lead to 5 input_shapes
+    # but the lut_schema only supports 3 at https://fburl.com/code/zfvv8twe
+    # which is called in compute_flops at https://fburl.com/code/6qkbya2w
+    if input_shapes is not None and len(input_shapes) > 3:
+        input_shapes = input_shapes[:3]
+
     op = lut_ops.MultiheadAttention(
         m.embed_dim,
         m.num_heads,
