@@ -11,7 +11,7 @@ import torchvision
 # to register for model_zoo
 from mobile_cv.model_zoo.models import model_zoo_factory  # noqa
 from mobile_cv.model_zoo.models.hub_utils import pretrained_download
-from pkg_resources import parse_version
+from packaging.version import parse as parse_version
 
 
 _tv_version = parse_version(torchvision.__version__)
