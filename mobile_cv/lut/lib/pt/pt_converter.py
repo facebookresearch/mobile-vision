@@ -143,6 +143,10 @@ def convert_MatMul(m, input_shapes):
 
 @PT_CONVERTER.register("MultiheadAttention")
 def convert_MultiheadAttention(m, input_shapes):
+    # Only use query, key, value shapes if there are more.
+    if input_shapes is not None and len(input_shapes) > 3:
+        input_shapes = input_shapes[:3]
+
     op = lut_ops.MultiheadAttention(
         m.embed_dim,
         m.num_heads,
