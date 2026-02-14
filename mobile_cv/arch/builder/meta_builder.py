@@ -141,6 +141,7 @@ import mobile_cv.arch.utils.helper as hp
 import mobile_cv.common.misc.iter_utils as iu
 import torch.nn as nn
 from mobile_cv.arch.fbnet_v2.blocks_factory import PRIMITIVES
+from mobile_cv.arch.utils import fuse_utils
 
 
 logger = logging.getLogger(__name__)
@@ -476,6 +477,8 @@ class MetaBuilder(object):
         dim_in: Optional[int] = None,
         prefix_name: str = "xif",
         override_missing: Optional[Dict[Any, Any]] = None,
+        fuse_ops: bool = False,
+        is_qat: bool = False,
         **kwargs,
     ):
         """
@@ -486,6 +489,9 @@ class MetaBuilder(object):
         override_missing: arguments that override the config in the blocks
                 if the argument in the block is None, otherwise it will be
                 ignored
+        fuse_ops: Whether to fuse the ops of known patterns (e.g. conv + bn + relu)
+                to speed up computation
+        is_qat: whether this is quantization aware training
         """
         assert isinstance(blocks, list) and all(
             isinstance(x, dict) for x in blocks
@@ -508,7 +514,12 @@ class MetaBuilder(object):
             block_cfg = block["block_cfg"]
             cur_kwargs = update_with_block_kwargs(copy.deepcopy(kwargs), block)
             nnblock = self.build_block(
-                block_op, block_cfg, override_missing=override_missing, **cur_kwargs
+                block_op,
+                block_cfg,
+                override_missing=override_missing,
+                fuse_ops=fuse_ops,
+                is_qat=is_qat,
+                **cur_kwargs,
             )
             nn_name = f"{prefix_name}{stage_idx}_{block_idx}"
             assert nn_name not in modules, f"{nn_name} existed in {modules}"
@@ -523,6 +534,8 @@ class MetaBuilder(object):
         block_cfg: Dict[str, Any],
         override_missing: Optional[Dict[str, Any]] = None,
         replace_strs: Optional[Dict[str, Any]] = None,
+        fuse_ops: bool = False,
+        is_qat: bool = False,
         **kwargs,
     ):
         """
@@ -534,6 +547,9 @@ class MetaBuilder(object):
             if the values are in '{name}` format
             Example: block_cfg={"out_channels": "{feature_dim}"} and replace_strs={"feature_dim": 20}
             will produce block_cfg={"out_channels": 20}
+        fuse_ops: Whether to fuse the ops of known patterns (e.g. conv + bn + relu)
+            to speed up computation
+        is_qat: whether this is quantization aware training
         """
 
         assert "out_channels" in block_cfg
@@ -572,6 +588,10 @@ class MetaBuilder(object):
             out_channels = self._get_divisible_width(out_channels * width_ratio)
 
         ret = PRIMITIVES.get(block_op)(in_channels, out_channels, **new_kwargs)
+        if fuse_ops:
+            # In training mode, only qat is supported for ops fusion
+            is_qat = ret.training or is_qat
+            ret = fuse_utils.fuse_model(ret, is_qat=is_qat, inplace=True)
         self.last_depth = getattr(ret, "out_channels", out_channels)
         return ret
 

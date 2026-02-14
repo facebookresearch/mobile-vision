@@ -53,6 +53,15 @@ class TestFBNetBuilder(unittest.TestCase):
         output = model(input)
         self.assertEqual(output.shape, torch.Size([2, 8, 2, 2]))
 
+    def test_fbnet_builder_fuse_ops(self):
+        import torch.ao.nn.intrinsic as nni
+
+        arch_def = {"blocks": [[("conv_k3", 4, 2, 1)]]}
+        model, builder = _build_model(arch_def, fuse_ops=True, dim_in=3)
+        self.assertIsInstance(model[0].conv, nni.ConvBnReLU2d)
+        self.assertIsInstance(model[0].bn, torch.nn.Identity)
+        self.assertIsInstance(model[0].relu, torch.nn.Identity)
+
     def test_fbnet_builder_width_divisor(self):
         e6 = {"expansion": 6}
 
