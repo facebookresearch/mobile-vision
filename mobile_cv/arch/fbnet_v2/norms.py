@@ -39,16 +39,18 @@ class adaILN(nn.Module):
     def forward(self, data: Tuple[torch.Tensor, torch.Tensor]):
         x, style = data
 
-        in_mean, in_var = torch.mean(x, dim=[2, 3], keepdim=True), torch.var(
-            x, dim=[2, 3], keepdim=True
+        in_mean, in_var = (
+            torch.mean(x, dim=[2, 3], keepdim=True),
+            torch.var(x, dim=[2, 3], keepdim=True),
         )
         # out_in = (x - in_mean) / torch.sqrt(in_var + self.eps)
         out_in = self.mul(
             self.add(x, self.mul_neg(in_mean)), torch.rsqrt(self.add_eps(in_var))
         )
 
-        ln_mean, ln_var = torch.mean(x, dim=[1, 2, 3], keepdim=True), torch.var(
-            x, dim=[1, 2, 3], keepdim=True
+        ln_mean, ln_var = (
+            torch.mean(x, dim=[1, 2, 3], keepdim=True),
+            torch.var(x, dim=[1, 2, 3], keepdim=True),
         )
         # out_ln = (x - ln_mean) / torch.sqrt(ln_var + self.eps)
         out_ln = self.mul(
@@ -90,16 +92,18 @@ class ILN(nn.Module):
         # todo: wrapper for torch.rsqrt ?
 
     def forward(self, x):
-        in_mean, in_var = torch.mean(x, dim=[2, 3], keepdim=True), torch.var(
-            x, dim=[2, 3], keepdim=True
+        in_mean, in_var = (
+            torch.mean(x, dim=[2, 3], keepdim=True),
+            torch.var(x, dim=[2, 3], keepdim=True),
         )
         # out_in = (x - in_mean) * torch.rsqrt(self.add_eps(in_var))
         out_in = self.mul(
             self.add(x, self.mul_neg(in_mean)), torch.rsqrt(self.add_eps(in_var))
         )
 
-        ln_mean, ln_var = torch.mean(x, dim=[1, 2, 3], keepdim=True), torch.var(
-            x, dim=[1, 2, 3], keepdim=True
+        ln_mean, ln_var = (
+            torch.mean(x, dim=[1, 2, 3], keepdim=True),
+            torch.var(x, dim=[1, 2, 3], keepdim=True),
         )
         # out_ln = (x - ln_mean) / torch.sqrt(ln_var + self.eps)
         out_ln = self.mul(

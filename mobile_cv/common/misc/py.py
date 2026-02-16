@@ -117,7 +117,6 @@ class FolderLock:
 
 # https://stackoverflow.com/questions/4716533/how-to-attach-debugger-to-a-python-subproccess  # noqa
 class MultiprocessingPdb(pdb.Pdb):
-
     _stdin_fd = sys.stdin.fileno()
     _stdin = None
 

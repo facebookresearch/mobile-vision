@@ -88,10 +88,16 @@ class TestFBNetBuilder(unittest.TestCase):
 
         blocks_factory.PRIMITIVES.register_dict(
             {
-                "conv_check": lambda in_channels, out_channels, stride, **kwargs: ConvCheck(  # noqa
+                "conv_check": lambda in_channels,
+                out_channels,
+                stride,
+                **kwargs: ConvCheck(  # noqa
                     in_channels, out_channels, stride=stride, **kwargs
                 ),
-                "irf_check": lambda in_channels, out_channels, stride, **kwargs: IRFCheck(  # noqa
+                "irf_check": lambda in_channels,
+                out_channels,
+                stride,
+                **kwargs: IRFCheck(  # noqa
                     in_channels, out_channels, stride=stride, **kwargs
                 ),
             }
