@@ -239,7 +239,8 @@ def draw_image_grid(
 
             # Draw the label below the image
             if label is not None:
-                label_width, label_height = label_font.getsize(label)
+                label_left, _, label_right, _ = label_font.getbbox(label)
+                label_width = label_right - label_left
                 label_x = (
                     image_x + (width_per_column[col] - label_width) // 2
                 )  # Center horizontally
@@ -249,7 +250,10 @@ def draw_image_grid(
 
             # Draw the image title above the image
             if image_title is not None:
-                image_title_width, image_title_height = title_font.getsize(image_title)
+                image_title_left, _, image_title_right, _ = title_font.getbbox(
+                    image_title
+                )
+                image_title_width = image_title_right - image_title_left
                 image_title_x = (
                     image_x + (width_per_column[col] - image_title_width) // 2
                 )  # Center horizontally
