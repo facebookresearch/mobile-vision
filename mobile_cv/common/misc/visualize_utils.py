@@ -178,7 +178,9 @@ def draw_image_grid(
                 cur = Image.open(fp)
                 cur.load()
             if max_image_size is not None:
-                cur.thumbnail((max_image_size, max_image_size), Image.LANCZOS)
+                cur.thumbnail(
+                    (max_image_size, max_image_size), Image.Resampling.LANCZOS
+                )
         images.append(cur)
 
     # Get the dimensions of the images to create the grid
