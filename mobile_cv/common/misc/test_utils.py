@@ -14,7 +14,7 @@ import pkg_resources
 from mobile_cv.common.misc.oss_utils import fb_overwritable
 
 
-class SubPackageInitFileTestMixin(object):
+class SubPackageInitFileTestMixin:
     """
     A helper for creating test to check every subpackage has an __init__.py file.
 

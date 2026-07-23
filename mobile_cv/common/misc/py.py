@@ -169,7 +169,7 @@ def post_mortem_if_fail(pdb_=None):
 
 
 # Copied from detectron2/utils/serialize.py
-class PicklableWrapper(object):
+class PicklableWrapper:
     """
     Wrap an object to make it more picklable, note that it uses
     heavy weight serialization libraries that are slower than pickle.

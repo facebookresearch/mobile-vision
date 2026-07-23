@@ -203,11 +203,11 @@ class TestIterUtils(unittest.TestCase):
         to the original structure"""
 
         @dataclass
-        class Type1(object):
+        class Type1:
             name: str
 
         @dataclass
-        class Type2(object):
+        class Type2:
             name: str
 
         adict = {
@@ -262,21 +262,21 @@ class TestIterUtils(unittest.TestCase):
         to the original structure"""
 
         @dataclass
-        class Type1(object):
+        class Type1:
             name: str
 
             def process(self, _):
                 return self.name + "_t1"
 
         @dataclass
-        class Type2(object):
+        class Type2:
             name: str
 
             def process(self, _):
                 return self.name + "_t2"
 
         @dataclass
-        class TypeChoice(object):
+        class TypeChoice:
             name: str
             data: List[Any]
 
