@@ -83,7 +83,10 @@ class TestModelZooToolsCreateModel(unittest.TestCase):
 
         blocks_factory.PRIMITIVES.register_dict(
             {
-                "cached_plus": lambda in_channels, out_channels, stride, **kwargs: CachedPlus()
+                "cached_plus": lambda in_channels,
+                out_channels,
+                stride,
+                **kwargs: CachedPlus()
             }
         )
         arch = {

@@ -5,7 +5,6 @@
 GhostNet: More Features from Cheap Operations
 """
 
-
 import math
 
 import mobile_cv.arch.utils.helper as hp

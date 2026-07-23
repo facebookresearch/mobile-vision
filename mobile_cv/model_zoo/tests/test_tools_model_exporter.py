@@ -289,9 +289,10 @@ class TestToolsModelExporter(unittest.TestCase):
     def test_tools_model_exporter_fx_quant(self):
         blocks_factory.PRIMITIVES.register_dict(
             {
-                "exporter_fx_quant_test": lambda in_channels, out_channels, stride, **kwargs: TestModel(
-                    num=2
-                )
+                "exporter_fx_quant_test": lambda in_channels,
+                out_channels,
+                stride,
+                **kwargs: TestModel(num=2)
             }
         )
         arch = {"blocks": [[("exporter_fx_quant_test", 1, 1, 1)]]}
