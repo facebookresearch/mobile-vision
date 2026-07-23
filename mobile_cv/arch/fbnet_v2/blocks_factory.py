@@ -12,7 +12,6 @@ from mobile_cv.arch.fbnet_v2 import (  # noqa
     irf_block,
     mobileone_block,
     res_block,
-    sg_block,
 )
 from torch import nn
 
