@@ -35,7 +35,7 @@ _PRIMITIVES = {
         in_channels, out_channels, kernel_size=3, stride=stride, **kwargs
     ),
     "skip": lambda in_channels, out_channels, stride, **kwargs: bb.Identity(
-        in_channels, out_channels, stride
+        in_channels, out_channels, stride, **kwargs
     ),
     "maxpool": lambda in_channels, out_channels, stride, kernel_size=3, padding=0, **kwargs: nn.MaxPool2d(  # noqa
         kernel_size=kernel_size,
