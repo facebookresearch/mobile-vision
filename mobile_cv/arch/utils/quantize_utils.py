@@ -91,7 +91,7 @@ def calibrate_model(model, data_loader, num_batches=1):
             )
 
 
-class PostQuantization(object):
+class PostQuantization:
     """Post quantization"""
 
     def __init__(self, model, copy_model=True):
@@ -132,7 +132,7 @@ class PostQuantization(object):
         return quant_model
 
 
-class PostQuantizationGraph(object):
+class PostQuantizationGraph:
     """Graph Mode post quantization"""
 
     def __init__(self, model, copy_model=True):
@@ -183,18 +183,13 @@ class PostQuantizationGraph(object):
         return self
 
     def convert_model(self):
-        assert self.processed_model is not None
-        assert self.calibrate_func is not None
-        ret = torch.ao.quantization.quantize_jit(
-            self.processed_model,
-            {"": self.qconfig},
-            self.calibrate_func,
-            ["_not_needed"],
+        raise RuntimeError(
+            "TorchScript quantization is deprecated: "
+            "https://github.com/pytorch/pytorch/issues/201653"
         )
-        return ret
 
 
-class PostQuantizationFX(object):
+class PostQuantizationFX:
     """Post quantization using FX"""
 
     def __init__(self, model, copy_model=True, qconfig=None):
