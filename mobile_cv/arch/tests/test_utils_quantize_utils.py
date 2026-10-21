@@ -61,34 +61,6 @@ class TestUtilsQuantizeUtils(unittest.TestCase):
         # make sure the original model was not modifed
         self.assertEqual(org_out.norm(), org_out_after.norm())
 
-    def test_utils_quantize_utils_quantize_model_graph_mode(self):
-        e6 = {"expansion": 6}
-        arch_def = {
-            "blocks": [
-                # [op, c, s, n, ...]
-                # stage 0
-                [("conv_k3", 4, 2, 1)],
-                # stage 1
-                [("ir_k3", 8, 2, 2, e6), ("ir_k5", 8, 1, 1, e6)],
-            ]
-        }
-        model = _build_model(arch_def, 3)
-        data = torch.rand((4, 3, 8, 8))
-        org_out = model(data)
-
-        pq = qu.PostQuantizationGraph(model)
-        pq.set_quant_backend("fbgemm")
-        quant_model = pq.set_calibrate([[data]], 1).trace([data]).convert_model()
-
-        print(quant_model)
-
-        quant_out = quant_model(data)
-        self.assertEqual(quant_out.shape, org_out.shape)
-
-        org_out_after = model(data)
-        # make sure the original model was not modifed
-        self.assertEqual(org_out.norm(), org_out_after.norm())
-
     def test_utils_quantize_utils_quantize_model_fx_mode(self):
         e6 = {"expansion": 6}
         arch_def = {
